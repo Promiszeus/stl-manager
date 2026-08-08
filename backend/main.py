@@ -74,9 +74,16 @@ def select_folder_dialog():
     try:
         ps_cmd = (
             "Add-Type -AssemblyName System.Windows.Forms; "
+            "$f = New-Object System.Windows.Forms.Form; "
+            "$f.TopMost = $true; "
+            "$f.Opacity = 0; "
+            "$f.ShowInTaskbar = $false; "
+            "$f.Show(); "
+            "$f.Activate(); "
             "$d = New-Object System.Windows.Forms.FolderBrowserDialog; "
             "$d.Description = 'Ordner für Überwachung auswählen'; "
-            "if ($d.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.SelectedPath }"
+            "if ($d.ShowDialog($f) -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.SelectedPath }; "
+            "$f.Dispose()"
         )
         res = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps_cmd],
                              capture_output=True, text=True)
@@ -111,10 +118,17 @@ def select_file_dialog():
     try:
         ps_cmd = (
             "Add-Type -AssemblyName System.Windows.Forms; "
+            "$f = New-Object System.Windows.Forms.Form; "
+            "$f.TopMost = $true; "
+            "$f.Opacity = 0; "
+            "$f.ShowInTaskbar = $false; "
+            "$f.Show(); "
+            "$f.Activate(); "
             "$d = New-Object System.Windows.Forms.OpenFileDialog; "
             "$d.Filter = 'Executable (*.exe)|*.exe|All Files (*.*)|*.*'; "
             "$d.Title = 'Slicer Executable (.exe) auswählen'; "
-            "if ($d.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.FileName }"
+            "if ($d.ShowDialog($f) -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.FileName }; "
+            "$f.Dispose()"
         )
         res = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps_cmd],
                              capture_output=True, text=True)
