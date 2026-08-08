@@ -59,17 +59,32 @@ def get_settings():
 def list_fs(path: str = "", filter_ext: str = ""):
     items = []
     
+    # Always include quick access paths
+    home = Path.home()
+    quick_access = [
+        {"name": "Desktop", "path": str(home / "Desktop")},
+        {"name": "Dokumente", "path": str(home / "Documents")},
+        {"name": "Downloads", "path": str(home / "Downloads")},
+        {"name": "Bilder", "path": str(home / "Pictures")},
+        {"name": "Musik", "path": str(home / "Music")},
+        {"name": "Videos", "path": str(home / "Videos")},
+        {"name": "Home", "path": str(home)},
+    ]
+    # filter out paths that don't exist
+    quick_access = [q for q in quick_access if Path(q["path"]).exists()]
+    
+    drives = []
+    if sys.platform == "win32":
+        import string
+        for drive in string.ascii_uppercase:
+            d = f"{drive}:\\"
+            if os.path.exists(d):
+                drives.append({"name": f"Lokaler Datenträger ({drive}:)", "path": d, "is_dir": True})
+    else:
+        drives.append({"name": "Root", "path": "/", "is_dir": True})
+
     if not path or path == "":
-        # Windows: list drives
-        if sys.platform == "win32":
-            import string
-            for drive in string.ascii_uppercase:
-                d = f"{drive}:\\"
-                if os.path.exists(d):
-                    items.append({"name": d, "path": d, "is_dir": True})
-        else:
-            items.append({"name": "/", "path": "/", "is_dir": True})
-        return {"current_path": "", "parent_path": "", "items": items}
+        return {"current_path": "", "parent_path": "", "items": drives, "quick_access": quick_access, "drives": drives}
         
     p = Path(path)
     if not p.exists() or not p.is_dir():
@@ -90,17 +105,20 @@ def list_fs(path: str = "", filter_ext: str = ""):
                         if not entry.name.lower().endswith(filter_ext.lower()):
                             continue
                 
+                stat = entry.stat(follow_symlinks=False)
                 items.append({
                     "name": entry.name,
                     "path": entry.path,
-                    "is_dir": is_dir
+                    "is_dir": is_dir,
+                    "size": stat.st_size if not is_dir else 0,
+                    "mtime": stat.st_mtime
                 })
             except Exception:
                 # Skip inaccessible files (e.g. permission denied)
                 continue
             
         items.sort(key=lambda x: (not x["is_dir"], x["name"].lower()))
-        return {"current_path": str(p), "parent_path": parent_path, "items": items}
+        return {"current_path": str(p), "parent_path": parent_path, "items": items, "quick_access": quick_access, "drives": drives}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

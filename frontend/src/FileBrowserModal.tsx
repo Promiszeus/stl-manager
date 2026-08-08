@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { X, Folder, File, ArrowLeft, HardDrive, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Folder, File, ArrowUp, RotateCw, HardDrive, Monitor, Download, Image as ImageIcon, Music, Video } from 'lucide-react';
 
 interface FsItem {
   name: string;
   path: string;
   is_dir: boolean;
+  size?: number;
+  mtime?: number;
+}
+
+interface QuickAccessItem {
+  name: string;
+  path: string;
 }
 
 interface Props {
@@ -15,27 +22,62 @@ interface Props {
   apiBase: string;
 }
 
+const formatSize = (bytes?: number) => {
+  if (bytes === undefined || bytes === 0) return '';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
+const formatDate = (timestamp?: number) => {
+  if (!timestamp) return '';
+  const d = new Date(timestamp * 1000);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const getQuickAccessIcon = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('desktop')) return <Monitor size={16} color="var(--accent-blue)" />;
+  if (n.includes('download')) return <Download size={16} color="#00cec9" />;
+  if (n.includes('bild') || n.includes('picture')) return <ImageIcon size={16} color="#fdcb6e" />;
+  if (n.includes('musik') || n.includes('music')) return <Music size={16} color="#e84393" />;
+  if (n.includes('video')) return <Video size={16} color="#6c5ce7" />;
+  return <Folder size={16} color="#f6e58d" />;
+};
+
 export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClose, onSelect, apiBase }) => {
   const [currentPath, setCurrentPath] = useState('');
   const [parentPath, setParentPath] = useState('');
   const [items, setItems] = useState<FsItem[]>([]);
+  const [quickAccess, setQuickAccess] = useState<QuickAccessItem[]>([]);
+  const [drives, setDrives] = useState<QuickAccessItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pathInput, setPathInput] = useState('');
+  const [selectedItem, setSelectedItem] = useState<FsItem | null>(null);
+  
+  const mainContentRef = useRef<HTMLDivElement>(null);
 
   const fetchPath = async (p: string) => {
     setLoading(true);
     setError('');
+    setSelectedItem(null);
     try {
       const res = await fetch(`${apiBase}/api/fs/list?path=${encodeURIComponent(p)}&filter_ext=${encodeURIComponent(filterExt)}`);
-      if (!res.ok) {
-        throw new Error('Failed to load path');
-      }
+      if (!res.ok) throw new Error('Zugriff verweigert oder Pfad nicht gefunden');
       const data = await res.json();
       setCurrentPath(data.current_path);
+      setPathInput(data.current_path);
       setParentPath(data.parent_path);
       setItems(data.items);
+      if (data.quick_access) setQuickAccess(data.quick_access);
+      if (data.drives) setDrives(data.drives);
+      
+      // Scroll to top
+      if (mainContentRef.current) mainContentRef.current.scrollTop = 0;
     } catch (e: any) {
-      setError(e.message || 'Error loading directory');
+      setError(e.message || 'Fehler beim Laden des Verzeichnisses');
     } finally {
       setLoading(false);
     }
@@ -45,7 +87,7 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
     fetchPath('');
   }, []);
 
-  const handleItemClick = (item: FsItem) => {
+  const handleItemDoubleClick = (item: FsItem) => {
     if (item.is_dir) {
       fetchPath(item.path);
     } else {
@@ -55,76 +97,154 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
     }
   };
 
-  const handleSelectCurrentFolder = () => {
-    if (mode === 'folder' && currentPath) {
-      onSelect(currentPath);
+  const handleItemClick = (item: FsItem) => {
+    setSelectedItem(item);
+  };
+
+  const handleSubmit = () => {
+    if (mode === 'folder') {
+      if (selectedItem && selectedItem.is_dir) {
+        onSelect(selectedItem.path);
+      } else if (currentPath) {
+        onSelect(currentPath);
+      }
+    } else {
+      if (selectedItem && !selectedItem.is_dir) {
+        onSelect(selectedItem.path, selectedItem.name.replace(/\.[^/.]+$/, ""));
+      }
     }
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 9999 }}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '600px', maxWidth: '90vw', height: '70vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="modal-overlay win-explorer-overlay" onClick={onClose}>
+      <div className="modal-content win-explorer-modal" onClick={e => e.stopPropagation()}>
         
-        <div className="modal-header" style={{ marginBottom: 0, paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-            <button 
-              className="icon-button" 
-              onClick={() => fetchPath(parentPath)}
-              disabled={loading}
-              title="Go up"
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {currentPath || 'Lokale Laufwerke'}
-            </span>
+        {/* Title Bar */}
+        <div className="win-explorer-header">
+          <div className="win-explorer-title">
+            <Folder size={14} color="#f6e58d" /> 
+            {mode === 'folder' ? 'Ordner suchen' : 'Datei öffnen'}
           </div>
-          <button className="icon-button" onClick={onClose}><X size={20} /></button>
+          <button className="win-icon-button close-btn" onClick={onClose}><X size={16} /></button>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 0', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>Lade...</div>
-          ) : error ? (
-            <div style={{ textAlign: 'center', padding: '20px', color: '#ff6b6b' }}>{error}</div>
-          ) : items.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>Ordner ist leer</div>
-          ) : (
-            items.map((item, i) => (
-              <div 
-                key={i} 
-                className="list-item" 
-                onClick={() => handleItemClick(item)}
-                style={{ cursor: 'pointer', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '10px' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-input)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                {currentPath === "" ? (
-                  <HardDrive size={18} color="var(--accent-blue)" />
-                ) : item.is_dir ? (
-                  <Folder size={18} color="#f6e58d" />
-                ) : (
-                  <File size={18} color="var(--text-muted)" />
-                )}
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {item.name}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div style={{ padding: '12px 0 0', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-            {mode === 'folder' ? 'Wähle einen Ordner aus.' : 'Wähle eine Datei aus.'}
-          </span>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="button-secondary" onClick={onClose}>Abbrechen</button>
-            {mode === 'folder' && currentPath && (
-              <button className="button-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={handleSelectCurrentFolder}>
-                <Check size={16} /> Aktuellen Ordner wählen
-              </button>
+        {/* Navigation Bar */}
+        <div className="win-explorer-navbar">
+          <div className="win-nav-actions">
+            <button className="win-icon-button" onClick={() => fetchPath(parentPath)} disabled={loading || !parentPath} title="Nach oben">
+              <ArrowUp size={18} />
+            </button>
+            <button className="win-icon-button" onClick={() => fetchPath(currentPath)} disabled={loading} title="Aktualisieren">
+              <RotateCw size={16} />
+            </button>
+          </div>
+          <div className="win-address-bar">
+            {currentPath === "" ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Monitor size={16} color="var(--accent-blue)" /> Dieser PC</div>
+            ) : (
+              <input 
+                type="text" 
+                value={pathInput}
+                onChange={e => setPathInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') fetchPath(pathInput); }}
+                className="win-address-input"
+              />
             )}
+          </div>
+        </div>
+
+        {/* Main Area */}
+        <div className="win-explorer-body">
+          {/* Sidebar */}
+          <div className="win-explorer-sidebar">
+            <div className="win-sidebar-group">
+              <div className="win-sidebar-title">Schnellzugriff</div>
+              {quickAccess.map((qa, i) => (
+                <div key={i} className={`win-sidebar-item ${currentPath === qa.path ? 'active' : ''}`} onClick={() => fetchPath(qa.path)}>
+                  {getQuickAccessIcon(qa.name)}
+                  <span>{qa.name}</span>
+                </div>
+              ))}
+            </div>
+            <div className="win-sidebar-group">
+              <div className="win-sidebar-title">Dieser PC</div>
+              {drives.map((d, i) => (
+                <div key={i} className={`win-sidebar-item ${currentPath === d.path ? 'active' : ''}`} onClick={() => fetchPath(d.path)}>
+                  <HardDrive size={16} color="var(--accent-blue)" />
+                  <span>{d.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Content Pane */}
+          <div className="win-explorer-content" ref={mainContentRef}>
+            {loading ? (
+              <div className="win-message">Lade...</div>
+            ) : error ? (
+              <div className="win-message error">{error}</div>
+            ) : items.length === 0 ? (
+              <div className="win-message">Dieser Ordner ist leer.</div>
+            ) : (
+              <table className="win-file-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '50%' }}>Name</th>
+                    <th style={{ width: '25%' }}>Änderungsdatum</th>
+                    <th style={{ width: '15%' }}>Typ</th>
+                    <th style={{ width: '10%', textAlign: 'right' }}>Größe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, i) => (
+                    <tr 
+                      key={i} 
+                      className={selectedItem?.path === item.path ? 'selected' : ''}
+                      onClick={() => handleItemClick(item)}
+                      onDoubleClick={() => handleItemDoubleClick(item)}
+                    >
+                      <td style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {item.is_dir ? <Folder size={18} color="#f6e58d" fill="#f6e58d" fillOpacity={0.2} /> : <File size={18} color="var(--text-muted)" />}
+                        <span className="file-name">{item.name}</span>
+                      </td>
+                      <td className="text-muted">{formatDate(item.mtime)}</td>
+                      <td className="text-muted">{item.is_dir ? 'Dateiordner' : 'Datei'}</td>
+                      <td className="text-muted" style={{ textAlign: 'right' }}>{formatSize(item.size)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* Footer Bar */}
+        <div className="win-explorer-footer">
+          <div className="win-footer-inputs">
+            <div className="win-input-row">
+              <label>{mode === 'folder' ? 'Ordner:' : 'Dateiname:'}</label>
+              <input type="text" readOnly value={selectedItem ? selectedItem.name : (mode === 'folder' ? currentPath : '')} />
+            </div>
+            <div className="win-input-row">
+              <label>Dateityp:</label>
+              <select disabled>
+                {mode === 'folder' ? (
+                  <option>Ordner</option>
+                ) : (
+                  <option>Executable (*.exe)</option>
+                )}
+              </select>
+            </div>
+          </div>
+          <div className="win-footer-actions">
+            <button 
+              className="win-btn-primary" 
+              onClick={handleSubmit}
+              disabled={mode === 'file' ? (!selectedItem || selectedItem.is_dir) : false}
+            >
+              {mode === 'folder' ? 'Ordner auswählen' : 'Öffnen'}
+            </button>
+            <button className="win-btn-secondary" onClick={onClose}>Abbrechen</button>
           </div>
         </div>
 
