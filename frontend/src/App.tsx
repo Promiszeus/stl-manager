@@ -958,16 +958,29 @@ function App() {
           filterExt={fileBrowserMode === 'slicer' ? '.exe' : ''}
           apiBase={API_BASE}
           onClose={() => setFileBrowserMode('none')}
-          onSelect={(path, name) => {
+          onSelect={async (path, name) => {
             if (fileBrowserMode === 'folder') {
               setDirectoryInput(path);
+              setFileBrowserMode('none');
+              try {
+                await fetch(`${API_BASE}/api/settings/directories`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ path: path })
+                });
+                setDirectoryInput('');
+                fetchSettings();
+                setTimeout(fetchModels, 2000);
+              } catch (e) {
+                console.error("Error auto-adding directory", e);
+              }
             } else if (fileBrowserMode === 'slicer') {
               setSlicerPathInput(path);
               if (name && !slicerNameInput) {
                 setSlicerNameInput(name);
               }
+              setFileBrowserMode('none');
             }
-            setFileBrowserMode('none');
           }}
         />
       )}
