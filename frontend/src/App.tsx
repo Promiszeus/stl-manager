@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Folder, FolderOpen, Database, HardDrive, Snail as Slicer, Star, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
+import { FileBrowserModal } from './FileBrowserModal';
 import './index.css';
 
 interface Model {
@@ -294,6 +295,7 @@ function App() {
   const [showPreviewSlicerMenu, setShowPreviewSlicerMenu] = useState(false);
   const [slicerNameInput, setSlicerNameInput] = useState('');
   const [slicerPathInput, setSlicerPathInput] = useState('');
+  const [fileBrowserMode, setFileBrowserMode] = useState<'none' | 'folder' | 'slicer'>('none');
 
   useEffect(() => {
     document.title = "Print Manager";
@@ -355,30 +357,11 @@ function App() {
   };
 
   const handleBrowseDirectory = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/utils/select-folder`, { method: 'POST' });
-      const data = await res.json();
-      if (data.path) {
-        setDirectoryInput(data.path);
-      }
-    } catch (e) {
-      console.error("Error picking directory", e);
-    }
+    setFileBrowserMode('folder');
   };
 
   const handleBrowseSlicer = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/utils/select-file`, { method: 'POST' });
-      const data = await res.json();
-      if (data.path) {
-        setSlicerPathInput(data.path);
-        if (!slicerNameInput && data.suggested_name) {
-          setSlicerNameInput(data.suggested_name);
-        }
-      }
-    } catch (e) {
-      console.error("Error picking slicer file", e);
-    }
+    setFileBrowserMode('slicer');
   };
 
   const handleSlice = async (id: string, path: string) => {
@@ -968,14 +951,31 @@ function App() {
           </div>
         </>
       )}
+
+      {fileBrowserMode !== 'none' && (
+        <FileBrowserModal
+          mode={fileBrowserMode === 'slicer' ? 'file' : 'folder'}
+          filterExt={fileBrowserMode === 'slicer' ? '.exe' : ''}
+          apiBase={API_BASE}
+          onClose={() => setFileBrowserMode('none')}
+          onSelect={(path, name) => {
+            if (fileBrowserMode === 'folder') {
+              setDirectoryInput(path);
+            } else if (fileBrowserMode === 'slicer') {
+              setSlicerPathInput(path);
+              if (name && !slicerNameInput) {
+                setSlicerNameInput(name);
+              }
+            }
+            setFileBrowserMode('none');
+          }}
+        />
+      )}
     </div>
   );
 }
 
 export default App;
-
-
-
 
 
 

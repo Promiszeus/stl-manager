@@ -55,108 +55,54 @@ def get_models():
 def get_settings():
     return load_settings()
 
-@app.post("/api/utils/select-folder")
-def select_folder_dialog():
-    # Try Tkinter first
-    if HAS_TKINTER:
-        try:
-            root = tk.Tk()
-            root.attributes('-alpha', 0.0) # Invisible instead of withdrawn
-            root.attributes('-topmost', True)
-            root.lift()
-            root.focus_force()
-            try:
-                import ctypes
-                ctypes.windll.user32.keybd_event(0x12, 0, 0, 0)
-                ctypes.windll.user32.keybd_event(0x12, 0, 2, 0)
-            except Exception:
-                pass
-            folder_path = filedialog.askdirectory(parent=root, title="Ordner für Überwachung auswählen")
-            root.destroy()
-            if folder_path:
-                return {"path": str(Path(folder_path))}
-        except Exception:
-            pass
-
-    # Fallback to PowerShell FolderBrowserDialog
-    try:
-        ps_cmd = (
-            "Add-Type -AssemblyName System.Windows.Forms; "
-            "$f = New-Object System.Windows.Forms.Form; "
-            "$f.TopMost = $true; "
-            "$f.Opacity = 0; "
-            "$f.ShowInTaskbar = $false; "
-            "$f.Show(); "
-            "$f.Activate(); "
-            "$d = New-Object System.Windows.Forms.FolderBrowserDialog; "
-            "$d.Description = 'Ordner für Überwachung auswählen'; "
-            "if ($d.ShowDialog($f) -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.SelectedPath }; "
-            "$f.Dispose()"
-        )
-        res = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps_cmd],
-                             capture_output=True, text=True)
-        folder = res.stdout.strip()
-        if folder:
-            return {"path": str(Path(folder))}
-    except Exception as e:
-        print(f"Folder picker error: {e}")
+@app.get("/api/fs/list")
+def list_fs(path: str = "", filter_ext: str = ""):
+    items = []
     
-    return {"path": ""}
-
-@app.post("/api/utils/select-file")
-def select_file_dialog():
-    # Try Tkinter first
-    if HAS_TKINTER:
-        try:
-            root = tk.Tk()
-            root.attributes('-alpha', 0.0)
-            root.attributes('-topmost', True)
-            root.lift()
-            root.focus_force()
-            try:
-                import ctypes
-                ctypes.windll.user32.keybd_event(0x12, 0, 0, 0)
-                ctypes.windll.user32.keybd_event(0x12, 0, 2, 0)
-            except Exception:
-                pass
-            file_path = filedialog.askopenfilename(
-                parent=root,
-                title="Slicer Executable (.exe) auswählen",
-                filetypes=[("Executable Files", "*.exe"), ("All Files", "*.*")]
-            )
-            root.destroy()
-            if file_path:
-                p = Path(file_path)
-                return {"path": str(p), "suggested_name": p.stem}
-        except Exception:
-            pass
-
-    # Fallback to PowerShell OpenFileDialog
+    if not path or path == "":
+        # Windows: list drives
+        if sys.platform == "win32":
+            import string
+            for drive in string.ascii_uppercase:
+                d = f"{drive}:\\"
+                if os.path.exists(d):
+                    items.append({"name": d, "path": d, "is_dir": True})
+        else:
+            items.append({"name": "/", "path": "/", "is_dir": True})
+        return {"current_path": "", "parent_path": "", "items": items}
+        
+    p = Path(path)
+    if not p.exists() or not p.is_dir():
+        raise HTTPException(status_code=400, detail="Invalid path")
+        
     try:
-        ps_cmd = (
-            "Add-Type -AssemblyName System.Windows.Forms; "
-            "$f = New-Object System.Windows.Forms.Form; "
-            "$f.TopMost = $true; "
-            "$f.Opacity = 0; "
-            "$f.ShowInTaskbar = $false; "
-            "$f.Show(); "
-            "$f.Activate(); "
-            "$d = New-Object System.Windows.Forms.OpenFileDialog; "
-            "$d.Filter = 'Executable (*.exe)|*.exe|All Files (*.*)|*.*'; "
-            "$d.Title = 'Slicer Executable (.exe) auswählen'; "
-            "if ($d.ShowDialog($f) -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.FileName }; "
-            "$f.Dispose()"
-        )
-        res = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps_cmd],
-                             capture_output=True, text=True)
-        filepath = res.stdout.strip()
-        if filepath:
-            p = Path(filepath)
-            return {"path": str(p), "suggested_name": p.stem}
+        parent_path = str(p.parent) if str(p.parent) != str(p) else ""
+        if sys.platform == "win32" and p.anchor == str(p):
+            parent_path = ""
+            
+        for entry in os.scandir(p):
+            try:
+                if entry.name.startswith('.') and entry.name != '..': continue
+                is_dir = entry.is_dir(follow_symlinks=False)
+                
+                if not is_dir:
+                    if filter_ext:
+                        if not entry.name.lower().endswith(filter_ext.lower()):
+                            continue
+                
+                items.append({
+                    "name": entry.name,
+                    "path": entry.path,
+                    "is_dir": is_dir
+                })
+            except Exception:
+                # Skip inaccessible files (e.g. permission denied)
+                continue
+            
+        items.sort(key=lambda x: (not x["is_dir"], x["name"].lower()))
+        return {"current_path": str(p), "parent_path": parent_path, "items": items}
     except Exception as e:
-        print(f"File picker error: {e}")
-
-    return {"path": "", "suggested_name": ""}
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/settings/directories")
 def add_directory(data: DirectoryAdd):
