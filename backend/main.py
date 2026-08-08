@@ -75,11 +75,12 @@ def list_fs(path: str = "", filter_ext: str = ""):
     
     drives = []
     if sys.platform == "win32":
-        import string
-        for drive in string.ascii_uppercase:
-            d = f"{drive}:\\"
-            if os.path.exists(d):
-                drives.append({"name": f"Lokaler Datenträger ({drive}:)", "path": d, "is_dir": True})
+        import ctypes
+        bitmask = ctypes.windll.kernel32.GetLogicalDrives()
+        for i in range(26):
+            if bitmask & (1 << i):
+                drive = f"{chr(65 + i)}:\\"
+                drives.append({"name": f"Lokaler Datenträger ({drive[:2]})", "path": drive, "is_dir": True})
     else:
         drives.append({"name": "Root", "path": "/", "is_dir": True})
 
