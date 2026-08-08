@@ -63,7 +63,9 @@ def select_folder_dialog():
             root = tk.Tk()
             root.withdraw()
             root.attributes('-topmost', True)
-            folder_path = filedialog.askdirectory(title="Ordner für Überwachung auswählen")
+            root.lift()
+            root.focus_force()
+            folder_path = filedialog.askdirectory(parent=root, title="Ordner für Überwachung auswählen")
             root.destroy()
             if folder_path:
                 return {"path": str(Path(folder_path))}
@@ -103,7 +105,10 @@ def select_file_dialog():
             root = tk.Tk()
             root.withdraw()
             root.attributes('-topmost', True)
+            root.lift()
+            root.focus_force()
             file_path = filedialog.askopenfilename(
+                parent=root,
                 title="Slicer Executable (.exe) auswählen",
                 filetypes=[("Executable Files", "*.exe"), ("All Files", "*.*")]
             )
