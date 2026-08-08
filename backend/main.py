@@ -61,10 +61,16 @@ def select_folder_dialog():
     if HAS_TKINTER:
         try:
             root = tk.Tk()
-            root.withdraw()
+            root.attributes('-alpha', 0.0) # Invisible instead of withdrawn
             root.attributes('-topmost', True)
             root.lift()
             root.focus_force()
+            try:
+                import ctypes
+                ctypes.windll.user32.keybd_event(0x12, 0, 0, 0)
+                ctypes.windll.user32.keybd_event(0x12, 0, 2, 0)
+            except Exception:
+                pass
             folder_path = filedialog.askdirectory(parent=root, title="Ordner für Überwachung auswählen")
             root.destroy()
             if folder_path:
@@ -103,10 +109,16 @@ def select_file_dialog():
     if HAS_TKINTER:
         try:
             root = tk.Tk()
-            root.withdraw()
+            root.attributes('-alpha', 0.0)
             root.attributes('-topmost', True)
             root.lift()
             root.focus_force()
+            try:
+                import ctypes
+                ctypes.windll.user32.keybd_event(0x12, 0, 0, 0)
+                ctypes.windll.user32.keybd_event(0x12, 0, 2, 0)
+            except Exception:
+                pass
             file_path = filedialog.askopenfilename(
                 parent=root,
                 title="Slicer Executable (.exe) auswählen",
