@@ -1,0 +1,51 @@
+========================================================
+    STL Manager - Portable Start (Port 8000)
+========================================================
+
+[OK] Portable Embedded Python erkannt.
+
+[STARTING] STL Manager is running at http://localhost:8000 ...
+Das System kann die angegebene Datei nicht finden.
+[INFO] Press Ctrl+C or close this window to stop the server.
+
+INFO:     Started server process [24100]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+Scanning directory: F:\STL-Manger\test
+  Found: Airless Footbal Ball whole.stl
+Started watching: F:\STL-Manger\test
+INFO:     127.0.0.1:65113 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65113 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65113 - "GET /api/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65113 - "GET /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65113 - "GET /cache/7324151a1219eda8deb62d609f9e6366_0.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:65113 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65113 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65113 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65113 - "GET / HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:65113 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65113 - "GET /api/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57849 - "GET /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57849 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57849 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57849 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57849 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /assets/index-nsNzsPJM.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /assets/index-B30tET8B.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /favicon.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /cache/7324151a1219eda8deb62d609f9e6366_0.png HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "POST /api/slice/7324151a1219eda8deb62d609f9e6366 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62618 - "GET /api/models HTTP/1.1" 200 OK
