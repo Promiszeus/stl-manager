@@ -1,4 +1,4 @@
-# STL-Manager (Printventory)
+# STL-Manager 
 
 STL-Manager is a powerful, local 3D model management application designed to seamlessly organize, preview, and interact with your STL files.
 
