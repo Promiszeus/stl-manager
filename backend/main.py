@@ -367,6 +367,6 @@ def open_folder(model_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Serve Frontend static build if present (for Portable / standalone mode)
-frontend_dist = Path(__file__).parent.parent / "frontend" / "dist"
+frontend_dist = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 if frontend_dist.exists():
     app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="static")
