@@ -15,6 +15,7 @@ interface Model {
   tags: string[];
   source_url?: string;
   added_at: number;
+  rel_path?: string;
 }
 
 const DEFAULT_TAG_COLORS = ['#8e2de2','#3a7bd5','#00b894','#e17055','#fdcb6e','#6c5ce7','#00cec9','#d63031','#e84393','#2d3436'];
@@ -65,7 +66,7 @@ const TagColorPicker = ({ tag, initialColor, onSave, size = 14 }: { tag: string,
   );
 };
 
-const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, handleToggleSelect, handleSlice, handleDeleteModel, handleToggleStatus, handlePreview, handleUpdateTags, handleOpenFolder, onContextMenu }: { model: Model, slicers: any[], viewMode: string, isSelected: boolean, allTags: string[], tagColors?: Record<string, string>, handleToggleSelect: (id: string) => void, handleSlice: (id: string, path: string) => void, handleDeleteModel: (id: string, name: string) => void, handleToggleStatus: (id: string, current: string) => void, handlePreview: (m: Model) => void, handleUpdateTags: (id: string, tags: string[]) => void, handleOpenFolder: (id: string) => void, onContextMenu: (e: React.MouseEvent, m: Model) => void }) => {
+const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, handleToggleSelect, handleSlice, handleDeleteModel, handleToggleStatus, handlePreview, handleUpdateTags, handleOpenFolder, onContextMenu, handleSetSearchTerm }: { model: Model, slicers: any[], viewMode: string, isSelected: boolean, allTags: string[], tagColors?: Record<string, string>, handleToggleSelect: (id: string) => void, handleSlice: (id: string, path: string) => void, handleDeleteModel: (id: string, name: string) => void, handleToggleStatus: (id: string, current: string) => void, handlePreview: (m: Model) => void, handleUpdateTags: (id: string, tags: string[]) => void, handleOpenFolder: (id: string) => void, onContextMenu: (e: React.MouseEvent, m: Model) => void, handleSetSearchTerm: (term: string) => void }) => {
   const [imgIdx, setImgIdx] = useState(0);
   const thumbs = model.thumbnails && model.thumbnails.length > 0 ? model.thumbnails : (model.thumbnail ? [model.thumbnail] : []);
   const currentThumb = thumbs[imgIdx] || '';
@@ -116,7 +117,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
                     <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} 
                           onMouseEnter={e => e.currentTarget.style.color='var(--accent-blue)'}
                           onMouseLeave={e => e.currentTarget.style.color='inherit'}
-                          onClick={(e) => { e.stopPropagation(); setSearchTerm(part); }}
+                          onClick={(e) => { e.stopPropagation(); handleSetSearchTerm(part); }}
                           title={`Nach '${part}' filtern`}>
                       {part}
                     </span>
@@ -214,7 +215,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
                   <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} 
                         onMouseEnter={e => e.currentTarget.style.color='var(--accent-blue)'}
                         onMouseLeave={e => e.currentTarget.style.color='inherit'}
-                        onClick={(e) => { e.stopPropagation(); setSearchTerm(part); }}
+                        onClick={(e) => { e.stopPropagation(); handleSetSearchTerm(part); }}
                         title={`Nach '${part}' filtern`}>
                     {part}
                   </span>
@@ -789,7 +790,7 @@ function App() {
 
         <div className={`${viewMode === 'grid' ? "models-grid" : "models-list"} ${selectedIds.length > 0 ? "has-selection" : ""}`}>
           {sortedModels.map(model => (
-            <ModelCard key={model.id} model={model} slicers={settings.slicers} viewMode={viewMode} isSelected={selectedIds.includes(model.id)} allTags={allTags} tagColors={settings.tag_colors} handleToggleSelect={handleToggleSelect} handleSlice={handleSlice} handleDeleteModel={handleDeleteModel} handleToggleStatus={handleToggleStatus} handlePreview={setPreviewModel} handleUpdateTags={handleUpdateTags} handleOpenFolder={handleOpenFolder} onContextMenu={(e, m) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, model: m }); }} />
+            <ModelCard key={model.id} model={model} slicers={settings.slicers} viewMode={viewMode} isSelected={selectedIds.includes(model.id)} allTags={allTags} tagColors={settings.tag_colors} handleToggleSelect={handleToggleSelect} handleSlice={handleSlice} handleDeleteModel={handleDeleteModel} handleToggleStatus={handleToggleStatus} handlePreview={setPreviewModel} handleUpdateTags={handleUpdateTags} handleOpenFolder={handleOpenFolder} handleSetSearchTerm={setSearchTerm} onContextMenu={(e, m) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, model: m }); }} />
           ))}
           {sortedModels.length === 0 && (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
