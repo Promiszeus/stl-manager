@@ -141,7 +141,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
             {model.status}
          </span>
          <div style={{ color: 'var(--text-muted)', fontSize: '12px', width: '80px' }}>{model.size_kb} KB</div>
-         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
+         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative', width: '100%', flex: 1 }}>
               <button
                 className="icon-button"
                 onClick={() => handleToggleStatus(model.id, model.status)}
@@ -227,7 +227,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
           <div className="meta-item"><HardDrive size={14} color="#3a7bd5" /> {model.size_kb} KB</div>
         </div>
         <div className="card-actions" style={{ paddingTop: '8px', borderTop: 'none', marginTop: '10px' }}>
-           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
+           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative', width: '100%' }}>
               <button
                 className="icon-button"
                 onClick={() => handleToggleStatus(model.id, model.status)}
@@ -335,7 +335,7 @@ function App() {
   const [fileBrowserMode, setFileBrowserMode] = useState<'none' | 'folder' | 'slicer'>('none');
 
   useEffect(() => {
-    document.title = "STL Mamanger";
+    document.title = "STL Manager";
     fetchModels();
     fetchSettings();
     fetchTags();
@@ -655,7 +655,7 @@ function App() {
                <Database size={32} color="white" />
             </div>
           </div>
-          <div className="logo-text">STL Mamanger</div>
+          <div className="logo-text">STL Manager</div>
           <div className="logo-sub">{models.length} models total</div>
         </div>
 
@@ -719,8 +719,15 @@ function App() {
               onChange={e => setSearchTerm(e.target.value)}
               style={{ paddingRight: '36px' }}
             />
-            <Search size={16} style={{ position: 'absolute', right: '10px', top: '12px', color: 'var(--text-muted)' }} />
+            {searchTerm ? (
+              <X size={16} onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: '10px', top: '12px', color: 'var(--text-muted)', cursor: 'pointer' }} />
+            ) : (
+              <Search size={16} style={{ position: 'absolute', right: '10px', top: '12px', color: 'var(--text-muted)' }} />
+            )}
           </div>
+          <button className="button-secondary" onClick={() => { setSearchTerm(''); setActiveTagFilter(null); }} style={{ marginTop: '8px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+             <X size={14} /> Filter zurücksetzen
+          </button>
         </div>
         
         <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
@@ -774,8 +781,8 @@ function App() {
                 <option value="name_desc">Sortieren: Name (Z - A)</option>
                 <option value="date_desc">Sortieren: Hinzugefügt (Neueste)</option>
                 <option value="date_asc">Sortieren: Hinzugefügt (Älteste)</option>
-                <option value="size_desc">Sortieren: Größe (Groß â†’ Klein)</option>
-                <option value="size_asc">Sortieren: Größe (Klein â†’ Groß)</option>
+                <option value="size_desc">Sortieren: Größe (Absteigend)</option>
+                <option value="size_asc">Sortieren: Größe (Aufsteigend)</option>
               </select>
             </div>
 
