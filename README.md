@@ -29,6 +29,14 @@ The "STL-Manager Tracker" extension intercepts your downloads from sites like Ma
 5. Select the `chrome-extension` folder located inside your STL-Manager directory.
 6. Done! From now on, whenever you download an STL or 3MF file, the exact URL will be saved in your STL-Manager library.
 
+## Updates
+
+STL-Manager includes a built-in auto-updater so you don't have to manually download ZIP files anymore!
+
+1. Make sure the server is closed.
+2. Double-click the **`update.bat`** file in your STL-Manager directory.
+3. The script will automatically download the latest version from GitHub and install missing Python dependencies, while keeping your personal settings, cache, and library intact.
+
 ## Tech Stack
 
 - **Backend**: Python (FastAPI, Uvicorn)
