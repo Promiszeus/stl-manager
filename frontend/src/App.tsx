@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Folder, FolderOpen, Database, HardDrive, Snail as Slicer, Star, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe, Pencil } from 'lucide-react';
+import { Search, Folder, FolderOpen, Database, HardDrive, Snail as Slicer, Printer, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe, Pencil } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import './index.css';
@@ -130,11 +130,11 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
              >
                <CheckCircle size={16} />
              </button>
-              <div style={{ position: 'relative' }}
+              <div style={{ position: 'relative', display: 'flex' }}
                 onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
                 onMouseLeave={() => setShowSlicerMenu(false)}>
-              <button className="slice-btn" onClick={onSendClick} title="Send to Slicer" style={{ padding: '4px 8px' }}>
-                 <Slicer size={14} /> Send
+              <button className="icon-button" onClick={onSendClick} title="Send to Slicer">
+                 <Printer size={16} />
               </button>
               {showSlicerMenu && (
                  <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
@@ -191,13 +191,6 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
           <div className="meta-item"><HardDrive size={14} color="#3a7bd5" /> {model.size_kb} KB</div>
         </div>
         <div className="card-actions" style={{ paddingTop: '8px', borderTop: 'none', marginTop: '10px' }}>
-           <div style={{ display: 'flex', gap: '4px' }}>
-              <Star size={14} color="var(--text-muted)" />
-              <Star size={14} color="var(--text-muted)" />
-              <Star size={14} color="var(--text-muted)" />
-              <Star size={14} color="var(--text-muted)" />
-              <Star size={14} color="var(--text-muted)" />
-           </div>
            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
              <button
                className="icon-button"
@@ -207,11 +200,11 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
              >
                <CheckCircle size={14} />
              </button>
-              <div style={{ position: 'relative' }}
+              <div style={{ position: 'relative', display: 'flex' }}
                 onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
                 onMouseLeave={() => setShowSlicerMenu(false)}>
-              <button className="slice-btn" onClick={onSendClick} title="Send to Slicer" style={{ padding: '4px 8px' }}>
-                 <Slicer size={14} /> Send
+              <button className="icon-button" onClick={onSendClick} title="Send to Slicer">
+                 <Printer size={14} />
               </button>
               {showSlicerMenu && (
                  <div style={{ position: 'absolute', bottom: '100%', left: '0', paddingBottom: '4px', zIndex: 100 }}>
@@ -714,10 +707,10 @@ function App() {
                   {selectedIds.length === sortedModels.length ? 'Auswahl aufheben' : 'Alle auswählen'}
                 </button>
                 <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px', color: '#2ecc71', borderColor: 'rgba(46, 204, 113, 0.4)' }} onClick={() => handleBatchStatus('Printed')}>
-                  âœ“ Als gedruckt
+                  ✓ Als gedruckt
                 </button>
                 <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => handleBatchStatus('Not Printed')}>
-                  âœ• Als nicht gedruckt
+                  ✗ Als nicht gedruckt
                 </button>
                 <button className="danger-btn" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleBatchDelete}>
                   <Trash2 size={13} style={{ marginRight: '4px' }} /> Löschen (von Festplatte)
