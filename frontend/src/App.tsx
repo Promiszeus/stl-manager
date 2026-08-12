@@ -821,9 +821,16 @@ function App() {
         <div className="modal-overlay" onClick={() => setPreviewModel(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '80%', height: '80%', display: 'flex', flexDirection: 'column' }}>
              <div className="modal-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Box size={20} color="var(--accent-blue)" />
-                  {previewModel.name}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Box size={20} color="var(--accent-blue)" />
+                    {previewModel.name}
+                  </div>
+                  {previewModel.source_url && (
+                    <a href={previewModel.source_url} target="_blank" rel="noreferrer" style={{ fontSize: '11px', color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }} onMouseEnter={e => e.currentTarget.style.color='var(--accent-cyan)'} onMouseLeave={e => e.currentTarget.style.color='var(--text-muted)'}>
+                      <Globe size={10} /> {previewModel.source_url}
+                    </a>
+                  )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ position: 'relative' }}
