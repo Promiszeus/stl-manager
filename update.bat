@@ -19,4 +19,8 @@ if not exist "%PYTHON_EXE%" (
 "%PYTHON_EXE%" "%~dp0update.py"
 
 echo.
+echo Installiere/Pruefe fehlende Python Module...
+"%PYTHON_EXE%" -m pip install -r "%~dp0backend\requirements.txt"
+
+echo.
 pause
