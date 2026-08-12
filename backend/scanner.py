@@ -29,6 +29,26 @@ def get_content_hash(filepath):
     except Exception:
         return None
 
+def get_source_url(filepath: str):
+    """Reads the Windows Zone.Identifier Alternate Data Stream to get the download URL."""
+    import sys
+    if sys.platform != "win32":
+        return None
+    try:
+        zone_file = filepath + ":Zone.Identifier"
+        referrer = None
+        host = None
+        with open(zone_file, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("ReferrerUrl="):
+                    referrer = line.split("=", 1)[1]
+                elif line.startswith("HostUrl="):
+                    host = line.split("=", 1)[1]
+        return referrer if referrer else host
+    except Exception:
+        return None
+
 class STLHandler(FileSystemEventHandler):
     def _is_3d_file(self, path: str) -> bool:
         p = path.lower()
@@ -93,7 +113,9 @@ class STLHandler(FileSystemEventHandler):
         
         # Always save to DB - even without a thumbnail the model should appear
         existing_entry = models.get(file_id, {})
-        if file_id not in models or existing_entry.get("thumbnails") != thumbnails_list:
+        new_source_url = get_source_url(filepath) or existing_entry.get("source_url")
+        
+        if file_id not in models or existing_entry.get("thumbnails") != thumbnails_list or existing_entry.get("source_url") != new_source_url:
             models[file_id] = {
                 "id": file_id,
                 "name": path_obj.name,
@@ -103,6 +125,7 @@ class STLHandler(FileSystemEventHandler):
                 "content_hash": get_content_hash(str(path_obj)),
                 "status": existing_entry.get("status", "Not Printed"),
                 "tags": existing_entry.get("tags", []),
+                "source_url": new_source_url,
                 "added_at": existing_entry.get("added_at", time.time())
             }
             save_models(models)

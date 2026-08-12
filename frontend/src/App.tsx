@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Folder, FolderOpen, Database, HardDrive, Snail as Slicer, Star, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown } from 'lucide-react';
+import { Search, Folder, FolderOpen, Database, HardDrive, Snail as Slicer, Star, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import './index.css';
@@ -13,6 +13,7 @@ interface Model {
   thumbnails?: string[];
   status: string;
   tags: string[];
+  source_url?: string;
   added_at: number;
 }
 
@@ -856,6 +857,11 @@ function App() {
                       </div>
                     )}
                   </div>
+                  {previewModel.source_url && (
+                    <button className="button-secondary" onClick={() => window.open(previewModel.source_url, '_blank')} title="Download-Seite öffnen" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', margin: 0, padding: '6px 12px' }}>
+                      <Globe size={14} /> Quelle öffnen
+                    </button>
+                  )}
                   <button className="button-secondary" onClick={() => handleOpenFolder(previewModel.id)} title="Speicherort im Explorer öffnen" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', margin: 0, padding: '6px 12px' }}>
                     <FolderOpen size={14} /> Speicherort öffnen
                   </button>
