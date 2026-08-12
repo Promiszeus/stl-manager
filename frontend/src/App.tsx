@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Folder, FolderOpen, Database, HardDrive, Snail as Slicer, Printer, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe, Pencil } from 'lucide-react';
+import { Search, Folder, FolderOpen, Database, HardDrive, Printer, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe, Pencil } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import './index.css';
