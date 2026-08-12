@@ -306,7 +306,7 @@ function App() {
   const [fileBrowserMode, setFileBrowserMode] = useState<'none' | 'folder' | 'slicer'>('none');
 
   useEffect(() => {
-    document.title = "Print Manager";
+    document.title = "STL Mamanger";
     fetchModels();
     fetchSettings();
     fetchTags();
@@ -624,7 +624,7 @@ function App() {
                <Database size={32} color="white" />
             </div>
           </div>
-          <div className="logo-text">PRINT MANAGER</div>
+          <div className="logo-text">STL Mamanger</div>
           <div className="logo-sub">{models.length} models total</div>
         </div>
 
