@@ -1,42 +1,4 @@
 {
-    "7d09466148b2a375bf281ac8014a6abf": {
-        "id": "7d09466148b2a375bf281ac8014a6abf",
-        "name": "Airless Footbal Ball whole.stl",
-        "path": "F:\\STL-Manager\\test\\Airless Footbal Ball whole.stl",
-        "size_kb": 3754.2,
-        "thumbnails": [
-            "/cache/7d09466148b2a375bf281ac8014a6abf_0.png"
-        ],
-        "content_hash": "09a5556de01c68e2a80e54ed97812297",
-        "status": "Not Printed",
-        "tags": [],
-        "source_url": null,
-        "added_at": 1786529441.230858
-    },
-    "9481b55d8da857bd868358f94e28f467": {
-        "id": "9481b55d8da857bd868358f94e28f467",
-        "name": "V2.Letter_and_Name.3mf",
-        "path": "F:\\STL-Manager\\test\\V2.Letter_and_Name.3mf",
-        "size_kb": 1260.3,
-        "thumbnails": [
-            "/cache/9481b55d8da857bd868358f94e28f467_0.png",
-            "/cache/9481b55d8da857bd868358f94e28f467_1.png",
-            "/cache/9481b55d8da857bd868358f94e28f467_2.png",
-            "/cache/9481b55d8da857bd868358f94e28f467_3.png",
-            "/cache/9481b55d8da857bd868358f94e28f467_4.png",
-            "/cache/9481b55d8da857bd868358f94e28f467_5.png",
-            "/cache/9481b55d8da857bd868358f94e28f467_6.png",
-            "/cache/9481b55d8da857bd868358f94e28f467_7.png",
-            "/cache/9481b55d8da857bd868358f94e28f467_8.png",
-            "/cache/9481b55d8da857bd868358f94e28f467_9.png",
-            "/cache/9481b55d8da857bd868358f94e28f467_10.png"
-        ],
-        "content_hash": "10762f878fd51361ef2ad1805d3f3d3c",
-        "status": "Not Printed",
-        "tags": [],
-        "source_url": "https://makerworld.com/",
-        "added_at": 1786529441.2807555
-    },
     "bd5ad8fffc5a7438c3fc70f3c8ed9f81": {
         "id": "bd5ad8fffc5a7438c3fc70f3c8ed9f81",
         "name": "Cap+holder.3mf",
@@ -54,7 +16,7 @@
         "content_hash": "c2fa3a2c1e7493d6005110f8cbdffff7",
         "status": "Not Printed",
         "tags": [],
-        "source_url": "https://makerworld.com/",
-        "added_at": 1786529469.5621192
+        "source_url": "https://makerworld.com/de/models/3031285-wall-mount-hat-holder?from=recommend#profileId-3407040",
+        "added_at": 1786530124.0354598
     }
 }

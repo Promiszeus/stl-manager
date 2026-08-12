@@ -151,8 +151,11 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
                  </div>
               )}
               </div>
+              {model.source_url && (
+                <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
+              )}
               <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
-             <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
+              <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
          </div>
       </div>
     );
@@ -225,7 +228,10 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
                  </div>
               )}
               </div>
-               <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={14} /></button>
+              {model.source_url && (
+                <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={14} /></button>
+              )}
+              <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={14} /></button>
               <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
               <button className="icon-button"><Heart size={14} /></button>
            </div>
