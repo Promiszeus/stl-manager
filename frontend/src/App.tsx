@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Folder, FolderOpen, Database, HardDrive, Snail as Slicer, Star, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe } from 'lucide-react';
+import { Search, Folder, FolderOpen, Database, HardDrive, Snail as Slicer, Star, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe, Pencil } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import './index.css';
@@ -302,6 +302,7 @@ function App() {
   const [showPreviewSlicerMenu, setShowPreviewSlicerMenu] = useState(false);
   const [slicerNameInput, setSlicerNameInput] = useState('');
   const [slicerPathInput, setSlicerPathInput] = useState('');
+  const [newTagInput, setNewTagInput] = useState('');
   const [fileBrowserMode, setFileBrowserMode] = useState<'none' | 'folder' | 'slicer'>('none');
 
   useEffect(() => {
@@ -428,6 +429,52 @@ function App() {
       fetchModels();
     } catch (e) {
       console.error("Error clearing database", e);
+    }
+  };
+
+  const handleUpdateUrl = async (id: string, currentUrl?: string) => {
+    const newUrl = window.prompt("Neue Quell-URL für dieses Modell eingeben:", currentUrl || "");
+    if (newUrl === null) return; // cancelled
+    try {
+      await fetch(`${API_BASE}/api/models/${id}/url`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: newUrl })
+      });
+      fetchModels();
+      if (previewModel && previewModel.id === id) {
+         setPreviewModel(prev => prev ? {...prev, source_url: newUrl} : null);
+      }
+    } catch (err) {
+      console.error("Failed to update URL", err);
+    }
+  };
+
+  const handleAddSettingsTag = async () => {
+    if (!newTagInput.trim()) return;
+    try {
+      await fetch(`${API_BASE}/api/settings/tags`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newTagInput })
+      });
+      setNewTagInput('');
+      fetchTags();
+      fetchSettings();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRemoveSettingsTag = async (tag: string) => {
+    if (!window.confirm(`Tag "${tag}" wirklich löschen? Dies entfernt ihn auch von allen Modellen.`)) return;
+    try {
+      await fetch(`${API_BASE}/api/settings/tags/${encodeURIComponent(tag)}`, { method: 'DELETE' });
+      fetchTags();
+      fetchModels();
+      fetchSettings();
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -793,9 +840,21 @@ function App() {
                    ))}
                    {settings.directories.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No directories monitored.</div>}
                  </div>
-                 {/* Tag Color Settings Section */}
+                 {/* Manage Tags Section */}
                  <div className="form-group" style={{ marginTop: '16px' }}>
-                    <label className="form-label">Tag Colors:</label>
+                    <label className="form-label">Manage Tags:</label>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                      <input 
+                        type="text" 
+                        className="input-field" 
+                        placeholder="Neuer Tag Name..." 
+                        value={newTagInput}
+                        onChange={e => setNewTagInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleAddSettingsTag(); }}
+                        style={{ flex: 1 }}
+                      />
+                      <button className="slice-btn" onClick={handleAddSettingsTag}>Add Tag</button>
+                    </div>
                     <div style={{ maxHeight: '120px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {allTags.map(t => {
                         const c = tagColor(t, settings?.tag_colors);
@@ -803,10 +862,11 @@ function App() {
                           <div key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--bg-input)', padding: '4px 10px', borderRadius: '8px', border: `1px solid ${c}44` }}>
                             <span style={{ fontSize: '12px', color: c, fontWeight: 'bold' }}>{t}</span>
                             <TagColorPicker tag={t} initialColor={c} onSave={handleUpdateTagColor} size={18} />
+                            <button className="icon-button" style={{ marginLeft: '4px', padding: '2px' }} onClick={() => handleRemoveSettingsTag(t)} title="Tag komplett löschen"><Trash2 size={12} color="#ff4d4d" /></button>
                           </div>
                         );
                       })}
-                      {allTags.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No tags found in library.</div>}
+                      {allTags.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No tags available.</div>}
                     </div>
                  </div>
               </div>
@@ -832,11 +892,18 @@ function App() {
                     <Box size={20} color="var(--accent-blue)" />
                     {previewModel.name}
                   </div>
-                  {previewModel.source_url && (
-                    <a href={previewModel.source_url} target="_blank" rel="noreferrer" style={{ fontSize: '11px', color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }} onMouseEnter={e => e.currentTarget.style.color='var(--accent-cyan)'} onMouseLeave={e => e.currentTarget.style.color='var(--text-muted)'}>
-                      <Globe size={10} /> {previewModel.source_url}
-                    </a>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {previewModel.source_url ? (
+                      <a href={previewModel.source_url} target="_blank" rel="noreferrer" style={{ fontSize: '11px', color: 'var(--text-muted)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }} onMouseEnter={e => e.currentTarget.style.color='var(--accent-cyan)'} onMouseLeave={e => e.currentTarget.style.color='var(--text-muted)'}>
+                        <Globe size={10} /> {previewModel.source_url}
+                      </a>
+                    ) : (
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Keine URL hinterlegt</span>
+                    )}
+                    <button className="icon-button" style={{ padding: '2px', opacity: 0.7 }} onClick={(e) => { e.stopPropagation(); handleUpdateUrl(previewModel.id, previewModel.source_url); }} title="URL bearbeiten/hinzufügen" onMouseEnter={e => e.currentTarget.style.opacity='1'} onMouseLeave={e => e.currentTarget.style.opacity='0.7'}>
+                      <Pencil size={10} />
+                    </button>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ position: 'relative' }}

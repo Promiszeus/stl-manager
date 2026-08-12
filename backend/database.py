@@ -25,9 +25,11 @@ def load_settings():
                 data["slicers"] = []
             if "tag_colors" not in data:
                 data["tag_colors"] = {}
+            if "predefined_tags" not in data:
+                data["predefined_tags"] = []
             return data
     except json.JSONDecodeError:
-        return {"directories": [], "slicers": [], "tag_colors": {}}
+        return {"directories": [], "slicers": [], "tag_colors": {}, "predefined_tags": []}
 
 def save_settings(data):
     with settings_lock:

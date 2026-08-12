@@ -273,9 +273,10 @@ def update_tags(model_id: str, data: TagsUpdate):
 
 @app.get("/api/tags")
 def get_all_tags():
-    """Returns all unique tags used across all models, sorted alphabetically."""
+    """Returns all unique tags used across all models and predefined tags, sorted alphabetically."""
     models = load_models()
-    all_tags = set()
+    settings = load_settings()
+    all_tags = set(settings.get("predefined_tags", []))
     for m in models.values():
         for tag in m.get("tags", []):
             all_tags.add(tag)
@@ -292,6 +293,54 @@ def update_tag_color(tag_name: str, data: TagColorUpdate):
     settings["tag_colors"][tag_name.lower()] = data.color
     save_settings(settings)
     return settings
+
+class TagItem(BaseModel):
+    name: str
+
+@app.post("/api/settings/tags")
+def add_tag(data: TagItem):
+    settings = load_settings()
+    tag = data.name.strip().lower()
+    if not tag:
+        return settings
+    if "predefined_tags" not in settings:
+        settings["predefined_tags"] = []
+    if tag not in settings["predefined_tags"]:
+        settings["predefined_tags"].append(tag)
+        save_settings(settings)
+    return settings
+
+@app.delete("/api/settings/tags/{tag_name}")
+def delete_tag(tag_name: str):
+    settings = load_settings()
+    tag = tag_name.lower()
+    if "predefined_tags" in settings and tag in settings["predefined_tags"]:
+        settings["predefined_tags"].remove(tag)
+        save_settings(settings)
+    
+    models = load_models()
+    changed = False
+    for m in models.values():
+        if "tags" in m and tag in m["tags"]:
+            m["tags"].remove(tag)
+            changed = True
+    if changed:
+        save_models(models)
+    
+    return {"status": "success"}
+
+class ModelUrlUpdate(BaseModel):
+    url: str
+
+@app.put("/api/models/{model_id}/url")
+def update_model_url(model_id: str, data: ModelUrlUpdate):
+    models = load_models()
+    if model_id in models:
+        models[model_id]["source_url"] = data.url
+        from scanner import apply_auto_tags
+        apply_auto_tags(models[model_id], data.url)
+        save_models(models)
+    return {"status": "success"}
 
 
 

@@ -15,8 +15,50 @@
         ],
         "content_hash": "c2fa3a2c1e7493d6005110f8cbdffff7",
         "status": "Not Printed",
-        "tags": [],
+        "tags": [
+            "mode"
+        ],
         "source_url": "https://makerworld.com/de/models/3031285-wall-mount-hat-holder?from=recommend#profileId-3407040",
         "added_at": 1786530124.0354598
+    },
+    "951dbc030337eccf827c83d48c5c077c": {
+        "id": "951dbc030337eccf827c83d48c5c077c",
+        "name": "flexi+magma+dragon+colored+3mf.3mf",
+        "path": "F:\\STL-Manager\\test\\flexi+magma+dragon+colored+3mf.3mf",
+        "size_kb": 2120.8,
+        "thumbnails": [
+            "/cache/951dbc030337eccf827c83d48c5c077c_0.png",
+            "/cache/951dbc030337eccf827c83d48c5c077c_1.png",
+            "/cache/951dbc030337eccf827c83d48c5c077c_2.png",
+            "/cache/951dbc030337eccf827c83d48c5c077c_3.png",
+            "/cache/951dbc030337eccf827c83d48c5c077c_4.png"
+        ],
+        "content_hash": "1ef6114b67472bc82a8e2cea9f7de37a",
+        "status": "Not Printed",
+        "tags": [
+            "esel"
+        ],
+        "source_url": "https://www.makeronline.com/en/model/Flexi%20Magma%20Dragon,%20Cute%20Articulated%20Model/316669.html?trackModuleType=3",
+        "added_at": 1786532287.5600004
+    },
+    "764d58e224d1f81eacbf06338e1504ba": {
+        "id": "764d58e224d1f81eacbf06338e1504ba",
+        "name": "MiddlefingerFroggyKX_EMP.3mf",
+        "path": "F:\\STL-Manager\\test\\MiddlefingerFroggyKX_EMP.3mf",
+        "size_kb": 6609.1,
+        "thumbnails": [
+            "/cache/764d58e224d1f81eacbf06338e1504ba_0.png",
+            "/cache/764d58e224d1f81eacbf06338e1504ba_1.png",
+            "/cache/764d58e224d1f81eacbf06338e1504ba_2.png",
+            "/cache/764d58e224d1f81eacbf06338e1504ba_3.png",
+            "/cache/764d58e224d1f81eacbf06338e1504ba_4.png"
+        ],
+        "content_hash": "10c82fcd29f53196687dff79d653ec67",
+        "status": "Not Printed",
+        "tags": [
+            "kind"
+        ],
+        "source_url": "https://www.makeronline.com/en/model/Middle%20Finger%20Froggy/317358.html?trackModuleType=3",
+        "added_at": 1786532486.7975574
     }
 }

@@ -29,6 +29,34 @@ def get_content_hash(filepath):
     except Exception:
         return None
 
+def apply_auto_tags(model_entry: dict, url: str):
+    from urllib.parse import urlparse
+    if not url:
+        return
+    try:
+        domain = urlparse(url).netloc.lower()
+        tag = None
+        if "makerworld" in domain:
+            tag = "Makerworld"
+        elif "makeronline" in domain:
+            tag = "Makeronline"
+        elif "printables" in domain:
+            tag = "Printables"
+        elif "thingiverse" in domain:
+            tag = "Thingiverse"
+        elif "thangs" in domain:
+            tag = "Thangs"
+        elif "cults3d" in domain:
+            tag = "Cults3D"
+            
+        if tag:
+            tags = model_entry.get("tags", [])
+            if tag not in tags:
+                tags.append(tag)
+                model_entry["tags"] = tags
+    except Exception:
+        pass
+
 DOWNLOAD_CACHE = {}
 
 def get_source_url(filepath: str):
@@ -123,7 +151,7 @@ class STLHandler(FileSystemEventHandler):
         new_source_url = get_source_url(filepath) or existing_entry.get("source_url")
         
         if file_id not in models or existing_entry.get("thumbnails") != thumbnails_list or existing_entry.get("source_url") != new_source_url:
-            models[file_id] = {
+            model_entry = {
                 "id": file_id,
                 "name": path_obj.name,
                 "path": str(path_obj),
@@ -135,6 +163,11 @@ class STLHandler(FileSystemEventHandler):
                 "source_url": new_source_url,
                 "added_at": existing_entry.get("added_at", time.time())
             }
+            # Auto-tag if new url is found
+            if new_source_url and new_source_url != existing_entry.get("source_url"):
+                apply_auto_tags(model_entry, new_source_url)
+            
+            models[file_id] = model_entry
             save_models(models)
             print(f"  Saved: {path_obj.name}")
 

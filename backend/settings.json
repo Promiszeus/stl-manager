@@ -6,6 +6,9 @@
     "tag_colors": {
         "klima": "#ff0095",
         "hdr50": "#0aaedb",
-        "ball": "#3a7bd5"
+        "ball": "#3a7bd5",
+        "esel": "#5be69e",
+        "kind": "#b8009f",
+        "mode": "#444b55"
     }
 }
