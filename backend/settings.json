@@ -9,6 +9,11 @@
         "ball": "#3a7bd5",
         "esel": "#5be69e",
         "kind": "#b8009f",
-        "mode": "#444b55"
-    }
+        "mode": "#444b55",
+        "makeronline": "#10da1e",
+        "kinder": "#2eba12"
+    },
+    "predefined_tags": [
+        "kinder"
+    ]
 }

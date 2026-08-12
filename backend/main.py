@@ -9,6 +9,12 @@ from database import load_settings, save_settings, load_models, save_models
 from scanner import scan_all_directories, start_watching
 import os
 import sys
+
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 try:
     import tkinter as tk
     from tkinter import filedialog
