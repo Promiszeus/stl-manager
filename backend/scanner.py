@@ -174,7 +174,8 @@ class STLHandler(FileSystemEventHandler):
             except Exception:
                 pass
 
-        if file_id not in models or existing_entry.get("thumbnails") != thumbnails_list or existing_entry.get("source_url") != new_source_url or existing_entry.get("rel_path") != rel_path:
+        mtime = path_obj.stat().st_mtime
+        if file_id not in models or existing_entry.get("thumbnails") != thumbnails_list or existing_entry.get("source_url") != new_source_url or existing_entry.get("rel_path") != rel_path or existing_entry.get("modified_at") != mtime:
             model_entry = {
                 "id": file_id,
                 "name": path_obj.name,
@@ -186,7 +187,8 @@ class STLHandler(FileSystemEventHandler):
                 "status": existing_entry.get("status", "Not Printed"),
                 "tags": existing_entry.get("tags", []),
                 "source_url": new_source_url,
-                "added_at": existing_entry.get("added_at", time.time())
+                "added_at": existing_entry.get("added_at", time.time()),
+                "modified_at": mtime
             }
             # Auto-tag if new url is found
             if new_source_url and new_source_url != existing_entry.get("source_url"):

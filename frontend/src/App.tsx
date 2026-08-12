@@ -16,6 +16,7 @@ interface Model {
   source_url?: string;
   added_at: number;
   rel_path?: string;
+  modified_at?: number;
 }
 
 const DEFAULT_TAG_COLORS = ['#8e2de2','#3a7bd5','#00b894','#e17055','#fdcb6e','#6c5ce7','#00cec9','#d63031','#e84393','#2d3436'];
@@ -640,6 +641,8 @@ function App() {
     if (sortBy === 'name_desc') return b.name.localeCompare(a.name, undefined, { numeric: true, sensitivity: 'base' });
     if (sortBy === 'date_desc') return (b.added_at || 0) - (a.added_at || 0);
     if (sortBy === 'date_asc') return (a.added_at || 0) - (b.added_at || 0);
+    if (sortBy === 'mod_desc') return (b.modified_at || b.added_at || 0) - (a.modified_at || a.added_at || 0);
+    if (sortBy === 'mod_asc') return (a.modified_at || a.added_at || 0) - (b.modified_at || b.added_at || 0);
     if (sortBy === 'size_desc') return (b.size_kb || 0) - (a.size_kb || 0);
     if (sortBy === 'size_asc') return (a.size_kb || 0) - (b.size_kb || 0);
     return 0;
@@ -781,6 +784,8 @@ function App() {
                 <option value="name_desc">Sortieren: Name (Z - A)</option>
                 <option value="date_desc">Sortieren: Hinzugefügt (Neueste)</option>
                 <option value="date_asc">Sortieren: Hinzugefügt (Älteste)</option>
+                <option value="mod_desc">Sortieren: Änderungsdatum (Neueste)</option>
+                <option value="mod_asc">Sortieren: Änderungsdatum (Älteste)</option>
                 <option value="size_desc">Sortieren: Größe (Absteigend)</option>
                 <option value="size_asc">Sortieren: Größe (Aufsteigend)</option>
               </select>
