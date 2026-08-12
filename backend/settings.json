@@ -1,5 +1,7 @@
 {
-    "directories": [],
+    "directories": [
+        "F:\\STL-Manager\\test"
+    ],
     "slicers": [],
     "tag_colors": {
         "klima": "#ff0095",

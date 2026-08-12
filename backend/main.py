@@ -295,6 +295,16 @@ def update_tag_color(tag_name: str, data: TagColorUpdate):
 
 
 
+class DownloadUrl(BaseModel):
+    filename: str
+    url: str
+
+@app.post("/api/downloads/url")
+def set_download_url(data: DownloadUrl):
+    from scanner import DOWNLOAD_CACHE
+    DOWNLOAD_CACHE[data.filename] = data.url
+    return {"status": "success"}
+
 @app.get("/api/download/{model_id}")
 def download_model(model_id: str):
     models = load_models()

@@ -27,10 +27,15 @@ def get_content_hash(filepath):
                 h.update(chunk)
         return h.hexdigest()
     except Exception:
-        return None
+DOWNLOAD_CACHE = {}
 
 def get_source_url(filepath: str):
     """Reads the Windows Zone.Identifier Alternate Data Stream to get the download URL."""
+    # Check cache first (populated by Chrome Extension via API)
+    filename = Path(filepath).name
+    if filename in DOWNLOAD_CACHE:
+        return DOWNLOAD_CACHE[filename]
+        
     import sys
     if sys.platform != "win32":
         return None
