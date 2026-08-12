@@ -122,19 +122,11 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
          </span>
          <div style={{ color: 'var(--text-muted)', fontSize: '12px', width: '80px' }}>{model.size_kb} KB</div>
          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
-             <button
-               className="icon-button"
-               onClick={() => handleToggleStatus(model.id, model.status)}
-               title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
-               style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
-             >
-               <CheckCircle size={16} />
-             </button>
               <div style={{ position: 'relative', display: 'flex' }}
                 onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
                 onMouseLeave={() => setShowSlicerMenu(false)}>
-              <button className="icon-button" onClick={onSendClick} title="Send to Slicer">
-                 <Printer size={16} />
+              <button className="icon-button" onClick={onSendClick} title="Send to Slicer" style={{ color: 'var(--accent-blue)' }}>
+                 <Printer size={18} strokeWidth={2.5} />
               </button>
               {showSlicerMenu && (
                  <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
@@ -151,6 +143,14 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
                  </div>
               )}
               </div>
+              <button
+                className="icon-button"
+                onClick={() => handleToggleStatus(model.id, model.status)}
+                title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
+                style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
+              >
+                <CheckCircle size={16} />
+              </button>
               {model.source_url && (
                 <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
               )}
@@ -192,35 +192,35 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
         </div>
         <div className="card-actions" style={{ paddingTop: '8px', borderTop: 'none', marginTop: '10px' }}>
            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
-             <button
-               className="icon-button"
-               onClick={() => handleToggleStatus(model.id, model.status)}
-               title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
-               style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
-             >
-               <CheckCircle size={14} />
-             </button>
-              <div style={{ position: 'relative', display: 'flex' }}
-                onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
-                onMouseLeave={() => setShowSlicerMenu(false)}>
-              <button className="icon-button" onClick={onSendClick} title="Send to Slicer">
-                 <Printer size={14} />
+               <div style={{ position: 'relative', display: 'flex' }}
+                 onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
+                 onMouseLeave={() => setShowSlicerMenu(false)}>
+               <button className="icon-button" onClick={onSendClick} title="Send to Slicer" style={{ color: 'var(--accent-blue)' }}>
+                  <Printer size={16} strokeWidth={2.5} />
+               </button>
+               {showSlicerMenu && (
+                  <div style={{ position: 'absolute', bottom: '100%', left: '0', paddingBottom: '4px', zIndex: 100 }}>
+                  <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content' }}>
+                     {slicers.map((s: any) => (
+                        <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
+                             onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
+                             onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
+                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                           {s.name}
+                        </div>
+                     ))}
+                  </div>
+                  </div>
+               )}
+               </div>
+              <button
+                className="icon-button"
+                onClick={() => handleToggleStatus(model.id, model.status)}
+                title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
+                style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
+              >
+                <CheckCircle size={14} />
               </button>
-              {showSlicerMenu && (
-                 <div style={{ position: 'absolute', bottom: '100%', left: '0', paddingBottom: '4px', zIndex: 100 }}>
-                 <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content' }}>
-                    {slicers.map((s: any) => (
-                       <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
-                            onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          {s.name}
-                       </div>
-                    ))}
-                 </div>
-                 </div>
-              )}
-              </div>
               {model.source_url && (
                 <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={14} /></button>
               )}
@@ -912,8 +912,8 @@ function App() {
                         } else {
                           setShowPreviewSlicerMenu(!showPreviewSlicerMenu);
                         }
-                      }} title="An Drucker/Slicer senden" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', margin: 0, padding: '6px 12px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
-                      <Slicer size={14} /> An Drucker senden
+                      }} title="An Drucker/Slicer senden">
+                      <Printer size={18} />
                     </button>
                     {showPreviewSlicerMenu && (
                       <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
