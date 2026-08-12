@@ -13,10 +13,21 @@ STL-Manager is a powerful, local 3D model management application designed to sea
 
 ## Getting Started
 
-1. Use `start.bat` or `run_portable.bat` to launch the application.
-2. The backend will start on `http://localhost:8000` and the frontend UI will be served.
-3. In the settings, add the directories where you store your 3D models.
-4. Add the path to your slicer executable to enable "Open in Slicer" functionality.
+### 1. Server Installation (Portable)
+1. Download or clone this repository.
+2. Run `run_portable.bat` to launch the application. This script will automatically use the embedded Python environment and build the frontend if necessary.
+3. The server will start and automatically open your browser at `http://localhost:8000`.
+4. **First steps:** Click on **Settings** to add the directories where you store your 3D models and specify the path to your slicer executable (e.g., PrusaSlicer or BambuStudio).
+
+### 2. Chrome Extension Installation (Optional but Recommended)
+The "STL-Manager Tracker" extension intercepts your downloads from sites like Makerworld or Thingiverse and automatically sends the correct source URL to the STL-Manager. This allows you to revisit the original model page with one click!
+
+1. Open Google Chrome (or Microsoft Edge / Brave).
+2. Type `chrome://extensions` in the address bar and hit Enter.
+3. Enable **Developer mode** (toggle in the top right corner).
+4. Click on **Load unpacked** (top left).
+5. Select the `chrome-extension` folder located inside your STL-Manager directory.
+6. Done! From now on, whenever you download an STL or 3MF file, the exact URL will be saved in your STL-Manager library.
 
 ## Tech Stack
 
