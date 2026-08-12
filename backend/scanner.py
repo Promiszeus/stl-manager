@@ -156,11 +156,30 @@ class STLHandler(FileSystemEventHandler):
         existing_entry = models.get(file_id, {})
         new_source_url = get_source_url(filepath) or existing_entry.get("source_url")
         
-        if file_id not in models or existing_entry.get("thumbnails") != thumbnails_list or existing_entry.get("source_url") != new_source_url:
+        # Determine rel_path
+        settings = load_settings()
+        directories = settings.get("directories", [])
+        rel_path = ""
+        for d in directories:
+            try:
+                base = Path(d).resolve()
+                res_path = path_obj.resolve()
+                if res_path.is_relative_to(base):
+                    rel = res_path.parent.relative_to(base).as_posix()
+                    if rel == ".":
+                        rel_path = base.name
+                    else:
+                        rel_path = f"{base.name}/{rel}"
+                    break
+            except Exception:
+                pass
+
+        if file_id not in models or existing_entry.get("thumbnails") != thumbnails_list or existing_entry.get("source_url") != new_source_url or existing_entry.get("rel_path") != rel_path:
             model_entry = {
                 "id": file_id,
                 "name": path_obj.name,
                 "path": str(path_obj),
+                "rel_path": rel_path,
                 "size_kb": round(path_obj.stat().st_size / 1024, 1),
                 "thumbnails": thumbnails_list,
                 "content_hash": get_content_hash(str(path_obj)),

@@ -106,7 +106,26 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
            <input type="checkbox" checked={isSelected} onChange={() => handleToggleSelect(model.id)} style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--accent-blue)' }} />
          </div>
          <img src={currentThumb} alt={model.name} style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} onClick={() => handlePreview(model)} />
-         <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: '500' }} title={model.name}>{model.name}</div>
+         <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontWeight: '500' }} title={model.name}>{model.name}</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <Folder size={11} color="#8e2de2" style={{ flexShrink: 0, marginRight: '4px' }} />
+              {model.rel_path ? (
+                model.rel_path.split(/[\/\\]/).map((part: string, idx: number, arr: string[]) => (
+                  <React.Fragment key={idx}>
+                    <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} 
+                          onMouseEnter={e => e.currentTarget.style.color='var(--accent-blue)'}
+                          onMouseLeave={e => e.currentTarget.style.color='inherit'}
+                          onClick={(e) => { e.stopPropagation(); setSearchTerm(part); }}
+                          title={`Nach '${part}' filtern`}>
+                      {part}
+                    </span>
+                    {idx < arr.length - 1 && <span style={{ opacity: 0.5, margin: '0 4px' }}>›</span>}
+                  </React.Fragment>
+                ))
+              ) : '3d'}
+            </div>
+         </div>
          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
            {tags.map(t => {
              const c = tagColor(t, tagColors);
@@ -187,7 +206,23 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
       <div className="model-title-box" title={model.name}>{model.name}</div>
       <div className="card-content">
         <div className="model-meta">
-          <div className="meta-item"><Folder size={14} color="#8e2de2" /> 3d</div>
+          <div className="meta-item" style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+            <Folder size={14} color="#8e2de2" style={{ flexShrink: 0, marginRight: '4px' }} />
+            {model.rel_path ? (
+              model.rel_path.split(/[\/\\]/).map((part: string, idx: number, arr: string[]) => (
+                <React.Fragment key={idx}>
+                  <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} 
+                        onMouseEnter={e => e.currentTarget.style.color='var(--accent-blue)'}
+                        onMouseLeave={e => e.currentTarget.style.color='inherit'}
+                        onClick={(e) => { e.stopPropagation(); setSearchTerm(part); }}
+                        title={`Nach '${part}' filtern`}>
+                    {part}
+                  </span>
+                  {idx < arr.length - 1 && <span style={{ opacity: 0.5, margin: '0 4px' }}>›</span>}
+                </React.Fragment>
+              ))
+            ) : '3d'}
+          </div>
           <div className="meta-item"><HardDrive size={14} color="#3a7bd5" /> {model.size_kb} KB</div>
         </div>
         <div className="card-actions" style={{ paddingTop: '8px', borderTop: 'none', marginTop: '10px' }}>
@@ -587,7 +622,9 @@ function App() {
   };
 
   const filteredModels = models.filter(m => {
-    const matchSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchSearch = m.name.toLowerCase().includes(searchLower) || 
+                        (m.rel_path && m.rel_path.toLowerCase().includes(searchLower));
     let matchTag = true;
     if (activeTagFilter === '__untagged__') {
       matchTag = !m.tags || m.tags.length === 0;
