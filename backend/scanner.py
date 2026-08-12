@@ -27,6 +27,8 @@ def get_content_hash(filepath):
                 h.update(chunk)
         return h.hexdigest()
     except Exception:
+        return None
+
 DOWNLOAD_CACHE = {}
 
 def get_source_url(filepath: str):

@@ -11,7 +11,7 @@
         "status": "Not Printed",
         "tags": [],
         "source_url": null,
-        "added_at": 1786520719.5358078
+        "added_at": 1786529441.230858
     },
     "9481b55d8da857bd868358f94e28f467": {
         "id": "9481b55d8da857bd868358f94e28f467",
@@ -35,6 +35,26 @@
         "status": "Not Printed",
         "tags": [],
         "source_url": "https://makerworld.com/",
-        "added_at": 1786520719.5891168
+        "added_at": 1786529441.2807555
+    },
+    "bd5ad8fffc5a7438c3fc70f3c8ed9f81": {
+        "id": "bd5ad8fffc5a7438c3fc70f3c8ed9f81",
+        "name": "Cap+holder.3mf",
+        "path": "F:\\STL-Manager\\test\\Cap+holder.3mf",
+        "size_kb": 664.0,
+        "thumbnails": [
+            "/cache/bd5ad8fffc5a7438c3fc70f3c8ed9f81_0.png",
+            "/cache/bd5ad8fffc5a7438c3fc70f3c8ed9f81_1.png",
+            "/cache/bd5ad8fffc5a7438c3fc70f3c8ed9f81_2.png",
+            "/cache/bd5ad8fffc5a7438c3fc70f3c8ed9f81_3.png",
+            "/cache/bd5ad8fffc5a7438c3fc70f3c8ed9f81_4.png",
+            "/cache/bd5ad8fffc5a7438c3fc70f3c8ed9f81_5.png",
+            "/cache/bd5ad8fffc5a7438c3fc70f3c8ed9f81_6.png"
+        ],
+        "content_hash": "c2fa3a2c1e7493d6005110f8cbdffff7",
+        "status": "Not Printed",
+        "tags": [],
+        "source_url": "https://makerworld.com/",
+        "added_at": 1786529469.5621192
     }
 }
