@@ -63,14 +63,62 @@ def apply_auto_tags(model_entry: dict, url: str):
     except Exception:
         pass
 
-DOWNLOAD_CACHE = {}
+DOWNLOADS_MAP_FILE = Path(".cache/downloads_map.json")
+
+def load_downloads_map():
+    if DOWNLOADS_MAP_FILE.exists():
+        try:
+            with open(DOWNLOADS_MAP_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def save_downloads_map(dmap):
+    try:
+        DOWNLOADS_MAP_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(DOWNLOADS_MAP_FILE, "w", encoding="utf-8") as f:
+            json.dump(dmap, f, indent=2)
+    except Exception:
+        pass
+
+DOWNLOAD_CACHE = load_downloads_map()
+
+def is_valid_specific_url(url: str):
+    """Returns True only if the URL is a specific model page and not just a homepage."""
+    if not url or not isinstance(url, str):
+        return False
+    url_clean = url.strip().rstrip("/")
+    # Check if URL has a path beyond the domain
+    parts = url_clean.split("://", 1)[-1].split("/")
+    if len(parts) <= 1:
+        return False
+    # If the only path is 'en' or 'de'
+    if len(parts) == 2 and parts[1] in ("en", "de", "index.html", ""):
+        return False
+    return True
 
 def get_source_url(filepath: str):
-    """Reads the Windows Zone.Identifier Alternate Data Stream to get the download URL."""
-    # Check cache first (populated by Chrome Extension via API)
-    filename = Path(filepath).name
-    if filename in DOWNLOAD_CACHE:
-        return DOWNLOAD_CACHE[filename]
+    """Reads the exact download URL from Chrome extension cache or Windows Zone.Identifier."""
+    path_obj = Path(filepath)
+    filename = path_obj.name.lower()
+    stem = path_obj.stem.lower()
+    parent_name = path_obj.parent.name.lower()
+
+    # 1. Check persistent cache (exact filename, stem, or normalized)
+    dmap = load_downloads_map()
+    dmap.update(DOWNLOAD_CACHE)
+
+    for candidate in (filename, stem, parent_name):
+        if candidate in dmap and is_valid_specific_url(dmap[candidate]):
+            return dmap[candidate]
+
+    # Partial / prefix match in cache
+    for key, url in dmap.items():
+        if is_valid_specific_url(url):
+            k_lower = key.lower()
+            if stem in k_lower or k_lower in stem or parent_name in k_lower:
+                return url
         
     import sys
     if sys.platform != "win32":
@@ -86,7 +134,12 @@ def get_source_url(filepath: str):
                     referrer = line.split("=", 1)[1]
                 elif line.startswith("HostUrl="):
                     host = line.split("=", 1)[1]
-        return referrer if referrer else host
+        
+        # Only return if it's a specific model page URL and not just a homepage
+        for u in (referrer, host):
+            if u and is_valid_specific_url(u):
+                return u
+        return None
     except Exception:
         return None
 

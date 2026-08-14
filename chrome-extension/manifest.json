@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
   "name": "STL-Manager Tracker",
-  "version": "1.0",
-  "description": "Erfasst die exakte Quell-URL von 3D-Modell-Downloads (z. B. auf Makerworld) und sendet sie an den STL-Manager.",
+  "version": "1.2",
+  "description": "Erfasst die exakte Modell-URL beim Download (MakerWorld, Printables, Cults3D, Thingiverse etc.) und verknüpft sie mit dem STL-Manager.",
   "permissions": [
     "downloads",
     "tabs"
   ],
   "host_permissions": [
-    "http://localhost:8000/*"
+    "http://localhost:*/*",
+    "http://127.0.0.1:*/*"
   ],
   "background": {
     "service_worker": "background.js"

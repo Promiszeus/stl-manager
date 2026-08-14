@@ -364,8 +364,23 @@ class DownloadUrl(BaseModel):
 
 @app.post("/api/downloads/url")
 def set_download_url(data: DownloadUrl):
-    from scanner import DOWNLOAD_CACHE
-    DOWNLOAD_CACHE[data.filename] = data.url
+    from scanner import DOWNLOAD_CACHE, load_downloads_map, save_downloads_map
+    if not data.filename or not data.url:
+        return {"status": "ignored"}
+    
+    fname_clean = data.filename.strip()
+    dmap = load_downloads_map()
+    
+    # Store multiple matching keys (exact, lowercase, stem)
+    dmap[fname_clean] = data.url
+    dmap[fname_clean.lower()] = data.url
+    stem = Path(fname_clean).stem
+    dmap[stem] = data.url
+    dmap[stem.lower()] = data.url
+    
+    DOWNLOAD_CACHE.update(dmap)
+    save_downloads_map(dmap)
+    print(f"  [Chrome-Extension] Recorded source URL: {fname_clean} -> {data.url}")
     return {"status": "success"}
 
 @app.get("/api/download/{model_id}")
