@@ -34,6 +34,67 @@ def set_cached(query: str, platforms_key: str, page: int, data):
         oldest = min(SEARCH_CACHE.keys(), key=lambda k: SEARCH_CACHE[k]["time"])
         del SEARCH_CACHE[oldest]
 
+def normalize_model_url(platform: str, model_id, raw_url: str):
+    """Ensure URLs link directly to the model page rather than the platform homepage."""
+    mid = str(model_id).strip() if model_id else ""
+    url = str(raw_url).strip() if raw_url else ""
+    
+    # 1. MakerWorld: Must have /en/models/ID or /de/models/ID
+    if platform in ("makerworld", "maker_world"):
+        if re.search(r'makerworld\.com/models/\d+', url):
+            return url.replace("makerworld.com/models/", "makerworld.com/en/models/")
+        if "/en/models/" in url or "/de/models/" in url:
+            return url
+        if mid and mid.isdigit():
+            return f"https://makerworld.com/en/models/{mid}"
+        if url.startswith("http") and url not in ("https://makerworld.com", "https://makerworld.com/"):
+            return url
+        return f"https://makerworld.com/en/models/{mid}" if mid else "https://makerworld.com"
+
+    # 2. Printables: Must have /model/ID
+    elif platform in ("printables", "prusa"):
+        if "/model/" in url:
+            return url
+        if mid:
+            return f"https://www.printables.com/model/{mid}"
+        return url or "https://www.printables.com"
+
+    # 3. Thingiverse: Must have /thing:ID
+    elif platform in ("thingiverse", "thing"):
+        if "/thing:" in url or "/thing/" in url:
+            return url
+        if mid:
+            return f"https://www.thingiverse.com/thing:{mid}"
+        return url or "https://www.thingiverse.com"
+
+    # 4. Cults 3D: Must have /en/3d-model/...
+    elif platform in ("cults", "cults3d"):
+        if "/3d-model/" in url:
+            if not url.startswith("http"):
+                url = f"https://cults3d.com{url}"
+            return url
+        if mid and not mid.isdigit():
+            return f"https://cults3d.com/en/3d-model/{mid}"
+        return url or "https://cults3d.com"
+
+    # 5. MakerOnline
+    elif platform in ("makeronline", "maker_online"):
+        if url.startswith("http") and ".html" in url:
+            return url
+        if mid:
+            return f"https://www.makeronline.com/model/{mid}"
+        return url or "https://www.makeronline.com"
+
+    # 6. Creality Cloud
+    elif platform in ("crealitycloud", "creality", "cratly"):
+        if "/model-detail/" in url:
+            return url
+        if mid:
+            return f"https://www.crealitycloud.com/model-detail/{mid}"
+        return url or "https://www.crealitycloud.com"
+
+    return url
+
 def search_cults3d_direct(query: str, limit: int = 24):
     """Direct scraper for Cults3D search."""
     results = []
@@ -45,7 +106,7 @@ def search_cults3d_direct(query: str, limit: int = 24):
             articles = tree.xpath("//article")
             for a in articles[:limit]:
                 try:
-                    link_elem = a.xpath(".//a[contains(@class, 'tbox-thumb')] | .//a[contains(@class, 'crea-title')] | .//a[contains(@class, 'card-title')]")
+                    link_elem = a.xpath(".//a[contains(@href, '/3d-model/')] | .//a[contains(@class, 'tbox-thumb')] | .//a[contains(@class, 'crea-title')]")
                     if not link_elem:
                         continue
                     
@@ -80,13 +141,14 @@ def search_cults3d_direct(query: str, limit: int = 24):
 
                     match = re.search(r'/([^/]+)$', href)
                     cults_id = match.group(1) if match else str(hash(href))
+                    direct_url = normalize_model_url("cults3d", cults_id, href)
 
                     results.append({
                         "id": f"cults_{cults_id}",
                         "title": title,
                         "platform": "cults3d",
                         "platform_name": "Cults 3D",
-                        "url": href,
+                        "url": direct_url,
                         "thumbnail": thumb,
                         "author": author,
                         "likes": 0,
@@ -123,8 +185,8 @@ def search_threedrop_api(query: str, page: int = 1):
                 name = item.get("name") or item.get("title") or "Untitled"
                 website_type = (item.get("websiteType") or item.get("platform") or "unknown").lower()
                 
-                url = item.get("url") or item.get("link") or ""
-                image = item.get("image") or item.get("thumbnail") or item.get("previewImage") or ""
+                raw_url = item.get("url") or item.get("link") or ""
+                image = item.get("imageUrl") or item.get("thumbnailUrl") or item.get("image") or item.get("thumbnail") or item.get("previewImage") or ""
                 author = item.get("author") or item.get("creator") or item.get("user") or "3D Creator"
                 if isinstance(author, dict):
                     author = author.get("name") or author.get("username") or "Creator"
@@ -150,12 +212,15 @@ def search_threedrop_api(query: str, page: int = 1):
                 plat_code = "cults3d" if website_type == "cults" else website_type
                 plat_name = plat_map.get(plat_code, website_type.capitalize())
 
+                # Normalize URL so it always points directly to the model
+                direct_url = normalize_model_url(plat_code, model_id, raw_url)
+
                 results.append({
                     "id": f"{plat_code}_{model_id}",
                     "title": name,
                     "platform": plat_code,
                     "platform_name": plat_name,
-                    "url": url,
+                    "url": direct_url,
                     "thumbnail": image,
                     "author": str(author),
                     "likes": int(likes) if str(likes).isdigit() else 0,
