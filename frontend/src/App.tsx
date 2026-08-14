@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Folder, FolderOpen, Database, HardDrive, Printer, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe, Pencil } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
+import { OnlineSearch } from './OnlineSearch';
 import './index.css';
 
 interface Model {
@@ -334,6 +335,7 @@ function App() {
   const [slicerPathInput, setSlicerPathInput] = useState('');
   const [newTagInput, setNewTagInput] = useState('');
   const [fileBrowserMode, setFileBrowserMode] = useState<'none' | 'folder' | 'slicer'>('none');
+  const [activeNav, setActiveNav] = useState<'library' | 'online'>('library');
 
   useEffect(() => {
     document.title = "STL Manager";
@@ -662,6 +664,59 @@ function App() {
           <div className="logo-sub">{models.length} models total</div>
         </div>
 
+        {/* Navigation Tabs */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px' }}>
+          <button 
+            onClick={() => setActiveNav('library')}
+            style={{
+              padding: '10px 14px',
+              borderRadius: '10px',
+              border: activeNav === 'library' ? '1px solid var(--accent-blue)' : '1px solid transparent',
+              background: activeNav === 'library' ? 'rgba(58, 123, 213, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+              color: activeNav === 'library' ? 'var(--accent-cyan)' : 'var(--text-muted)',
+              fontWeight: '600',
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              transition: 'all 0.15s'
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Folder size={16} /> Meine Bibliothek
+            </span>
+            <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '10px', color: 'var(--text-main)' }}>
+              {models.length}
+            </span>
+          </button>
+
+          <button 
+            onClick={() => setActiveNav('online')}
+            style={{
+              padding: '10px 14px',
+              borderRadius: '10px',
+              border: activeNav === 'online' ? '1px solid var(--accent-cyan)' : '1px solid transparent',
+              background: activeNav === 'online' ? 'rgba(0, 210, 255, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+              color: activeNav === 'online' ? 'var(--accent-cyan)' : 'var(--text-muted)',
+              fontWeight: '600',
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              transition: 'all 0.15s'
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Globe size={16} /> Online-Modelle
+            </span>
+            <span style={{ fontSize: '10px', fontWeight: 'bold', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', padding: '2px 6px', borderRadius: '10px', color: '#fff' }}>
+              NEU
+            </span>
+          </button>
+        </div>
+
         <button className="button-primary" onClick={fetchModels}>Refresh Models</button>
         <button className="button-secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handleFindDuplicates}>
           <Copy size={16} /> Find Duplicates
@@ -740,77 +795,81 @@ function App() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="main-content">
-        {/* Controls Bar: Sort, View Mode, Selection Bar */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Left / Selection Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {selectedIds.length > 0 ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0, 210, 255, 0.1)', border: '1px solid var(--accent-blue)', borderRadius: '8px', padding: '6px 14px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-blue)' }}>
-                  {selectedIds.length} ausgewählt
-                </span>
-                <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleSelectAll}>
-                  {selectedIds.length === sortedModels.length ? 'Auswahl aufheben' : 'Alle auswählen'}
-                </button>
-                <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px', color: '#2ecc71', borderColor: 'rgba(46, 204, 113, 0.4)' }} onClick={() => handleBatchStatus('Printed')}>
-                  ✓ Als gedruckt
-                </button>
-                <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => handleBatchStatus('Not Printed')}>
-                  ✗ Als nicht gedruckt
-                </button>
-                <button className="danger-btn" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleBatchDelete}>
-                  <Trash2 size={13} style={{ marginRight: '4px' }} /> Löschen (von Festplatte)
-                </button>
+      {/* Main Content Area */}
+      {activeNav === 'online' ? (
+        <OnlineSearch />
+      ) : (
+        <div className="main-content">
+          {/* Controls Bar: Sort, View Mode, Selection Bar */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between' }}>
+            {/* Left / Selection Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {selectedIds.length > 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0, 210, 255, 0.1)', border: '1px solid var(--accent-blue)', borderRadius: '8px', padding: '6px 14px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-blue)' }}>
+                    {selectedIds.length} ausgewählt
+                  </span>
+                  <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleSelectAll}>
+                    {selectedIds.length === sortedModels.length ? 'Auswahl aufheben' : 'Alle auswählen'}
+                  </button>
+                  <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px', color: '#2ecc71', borderColor: 'rgba(46, 204, 113, 0.4)' }} onClick={() => handleBatchStatus('Printed')}>
+                    ✓ Als gedruckt
+                  </button>
+                  <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => handleBatchStatus('Not Printed')}>
+                    ✗ Als nicht gedruckt
+                  </button>
+                  <button className="danger-btn" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleBatchDelete}>
+                    <Trash2 size={13} style={{ marginRight: '4px' }} /> Löschen (von Festplatte)
+                  </button>
+                </div>
+              ) : (
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                  {sortedModels.length} Modell{sortedModels.length !== 1 ? 'e' : ''} angezeigt
+                </div>
+              )}
+            </div>
+
+            {/* Right: Sort & View Mode */}
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <ArrowUpDown size={14} color="var(--text-muted)" />
+                <select 
+                  value={sortBy} 
+                  onChange={e => setSortBy(e.target.value)}
+                  style={{ background: 'var(--bg-card)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
+                >
+                  <option value="name_asc">Sortieren: Name (A - Z)</option>
+                  <option value="name_desc">Sortieren: Name (Z - A)</option>
+                  <option value="date_desc">Sortieren: Hinzugefügt (Neueste)</option>
+                  <option value="date_asc">Sortieren: Hinzugefügt (Älteste)</option>
+                  <option value="mod_desc">Sortieren: Änderungsdatum (Neueste)</option>
+                  <option value="mod_asc">Sortieren: Änderungsdatum (Älteste)</option>
+                  <option value="size_desc">Sortieren: Größe (Absteigend)</option>
+                  <option value="size_asc">Sortieren: Größe (Aufsteigend)</option>
+                </select>
               </div>
-            ) : (
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                {sortedModels.length} Modell{sortedModels.length !== 1 ? 'e' : ''} angezeigt
+
+              <button className="icon-button" style={{ background: viewMode === 'grid' ? 'var(--accent-blue)' : 'var(--bg-dark)' }} onClick={() => setViewMode('grid')} title="Grid View">
+                 <LayoutGrid size={18} />
+              </button>
+              <button className="icon-button" style={{ background: viewMode === 'list' ? 'var(--accent-blue)' : 'var(--bg-dark)' }} onClick={() => setViewMode('list')} title="List View">
+                 <ListIcon size={18} />
+              </button>
+            </div>
+          </div>
+
+          <div className={`${viewMode === 'grid' ? "models-grid" : "models-list"} ${selectedIds.length > 0 ? "has-selection" : ""}`}>
+            {sortedModels.map(model => (
+              <ModelCard key={model.id} model={model} slicers={settings.slicers} viewMode={viewMode} isSelected={selectedIds.includes(model.id)} allTags={allTags} tagColors={settings.tag_colors} handleToggleSelect={handleToggleSelect} handleSlice={handleSlice} handleDeleteModel={handleDeleteModel} handleToggleStatus={handleToggleStatus} handlePreview={setPreviewModel} handleUpdateTags={handleUpdateTags} handleOpenFolder={handleOpenFolder} handleSetSearchTerm={setSearchTerm} onContextMenu={(e, m) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, model: m }); }} />
+            ))}
+            {sortedModels.length === 0 && (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                No models found. Add a directory to start scanning.
               </div>
             )}
           </div>
-
-          {/* Right: Sort & View Mode */}
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <ArrowUpDown size={14} color="var(--text-muted)" />
-              <select 
-                value={sortBy} 
-                onChange={e => setSortBy(e.target.value)}
-                style={{ background: 'var(--bg-card)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
-              >
-                <option value="name_asc">Sortieren: Name (A - Z)</option>
-                <option value="name_desc">Sortieren: Name (Z - A)</option>
-                <option value="date_desc">Sortieren: Hinzugefügt (Neueste)</option>
-                <option value="date_asc">Sortieren: Hinzugefügt (Älteste)</option>
-                <option value="mod_desc">Sortieren: Änderungsdatum (Neueste)</option>
-                <option value="mod_asc">Sortieren: Änderungsdatum (Älteste)</option>
-                <option value="size_desc">Sortieren: Größe (Absteigend)</option>
-                <option value="size_asc">Sortieren: Größe (Aufsteigend)</option>
-              </select>
-            </div>
-
-            <button className="icon-button" style={{ background: viewMode === 'grid' ? 'var(--accent-blue)' : 'var(--bg-dark)' }} onClick={() => setViewMode('grid')} title="Grid View">
-               <LayoutGrid size={18} />
-            </button>
-            <button className="icon-button" style={{ background: viewMode === 'list' ? 'var(--accent-blue)' : 'var(--bg-dark)' }} onClick={() => setViewMode('list')} title="List View">
-               <ListIcon size={18} />
-            </button>
-          </div>
         </div>
-
-        <div className={`${viewMode === 'grid' ? "models-grid" : "models-list"} ${selectedIds.length > 0 ? "has-selection" : ""}`}>
-          {sortedModels.map(model => (
-            <ModelCard key={model.id} model={model} slicers={settings.slicers} viewMode={viewMode} isSelected={selectedIds.includes(model.id)} allTags={allTags} tagColors={settings.tag_colors} handleToggleSelect={handleToggleSelect} handleSlice={handleSlice} handleDeleteModel={handleDeleteModel} handleToggleStatus={handleToggleStatus} handlePreview={setPreviewModel} handleUpdateTags={handleUpdateTags} handleOpenFolder={handleOpenFolder} handleSetSearchTerm={setSearchTerm} onContextMenu={(e, m) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, model: m }); }} />
-          ))}
-          {sortedModels.length === 0 && (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-              No models found. Add a directory to start scanning.
-            </div>
-          )}
-        </div>
-      </div>
+      )}
 
       {showSettings && (
         <div className="modal-overlay" onClick={() => setShowSettings(false)}>

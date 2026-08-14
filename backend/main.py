@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 from database import load_settings, save_settings, load_models, save_models
 from scanner import scan_all_directories, start_watching
+from online_search import search_online_models
 import os
 import sys
 
@@ -56,6 +57,13 @@ def get_models():
     models = list(models_db.values())
     models.sort(key=lambda x: x["added_at"], reverse=True)
     return models
+
+@app.get("/api/online/search")
+def api_online_search(q: str = "", platforms: str = "", page: int = 1):
+    if not q or not q.strip():
+        return []
+    plat_list = [p.strip().lower() for p in platforms.split(",") if p.strip()] if platforms else None
+    return search_online_models(q.strip(), platforms=plat_list, page=page)
 
 @app.get("/api/settings")
 def get_settings():

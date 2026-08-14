@@ -19,16 +19,39 @@ EXCLUDE = [
     "start.bat"
 ]
 
+def download_with_retry(url, target_path, max_retries=3):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept": "*/*"
+    }
+    req = urllib.request.Request(url, headers=headers)
+    
+    last_error = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            print(f"Versuch {attempt}/{max_retries}: Verbindung zu GitHub wird aufgebaut...")
+            with urllib.request.urlopen(req, timeout=15) as response, open(target_path, 'wb') as out_file:
+                shutil.copyfileobj(response, out_file)
+            return True
+        except Exception as e:
+            last_error = e
+            print(f"  Fehler bei Versuch {attempt}: {e}")
+            if attempt < max_retries:
+                time.sleep(2)
+    raise last_error
+
 def update():
     print("========================================")
     print("       STL Manager - Auto Updater       ")
     print("========================================")
     print("\nLade die neueste Version von GitHub herunter...")
     
+    zip_path = None
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tf:
-            urllib.request.urlretrieve(REPO_ZIP_URL, tf.name)
             zip_path = tf.name
+            
+        download_with_retry(REPO_ZIP_URL, zip_path)
             
         print("Entpacke Dateien...")
         with tempfile.TemporaryDirectory() as td:
@@ -59,12 +82,17 @@ def update():
                     shutil.copy2(src, dst)
                     updated_files += 1
                     
-        os.remove(zip_path)
-        print(f"\nErfolgreich! Es wurden {updated_files} Dateien aktualisiert.")
-        print("Du kannst den Server nun wie gewohnt starten.")
-        
+            print(f"\n[OK] Update erfolgreich abgeschlossen! ({updated_files} Dateien aktualisiert)")
+            
     except Exception as e:
-        print(f"\nFehler beim Update: {e}")
+        print(f"\n[ERROR] Fehler beim Update: {e}")
+        print("Tipp: Bitte pruefe deine Internetverbindung oder versuche es in wenigen Minuten erneut.")
+    finally:
+        if zip_path and os.path.exists(zip_path):
+            try:
+                os.remove(zip_path)
+            except:
+                pass
 
 if __name__ == "__main__":
     update()
