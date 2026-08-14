@@ -1,10 +1,35 @@
+function cleanModelUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  url = url.trim();
+
+  // Printables CDN: files.printables.com/media/prints/610638/... -> https://www.printables.com/model/610638
+  const mPrintables = url.match(/printables\.com\/(?:media\/)?prints\/(\d+)/i);
+  if (mPrintables) {
+    return `https://www.printables.com/model/${mPrintables[1]}`;
+  }
+
+  // MakerWorld: makerworld.com/models/12345 -> https://makerworld.com/en/models/12345
+  const mMw = url.match(/makerworld\.com\/(?:[a-z]{2}\/)?models\/(\d+)/i);
+  if (mMw) {
+    return `https://makerworld.com/en/models/${mMw[1]}`;
+  }
+
+  // Thingiverse: thingiverse.com/thing:12345 or things/12345 -> https://www.thingiverse.com/thing:${mThing[1]}
+  const mThing = url.match(/thingiverse\.com\/(?:things\/|thing:)(\d+)/i);
+  if (mThing) {
+    return `https://www.thingiverse.com/thing:${mThing[1]}`;
+  }
+
+  return url;
+}
+
 function isValidModelUrl(url) {
   if (!url || typeof url !== 'string') return false;
   if (url.startsWith('chrome://') || url.startsWith('about:') || url.startsWith('chrome-extension://')) return false;
   
   // Ignore bare homepages
   const parsed = url.replace(/https?:\/\//, '').replace(/\/+$/, '');
-  if (!parsed.includes('/')) return false; // just domain like "makerworld.com"
+  if (!parsed.includes('/')) return false;
   
   return true;
 }
@@ -12,14 +37,18 @@ function isValidModelUrl(url) {
 function sendToStlManager(filename, pageUrl) {
   if (!filename || !pageUrl) return;
 
+  // Clean / normalize URL to model presentation page
+  const finalUrl = cleanModelUrl(pageUrl);
+  if (!finalUrl) return;
+
   // Extract clean filename without path
   let cleanName = filename;
   if (cleanName.includes('\\')) cleanName = cleanName.split('\\').pop();
   if (cleanName.includes('/')) cleanName = cleanName.split('/').pop();
 
-  console.log(`[STL-Manager] Sending download link: ${cleanName} -> ${pageUrl}`);
+  console.log(`[STL-Manager] Tracking: ${cleanName} -> ${finalUrl}`);
 
-  const payload = JSON.stringify({ filename: cleanName, url: pageUrl });
+  const payload = JSON.stringify({ filename: cleanName, url: finalUrl });
   const endpoints = [
     'http://localhost:8000/api/downloads/url',
     'http://127.0.0.1:8000/api/downloads/url'
@@ -30,9 +59,7 @@ function sendToStlManager(filename, pageUrl) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: payload
-    }).catch(() => {
-      // Backend might be offline or using another port
-    });
+    }).catch(() => {});
   });
 }
 
@@ -57,7 +84,15 @@ function processDownload(downloadItem) {
       bestUrl = downloadItem.referrer;
     }
 
-    // 3. Fallback: check all tabs matching 3D printing sites
+    // 3. Fallback: check if downloadItem.url is a CDN link that can be transformed (e.g. Printables CDN)
+    if (!bestUrl && downloadItem.url) {
+      const cleanedCdn = cleanModelUrl(downloadItem.url);
+      if (cleanedCdn && cleanedCdn !== downloadItem.url) {
+        bestUrl = cleanedCdn;
+      }
+    }
+
+    // 4. Fallback: check all open tabs matching 3D printing sites
     if (!bestUrl) {
       chrome.tabs.query({}, (allTabs) => {
         for (const t of allTabs) {
@@ -88,18 +123,15 @@ function processDownload(downloadItem) {
   });
 }
 
-// Listen to download creation
 chrome.downloads.onCreated.addListener((item) => {
   processDownload(item);
 });
 
-// Listen when filename is determined
 chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
   processDownload(item);
   suggest();
 });
 
-// Listen to state changes
 chrome.downloads.onChanged.addListener((delta) => {
   if (delta.filename && delta.filename.current) {
     chrome.downloads.search({ id: delta.id }, (items) => {

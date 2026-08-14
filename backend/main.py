@@ -350,9 +350,10 @@ class ModelUrlUpdate(BaseModel):
 def update_model_url(model_id: str, data: ModelUrlUpdate):
     models = load_models()
     if model_id in models:
-        models[model_id]["source_url"] = data.url
-        from scanner import apply_auto_tags
-        apply_auto_tags(models[model_id], data.url)
+        from scanner import clean_model_source_url, apply_auto_tags
+        cleaned_url = clean_model_source_url(data.url) or data.url.strip()
+        models[model_id]["source_url"] = cleaned_url
+        apply_auto_tags(models[model_id], cleaned_url)
         save_models(models)
     return {"status": "success"}
 
@@ -364,23 +365,24 @@ class DownloadUrl(BaseModel):
 
 @app.post("/api/downloads/url")
 def set_download_url(data: DownloadUrl):
-    from scanner import DOWNLOAD_CACHE, load_downloads_map, save_downloads_map
+    from scanner import DOWNLOAD_CACHE, load_downloads_map, save_downloads_map, clean_model_source_url
     if not data.filename or not data.url:
         return {"status": "ignored"}
     
+    cleaned_url = clean_model_source_url(data.url) or data.url.strip()
     fname_clean = data.filename.strip()
     dmap = load_downloads_map()
     
     # Store multiple matching keys (exact, lowercase, stem)
-    dmap[fname_clean] = data.url
-    dmap[fname_clean.lower()] = data.url
+    dmap[fname_clean] = cleaned_url
+    dmap[fname_clean.lower()] = cleaned_url
     stem = Path(fname_clean).stem
-    dmap[stem] = data.url
-    dmap[stem.lower()] = data.url
+    dmap[stem] = cleaned_url
+    dmap[stem.lower()] = cleaned_url
     
     DOWNLOAD_CACHE.update(dmap)
     save_downloads_map(dmap)
-    print(f"  [Chrome-Extension] Recorded source URL: {fname_clean} -> {data.url}")
+    print(f"  [Chrome-Extension] Recorded source URL: {fname_clean} -> {cleaned_url}")
     return {"status": "success"}
 
 @app.get("/api/download/{model_id}")

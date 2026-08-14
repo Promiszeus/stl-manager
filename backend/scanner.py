@@ -1,4 +1,6 @@
 import os
+import re
+import json
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from pathlib import Path
@@ -84,6 +86,56 @@ def save_downloads_map(dmap):
 
 DOWNLOAD_CACHE = load_downloads_map()
 
+def clean_model_source_url(url: str):
+    """Converts CDN direct file links and raw API URLs to the actual model presentation page."""
+    if not url or not isinstance(url, str):
+        return None
+    url = url.strip()
+
+    # 1. Printables CDN: files.printables.com/media/prints/610638/stls/... -> https://www.printables.com/model/610638
+    m_printables = re.search(r'printables\.com/(?:media/)?prints/(\d+)', url)
+    if m_printables:
+        return f"https://www.printables.com/model/{m_printables.group(1)}"
+    if "printables.com/model/" in url:
+        return url
+
+    # 2. MakerWorld CDN or direct link: makerworld.bblmw.com/... or makerworld.com/models/12345
+    m_mw = re.search(r'makerworld\.com/(?:[a-z]{2}/)?models/(\d+)', url)
+    if m_mw:
+        return f"https://makerworld.com/en/models/{m_mw.group(1)}"
+    m_mw_cdn_inst = re.search(r'makerworld\.bblmw\.com/makerworld/model/[^/]+/(\d+)/', url)
+    if m_mw_cdn_inst:
+        return f"https://makerworld.com/en/models/{m_mw_cdn_inst.group(1)}"
+    m_mw_cdn = re.search(r'makerworld\.bblmw\.com/.*?(?:design|model)/([A-Za-z0-9]+)', url)
+    if m_mw_cdn and m_mw_cdn.group(1).isdigit():
+        return f"https://makerworld.com/en/models/{m_mw_cdn.group(1)}"
+
+    # 3. Thingiverse CDN or direct link: api.thingiverse.com/things/12345/files or thing:12345
+    m_thing = re.search(r'thingiverse\.com/(?:things/|thing:)(\d+)', url)
+    if m_thing:
+        return f"https://www.thingiverse.com/thing:{m_thing.group(1)}"
+
+    # 4. Cults3D CDN or model link
+    if "cults3d.com" in url:
+        m_cults = re.search(r'cults3d\.com/([a-z]{2}/3d-model/[^?#]+)', url)
+        if m_cults:
+            return f"https://cults3d.com/{m_cults.group(1)}"
+
+    # 5. MakerOnline
+    m_mo = re.search(r'makeronline\.com/model/([^?#]+)', url)
+    if m_mo:
+        return f"https://www.makeronline.com/model/{m_mo.group(1)}"
+
+    # 6. Creality Cloud
+    m_cc = re.search(r'crealitycloud\.com/model-detail/([a-zA-Z0-9]+)', url)
+    if m_cc:
+        return f"https://www.crealitycloud.com/model-detail/{m_cc.group(1)}"
+
+    if not is_valid_specific_url(url):
+        return None
+
+    return url
+
 def is_valid_specific_url(url: str):
     """Returns True only if the URL is a specific model page and not just a homepage."""
     if not url or not isinstance(url, str):
@@ -110,15 +162,18 @@ def get_source_url(filepath: str):
     dmap.update(DOWNLOAD_CACHE)
 
     for candidate in (filename, stem, parent_name):
-        if candidate in dmap and is_valid_specific_url(dmap[candidate]):
-            return dmap[candidate]
+        if candidate in dmap:
+            cleaned = clean_model_source_url(dmap[candidate])
+            if cleaned:
+                return cleaned
 
     # Partial / prefix match in cache
-    for key, url in dmap.items():
-        if is_valid_specific_url(url):
+    for key, raw_url in dmap.items():
+        cleaned = clean_model_source_url(raw_url)
+        if cleaned:
             k_lower = key.lower()
             if stem in k_lower or k_lower in stem or parent_name in k_lower:
-                return url
+                return cleaned
         
     import sys
     if sys.platform != "win32":
@@ -135,10 +190,12 @@ def get_source_url(filepath: str):
                 elif line.startswith("HostUrl="):
                     host = line.split("=", 1)[1]
         
-        # Only return if it's a specific model page URL and not just a homepage
+        # Check referrer first, then host
         for u in (referrer, host):
-            if u and is_valid_specific_url(u):
-                return u
+            if u:
+                cleaned = clean_model_source_url(u)
+                if cleaned:
+                    return cleaned
         return None
     except Exception:
         return None
@@ -251,7 +308,35 @@ class STLHandler(FileSystemEventHandler):
             save_models(models)
             print(f"  Saved: {path_obj.name}")
 
+def cleanup_existing_source_urls():
+    """Migrates any legacy CDN/direct-file URLs in models.json to proper model overview pages."""
+    try:
+        models = load_models()
+        changed = False
+        for mid, model in models.items():
+            surl = model.get("source_url")
+            if surl:
+                cleaned = clean_model_source_url(surl)
+                if cleaned and cleaned != surl:
+                    model["source_url"] = cleaned
+                    apply_auto_tags(model, cleaned)
+                    changed = True
+                elif not cleaned and surl:
+                    fpath = model.get("path")
+                    if fpath:
+                        better = get_source_url(fpath)
+                        if better and better != surl:
+                            model["source_url"] = better
+                            apply_auto_tags(model, better)
+                            changed = True
+        if changed:
+            save_models(models)
+            print("  Cleaned up legacy model source URLs in database.")
+    except Exception as e:
+        print(f"Error cleaning legacy URLs: {e}")
+
 def scan_all_directories():
+    cleanup_existing_source_urls()
     settings = load_settings()
     handler = STLHandler()
     for directory in settings.get("directories", []):
