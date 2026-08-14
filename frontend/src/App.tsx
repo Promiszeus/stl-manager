@@ -664,29 +664,31 @@ function App() {
           <div className="logo-sub">{models.length} models total</div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px' }}>
+        {/* Navigation Tabs - Larger, Modern & Clean */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
           <button 
             onClick={() => setActiveNav('library')}
             style={{
-              padding: '10px 14px',
-              borderRadius: '10px',
-              border: activeNav === 'library' ? '1px solid var(--accent-blue)' : '1px solid transparent',
-              background: activeNav === 'library' ? 'rgba(58, 123, 213, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-              color: activeNav === 'library' ? 'var(--accent-cyan)' : 'var(--text-muted)',
-              fontWeight: '600',
-              fontSize: '13px',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              border: activeNav === 'library' ? '1px solid var(--accent-blue)' : '1px solid rgba(255, 255, 255, 0.05)',
+              background: activeNav === 'library' ? 'rgba(58, 123, 213, 0.25)' : 'rgba(255, 255, 255, 0.03)',
+              color: activeNav === 'library' ? '#fff' : 'var(--text-muted)',
+              fontWeight: '700',
+              fontSize: '14px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               cursor: 'pointer',
-              transition: 'all 0.15s'
+              boxShadow: activeNav === 'library' ? '0 4px 15px rgba(58, 123, 213, 0.25)' : 'none',
+              transition: 'all 0.2s'
             }}
           >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Folder size={16} /> Meine Bibliothek
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Folder size={18} color={activeNav === 'library' ? 'var(--accent-cyan)' : 'var(--text-muted)'} /> 
+              Meine Bibliothek
             </span>
-            <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '10px', color: 'var(--text-main)' }}>
+            <span style={{ fontSize: '11px', fontWeight: '700', background: 'rgba(255,255,255,0.08)', padding: '3px 8px', borderRadius: '12px', color: 'var(--text-main)' }}>
               {models.length}
             </span>
           </button>
@@ -694,103 +696,121 @@ function App() {
           <button 
             onClick={() => setActiveNav('online')}
             style={{
-              padding: '10px 14px',
-              borderRadius: '10px',
-              border: activeNav === 'online' ? '1px solid var(--accent-cyan)' : '1px solid transparent',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              border: activeNav === 'online' ? '1px solid var(--accent-cyan)' : '1px solid rgba(255, 255, 255, 0.05)',
               background: activeNav === 'online' ? 'rgba(0, 210, 255, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-              color: activeNav === 'online' ? 'var(--accent-cyan)' : 'var(--text-muted)',
-              fontWeight: '600',
-              fontSize: '13px',
+              color: activeNav === 'online' ? '#fff' : 'var(--text-muted)',
+              fontWeight: '700',
+              fontSize: '14px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               cursor: 'pointer',
-              transition: 'all 0.15s'
+              boxShadow: activeNav === 'online' ? '0 4px 15px rgba(0, 210, 255, 0.25)' : 'none',
+              transition: 'all 0.2s'
             }}
           >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Globe size={16} /> Online-Modelle
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Globe size={18} color={activeNav === 'online' ? 'var(--accent-cyan)' : 'var(--text-muted)'} /> 
+              Online-Modelle
             </span>
-            <span style={{ fontSize: '10px', fontWeight: 'bold', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', padding: '2px 6px', borderRadius: '10px', color: '#fff' }}>
+            <span style={{ fontSize: '10px', fontWeight: '800', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', padding: '2px 7px', borderRadius: '10px', color: '#fff' }}>
               NEU
             </span>
           </button>
         </div>
 
-        <button className="button-primary" onClick={fetchModels}>Refresh Models</button>
-        <button className="button-secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handleFindDuplicates}>
-          <Copy size={16} /> Find Duplicates
-        </button>
+        {/* Library Controls (Search, Tags, Duplicates) */}
+        {activeNav === 'library' && (
+          <>
+            {/* Search Input */}
+            <div className="form-group" style={{ marginBottom: '18px' }}>
+              <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                Lokale Modelle durchsuchen:
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="Modellname oder Ordner..." 
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  style={{ paddingRight: '36px', borderRadius: '10px' }}
+                />
+                {searchTerm ? (
+                  <X size={16} onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: '12px', top: '12px', color: 'var(--text-muted)', cursor: 'pointer' }} />
+                ) : (
+                  <Search size={16} style={{ position: 'absolute', right: '12px', top: '12px', color: 'var(--text-muted)' }} />
+                )}
+              </div>
+            </div>
 
-        <div className="form-group" style={{ marginTop: '10px' }}>
-           <label className="form-label">Monitored Folders:</label>
-           <ul style={{ fontSize: '12px', color: 'var(--text-muted)', paddingLeft: '20px' }}>
-              {(settings?.directories || []).map((d: string, i: number) => <li key={i}>{d}</li>)}
-           </ul>
-        </div>
+            {/* Tag Filter */}
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                  <Tag size={13} /> Tags:
+                </label>
+                {activeTagFilter && (
+                  <span 
+                    onClick={() => setActiveTagFilter(null)} 
+                    style={{ color: 'var(--accent-cyan)', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }}
+                  >
+                    Filter aufheben
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                <span 
+                  onClick={() => setActiveTagFilter(activeTagFilter === '__untagged__' ? null : '__untagged__')}
+                  style={{
+                    background: activeTagFilter === '__untagged__' ? 'rgba(255, 77, 77, 0.3)' : 'rgba(255, 77, 77, 0.1)',
+                    color: '#ff6b6b',
+                    border: `1px solid ${activeTagFilter === '__untagged__' ? '#ff6b6b' : 'rgba(255, 77, 77, 0.3)'}`,
+                    borderRadius: '10px',
+                    padding: '3px 9px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all .15s'
+                  }}
+                  title="Zeige nur Modelle ohne Tags"
+                >
+                  Ohne Tag
+                </span>
+                {allTags.map(t => {
+                  const c = tagColor(t, settings?.tag_colors);
+                  const isSelected = activeTagFilter === t;
+                  return (
+                    <div key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: isSelected ? c+'44' : c+'18', color: c, border: `1px solid ${c}${isSelected ? 'bb' : '44'}`, borderRadius: '10px', padding: '3px 8px', fontSize: '11px', fontWeight: '600' }}>
+                      <span onClick={() => setActiveTagFilter(isSelected ? null : t)} style={{ cursor: 'pointer' }}>{t}</span>
+                      <TagColorPicker tag={t} initialColor={c} onSave={handleUpdateTagColor} size={12} />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-        <div className="form-group" style={{ marginTop: '16px' }}>
-          <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Tag size={13} /> Filter by Tag:
-          </label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '6px' }}>
-            <span 
-              onClick={() => setActiveTagFilter(activeTagFilter === '__untagged__' ? null : '__untagged__')}
-              style={{
-                background: activeTagFilter === '__untagged__' ? 'rgba(255, 77, 77, 0.3)' : 'rgba(255, 77, 77, 0.1)',
-                color: '#ff6b6b',
-                border: `1px solid ${activeTagFilter === '__untagged__' ? '#ff6b6b' : 'rgba(255, 77, 77, 0.3)'}`,
-                borderRadius: '10px',
-                padding: '2px 8px',
-                fontSize: '11px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all .15s'
-              }}
-              title="Zeige nur Modelle ohne Tags"
+            {/* Duplicates Tool Button */}
+            <button 
+              className="button-secondary" 
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '10px', fontSize: '13px', marginBottom: '16px' }} 
+              onClick={handleFindDuplicates}
             >
-              Ohne Tag
-            </span>
-            {allTags.map(t => {
-              const c = tagColor(t, settings?.tag_colors);
-              return (
-                <div key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: activeTagFilter === t ? c+'44' : c+'18', color: c, border: `1px solid ${c}${activeTagFilter === t ? 'bb' : '44'}`, borderRadius: '10px', padding: '2px 8px', fontSize: '11px', fontWeight: '600' }}>
-                  <span onClick={() => setActiveTagFilter(activeTagFilter === t ? null : t)} style={{ cursor: 'pointer' }}>{t}</span>
-                  <TagColorPicker tag={t} initialColor={c} onSave={handleUpdateTagColor} size={12} />
-                </div>
-              );
-            })}
-            {activeTagFilter && (
-              <span onClick={() => setActiveTagFilter(null)} style={{ color: 'var(--text-muted)', fontSize: '11px', cursor: 'pointer', padding: '2px 6px' }}>clear</span>
-            )}
-          </div>
-        </div>
+              <Copy size={15} /> Duplikate finden
+            </button>
+          </>
+        )}
 
-        <div className="form-group" style={{ marginTop: '16px' }}>
-          <label className="form-label">Search Models:</label>
-          <div style={{ position: 'relative' }}>
-            <input 
-              type="text" 
-              className="input-field" 
-              placeholder="Enter search term..." 
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              style={{ paddingRight: '36px' }}
-            />
-            {searchTerm ? (
-              <X size={16} onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: '10px', top: '12px', color: 'var(--text-muted)', cursor: 'pointer' }} />
-            ) : (
-              <Search size={16} style={{ position: 'absolute', right: '10px', top: '12px', color: 'var(--text-muted)' }} />
-            )}
-          </div>
-          <button className="button-secondary" onClick={() => { setSearchTerm(''); setActiveTagFilter(null); }} style={{ marginTop: '8px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-             <X size={14} /> Filter zurücksetzen
-          </button>
-        </div>
-        
-        <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
-          <button className="button-secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => setShowSettings(true)}>
-             <Settings size={16} /> Settings
+        {/* Footer / Settings */}
+        <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
+          <button 
+            className="button-secondary" 
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '11px', borderRadius: '10px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)' }} 
+            onClick={() => setShowSettings(true)}
+          >
+             <Settings size={16} /> Einstellungen
           </button>
         </div>
       </div>
