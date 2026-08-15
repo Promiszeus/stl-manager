@@ -119,9 +119,10 @@ export const OnlineSearch: React.FC = () => {
       return true;
     })
     .sort((a, b) => {
-      if (sortBy === 'popular') return (b.downloads + b.likes) - (a.downloads + a.likes);
       if (sortBy === 'likes') return b.likes - a.likes;
       if (sortBy === 'name') return a.title.localeCompare(b.title);
+      // For 'popular' (default), preserve the batch arrival order from the backend so that
+      // clicking "Load More" appends new models strictly downwards without reshuffling existing cards!
       return 0;
     });
 
