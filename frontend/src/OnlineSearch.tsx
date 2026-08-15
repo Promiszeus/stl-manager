@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { createContext, useContext, useState, type ReactNode } from 'react';
 import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 
-interface OnlineModel {
+export interface OnlineModel {
   id: string;
   title: string;
   platform: string;
@@ -15,7 +15,7 @@ interface OnlineModel {
   price?: string | null;
 }
 
-const PLATFORMS = [
+export const PLATFORMS = [
   { id: 'makerworld', name: 'MakerWorld', color: '#00ae42', bg: 'rgba(0, 174, 66, 0.15)' },
   { id: 'printables', name: 'Printables', color: '#fa6b05', bg: 'rgba(250, 107, 5, 0.15)' },
   { id: 'cults3d', name: 'Cults 3D', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)' },
@@ -24,9 +24,37 @@ const PLATFORMS = [
   { id: 'crealitycloud', name: 'Creality Cloud', color: '#0284c7', bg: 'rgba(2, 132, 199, 0.15)' },
 ];
 
-const POPULAR_TAGS = ['Benchy', 'Gridfinity', 'Bambu Lab', 'Voron', 'Kabelclip', 'Wandhalterung', 'Toolbox', 'Fidget'];
+export const POPULAR_TAGS = ['Benchy', 'Gridfinity', 'Bambu Lab', 'Voron', 'Kabelclip', 'Wandhalterung', 'Toolbox', 'Fidget'];
 
-export const OnlineSearch: React.FC = () => {
+interface OnlineSearchContextType {
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  currentQuery: string;
+  activePlatforms: string[];
+  togglePlatform: (platId: string) => void;
+  selectAllPlatforms: () => void;
+  results: OnlineModel[];
+  displayedResults: OnlineModel[];
+  loading: boolean;
+  loadingMore: boolean;
+  page: number;
+  hasMore: boolean;
+  hasSearched: boolean;
+  error: string | null;
+  copiedId: string | null;
+  sortBy: 'popular' | 'likes' | 'name';
+  setSortBy: (sort: 'popular' | 'likes' | 'name') => void;
+  freeOnly: boolean;
+  setFreeOnly: (val: boolean) => void;
+  handleSearch: (termToSearch?: string) => Promise<void>;
+  handleLoadMore: () => Promise<void>;
+  copyUrl: (id: string, url: string) => void;
+  getPlatformStyle: (plat: string) => { color: string; bg: string };
+}
+
+const OnlineSearchContext = createContext<OnlineSearchContextType | undefined>(undefined);
+
+export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentQuery, setCurrentQuery] = useState('');
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
@@ -105,10 +133,19 @@ export const OnlineSearch: React.FC = () => {
     );
   };
 
+  const selectAllPlatforms = () => {
+    setActivePlatforms([]);
+  };
+
   const copyUrl = (id: string, url: string) => {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const getPlatformStyle = (plat: string) => {
+    const found = PLATFORMS.find(p => p.id === plat);
+    return found || { color: 'var(--accent-cyan)', bg: 'rgba(0, 210, 255, 0.15)' };
   };
 
   // Filter and sort results
@@ -121,91 +158,233 @@ export const OnlineSearch: React.FC = () => {
     .sort((a, b) => {
       if (sortBy === 'likes') return b.likes - a.likes;
       if (sortBy === 'name') return a.title.localeCompare(b.title);
-      // For 'popular' (default), preserve the batch arrival order from the backend so that
-      // clicking "Load More" appends new models strictly downwards without reshuffling existing cards!
+      // For 'popular' (default), preserve batch order from backend so clicking "Load More" appends downwards without reshuffling
       return 0;
     });
 
-  const getPlatformStyle = (plat: string) => {
-    const found = PLATFORMS.find(p => p.id === plat);
-    return found || { color: 'var(--accent-cyan)', bg: 'rgba(0, 210, 255, 0.15)' };
+  return (
+    <OnlineSearchContext.Provider
+      value={{
+        searchTerm,
+        setSearchTerm,
+        currentQuery,
+        activePlatforms,
+        togglePlatform,
+        selectAllPlatforms,
+        results,
+        displayedResults,
+        loading,
+        loadingMore,
+        page,
+        hasMore,
+        hasSearched,
+        error,
+        copiedId,
+        sortBy,
+        setSortBy,
+        freeOnly,
+        setFreeOnly,
+        handleSearch,
+        handleLoadMore,
+        copyUrl,
+        getPlatformStyle
+      }}
+    >
+      {children}
+    </OnlineSearchContext.Provider>
+  );
+};
+
+export const useOnlineSearch = () => {
+  const context = useContext(OnlineSearchContext);
+  if (!context) {
+    throw new Error('useOnlineSearch must be used within an OnlineSearchProvider');
+  }
+  return context;
+};
+
+/**
+ * Online Search Sidebar Controls
+ * Rendered in the fixed sidebar when "Online-Modelle" tab is active.
+ */
+export const OnlineSearchSidebar: React.FC = () => {
+  const {
+    searchTerm,
+    setSearchTerm,
+    activePlatforms,
+    togglePlatform,
+    selectAllPlatforms,
+    loading,
+    sortBy,
+    setSortBy,
+    freeOnly,
+    setFreeOnly,
+    handleSearch
+  } = useOnlineSearch();
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      handleSearch();
+    }
   };
 
   return (
-    <div style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '28px 36px', background: 'var(--bg-dark)' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
-          <Globe size={28} color="var(--accent-cyan)" /> Online 3D-Modell-Suche
-        </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>
-          Durchsuche MakerWorld, Printables, Cults 3D, Thingiverse, MakerOnline & Creality Cloud gleichzeitig.
-        </p>
-      </div>
-
-      {/* Big Search Box */}
-      <div style={{ maxWidth: '850px', marginBottom: '20px' }}>
-        <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }} style={{ display: 'flex', gap: '10px' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={20} style={{ position: 'absolute', left: '16px', top: '14px', color: 'var(--text-muted)' }} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Search Input Box */}
+      <div className="form-group" style={{ marginBottom: 0 }}>
+        <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px' }}>
+          Online nach 3D-Modellen suchen:
+        </label>
+        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ position: 'relative' }}>
             <input
               type="text"
+              className="input-field"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Suchbegriff eingeben (z. B. Benchy, Gridfinity, Bambu, Halterung)..."
-              style={{
-                width: '100%',
-                padding: '13px 44px 13px 48px',
-                background: 'var(--bg-card)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                color: 'var(--text-main)',
-                fontSize: '15px',
-                outline: 'none',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                transition: 'border-color 0.2s, box-shadow 0.2s'
-              }}
-              onFocus={e => e.currentTarget.style.borderColor = 'var(--accent-blue)'}
-              onBlur={e => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+              placeholder="z. B. Skull, Benchy, Halterung..."
+              style={{ paddingRight: '36px', borderRadius: '10px' }}
+              autoFocus
             />
-            {searchTerm && (
+            {searchTerm ? (
               <X
-                size={18}
+                size={16}
                 onClick={() => setSearchTerm('')}
-                style={{ position: 'absolute', right: '16px', top: '15px', color: 'var(--text-muted)', cursor: 'pointer' }}
+                style={{ position: 'absolute', right: '12px', top: '12px', color: 'var(--text-muted)', cursor: 'pointer' }}
               />
+            ) : (
+              <Search size={16} style={{ position: 'absolute', right: '12px', top: '12px', color: 'var(--text-muted)' }} />
             )}
           </div>
           <button
             type="submit"
             disabled={loading || !searchTerm.trim()}
             style={{
-              padding: '0 28px',
+              padding: '10px 16px',
               background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
               color: '#fff',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '10px',
               fontWeight: '700',
-              fontSize: '15px',
+              fontSize: '13px',
               cursor: loading || !searchTerm.trim() ? 'not-allowed' : 'pointer',
               opacity: loading || !searchTerm.trim() ? 0.6 : 1,
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '8px',
-              boxShadow: '0 4px 15px rgba(0, 210, 255, 0.25)',
-              transition: 'transform 0.15s, opacity 0.15s'
+              boxShadow: '0 4px 12px rgba(0, 210, 255, 0.2)',
+              transition: 'all 0.15s'
             }}
           >
-            {loading ? <Loader2 size={18} className="spin" /> : <Search size={18} />}
+            {loading ? <Loader2 size={16} className="spin" /> : <Search size={16} />}
             {loading ? 'Suche läuft...' : 'Suchen'}
           </button>
         </form>
+      </div>
 
-        {/* Quick Tag Pills */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Sparkles size={13} color="var(--accent-cyan)" /> Beliebt:
-          </span>
+      {/* Platform Filter Pills */}
+      <div className="form-group" style={{ marginBottom: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+            <Filter size={13} /> Plattformen:
+          </label>
+          {activePlatforms.length > 0 && (
+            <span
+              onClick={selectAllPlatforms}
+              style={{ color: 'var(--accent-cyan)', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }}
+            >
+              Alle wählen
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+          <button
+            onClick={selectAllPlatforms}
+            style={{
+              fontSize: '11px',
+              fontWeight: '600',
+              padding: '3px 8px',
+              borderRadius: '8px',
+              border: activePlatforms.length === 0 ? '1px solid var(--accent-cyan)' : '1px solid rgba(255, 255, 255, 0.1)',
+              background: activePlatforms.length === 0 ? 'rgba(0, 210, 255, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+              color: activePlatforms.length === 0 ? 'var(--accent-cyan)' : 'var(--text-muted)',
+              cursor: 'pointer'
+            }}
+          >
+            Alle ({PLATFORMS.length})
+          </button>
+          {PLATFORMS.map(p => {
+            const isSelected = activePlatforms.includes(p.id);
+            return (
+              <button
+                key={p.id}
+                onClick={() => togglePlatform(p.id)}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  padding: '3px 8px',
+                  borderRadius: '8px',
+                  border: isSelected ? `1px solid ${p.color}` : '1px solid rgba(255, 255, 255, 0.08)',
+                  background: isSelected ? p.bg : 'rgba(255, 255, 255, 0.03)',
+                  color: isSelected ? p.color : 'var(--text-muted)',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s'
+                }}
+              >
+                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: p.color }} />
+                {p.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Options & Sort */}
+      <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', margin: 0 }}>
+          Sortierung & Filter:
+        </label>
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as any)}
+          style={{
+            width: '100%',
+            padding: '7px 10px',
+            background: 'var(--bg-input)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            color: 'var(--text-main)',
+            fontSize: '12px',
+            outline: 'none',
+            cursor: 'pointer'
+          }}
+        >
+          <option value="popular">Sortieren: Beliebteste</option>
+          <option value="likes">Sortieren: Meiste Likes</option>
+          <option value="name">Sortieren: Name (A-Z)</option>
+        </select>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)', cursor: 'pointer', marginTop: '2px' }}>
+          <input
+            type="checkbox"
+            checked={freeOnly}
+            onChange={e => setFreeOnly(e.target.checked)}
+            style={{ cursor: 'pointer', accentColor: 'var(--accent-cyan)' }}
+          />
+          Nur kostenlose Vorlagen
+        </label>
+      </div>
+
+      {/* Popular Quick-Search Tags */}
+      <div className="form-group" style={{ marginBottom: 0 }}>
+        <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+          <Sparkles size={13} color="var(--accent-cyan)" /> Beliebte Suchbegriffe:
+        </label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
           {POPULAR_TAGS.map(tag => (
             <span
               key={tag}
@@ -215,10 +394,10 @@ export const OnlineSearch: React.FC = () => {
               }}
               style={{
                 fontSize: '11px',
-                padding: '3px 10px',
-                background: 'rgba(255, 255, 255, 0.05)',
+                padding: '3px 8px',
+                background: 'rgba(255, 255, 255, 0.04)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '20px',
+                borderRadius: '8px',
                 color: 'var(--text-muted)',
                 cursor: 'pointer',
                 transition: 'all 0.15s'
@@ -228,7 +407,7 @@ export const OnlineSearch: React.FC = () => {
                 e.currentTarget.style.color = 'var(--accent-cyan)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
                 e.currentTarget.style.color = 'var(--text-muted)';
               }}
             >
@@ -237,87 +416,51 @@ export const OnlineSearch: React.FC = () => {
           ))}
         </div>
       </div>
+    </div>
+  );
+};
 
-      {/* Platform & Sort Filters */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)', marginBottom: '24px' }}>
-        {/* Platform Toggles */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Filter size={14} /> Plattformen:
-          </span>
-          <button
-            onClick={() => setActivePlatforms([])}
-            style={{
-              fontSize: '12px',
-              fontWeight: '600',
-              padding: '4px 12px',
-              borderRadius: '20px',
-              border: activePlatforms.length === 0 ? '1px solid var(--accent-cyan)' : '1px solid rgba(255, 255, 255, 0.1)',
-              background: activePlatforms.length === 0 ? 'rgba(0, 210, 255, 0.15)' : 'transparent',
-              color: activePlatforms.length === 0 ? 'var(--accent-cyan)' : 'var(--text-muted)',
-              cursor: 'pointer'
-            }}
-          >
-            Alle
-          </button>
-          {PLATFORMS.map(p => {
-            const isSelected = activePlatforms.includes(p.id);
-            return (
-              <button
-                key={p.id}
-                onClick={() => togglePlatform(p.id)}
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  padding: '4px 12px',
-                  borderRadius: '20px',
-                  border: isSelected ? `1px solid ${p.color}` : '1px solid rgba(255, 255, 255, 0.08)',
-                  background: isSelected ? p.bg : 'transparent',
-                  color: isSelected ? p.color : 'var(--text-muted)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  transition: 'all 0.15s'
-                }}
-              >
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: p.color }} />
-                {p.name}
-              </button>
-            );
-          })}
+/**
+ * Main Online Search Content View
+ */
+export const OnlineSearchContent: React.FC = () => {
+  const {
+    currentQuery,
+    displayedResults,
+    loading,
+    loadingMore,
+    hasMore,
+    hasSearched,
+    error,
+    copiedId,
+    handleLoadMore,
+    copyUrl,
+    getPlatformStyle,
+    handleSearch,
+    setSearchTerm
+  } = useOnlineSearch();
+
+  return (
+    <div style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '24px 32px', background: 'var(--bg-dark)' }}>
+      {/* Header Bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h1 style={{ fontSize: '22px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)', margin: 0 }}>
+            <Globe size={24} color="var(--accent-cyan)" /> 
+            {currentQuery ? `Online-Modelle: "${currentQuery}"` : 'Online 3D-Modell-Suche'}
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '3px', margin: 0 }}>
+            MakerWorld • Printables • Cults 3D • Thingiverse • MakerOnline • Creality Cloud
+          </p>
         </div>
 
-        {/* Sort & Free Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={freeOnly}
-              onChange={e => setFreeOnly(e.target.checked)}
-              style={{ cursor: 'pointer', accentColor: 'var(--accent-cyan)' }}
-            />
-            Nur Kostenlose
-          </label>
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value as any)}
-            style={{
-              padding: '6px 12px',
-              background: 'var(--bg-card)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '8px',
-              color: 'var(--text-main)',
-              fontSize: '12px',
-              outline: 'none',
-              cursor: 'pointer'
-            }}
-          >
-            <option value="popular">Sortieren: Beliebteste</option>
-            <option value="likes">Sortieren: Meiste Likes</option>
-            <option value="name">Sortieren: Name (A-Z)</option>
-          </select>
-        </div>
+        {displayedResults.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '700', background: 'rgba(0, 210, 255, 0.15)', color: 'var(--accent-cyan)', border: '1px solid rgba(0, 210, 255, 0.3)', padding: '5px 12px', borderRadius: '12px' }}>
+              {displayedResults.length} Vorlagen geladen
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Error Message */}
@@ -333,20 +476,52 @@ export const OnlineSearch: React.FC = () => {
         <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
           <Loader2 size={40} className="spin" style={{ color: 'var(--accent-cyan)', margin: '0 auto 16px' }} />
           <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-main)' }}>Suche auf allen Plattformen...</div>
-          <div style={{ fontSize: '13px', marginTop: '6px' }}>MakerWorld, Printables, Cults 3D, Thingiverse, MakerOnline werden abgefragt...</div>
+          <div style={{ fontSize: '13px', marginTop: '6px' }}>MakerWorld, Printables, Cults 3D, Thingiverse, MakerOnline & Creality Cloud werden durchsucht...</div>
         </div>
       )}
 
       {/* Empty State / Initial State */}
       {!loading && !hasSearched && (
-        <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-muted)' }}>
+        <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
           <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(0, 210, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
             <Globe size={36} color="var(--accent-cyan)" />
           </div>
           <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>Finde Millionen 3D-Modelle im Web</h3>
-          <p style={{ fontSize: '13px', maxWidth: '500px', margin: '0 auto', lineHeight: '1.6' }}>
-            Gib einfach einen Suchbegriff oben ein, um blitzschnell passende Druckvorlagen von den größten Repositories zu finden und direkt zu öffnen.
+          <p style={{ fontSize: '13px', maxWidth: '480px', margin: '0 auto', lineHeight: '1.6' }}>
+            Nutze die Suchleiste links in der Seitenleiste, um nach Stichworten wie <b>Benchy</b>, <b>Skull</b>, <b>Halterung</b> oder <b>Gridfinity</b> zu suchen.
           </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '24px', flexWrap: 'wrap' }}>
+            {POPULAR_TAGS.map(t => (
+              <button
+                key={t}
+                onClick={() => {
+                  setSearchTerm(t);
+                  handleSearch(t);
+                }}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: 'var(--text-main)',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = 'var(--accent-cyan)';
+                  e.currentTarget.style.color = 'var(--accent-cyan)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  e.currentTarget.style.color = 'var(--text-main)';
+                }}
+              >
+                {t} suchen →
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -355,16 +530,13 @@ export const OnlineSearch: React.FC = () => {
         <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
           <Search size={40} style={{ opacity: 0.3, margin: '0 auto 16px' }} />
           <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-main)' }}>Keine Modelle gefunden</div>
-          <div style={{ fontSize: '13px', marginTop: '6px' }}>Versuche es mit einem allgemeineren Begriff oder wähle mehr Plattformen aus.</div>
+          <div style={{ fontSize: '13px', marginTop: '6px' }}>Versuche es mit einem allgemeineren Begriff in der Seitenleiste.</div>
         </div>
       )}
 
       {/* Results Grid */}
       {!loading && displayedResults.length > 0 && (
         <div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px', fontWeight: '500' }}>
-            {displayedResults.length} Modelle gefunden:
-          </div>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
@@ -458,44 +630,43 @@ export const OnlineSearch: React.FC = () => {
 
                   {/* Card Content */}
                   <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div
+                    <h3
                       title={model.title}
                       style={{
-                        fontWeight: '600',
                         fontSize: '14px',
+                        fontWeight: '700',
                         color: 'var(--text-main)',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        marginBottom: '6px',
+                        lineHeight: '1.3',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
-                        lineHeight: '1.4',
-                        marginBottom: '8px',
-                        minHeight: '38px'
+                        overflow: 'hidden',
+                        height: '36px'
                       }}
                     >
                       {model.title}
-                    </div>
+                    </h3>
 
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }} title={`Ersteller: ${model.author}`}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
                         von {model.author}
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
                         {model.likes > 0 && (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#ff6b6b' }}>
-                            <Heart size={11} fill="#ff6b6b" /> {model.likes}
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '2px', color: '#ff6b81' }}>
+                            <Heart size={11} fill="#ff6b81" /> {model.likes}
                           </span>
                         )}
                         {model.downloads > 0 && (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--accent-cyan)' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--accent-cyan)' }}>
                             <Download size={11} /> {model.downloads}
                           </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Actions */}
+                    {/* Action Buttons */}
                     <div style={{ marginTop: 'auto', display: 'flex', gap: '8px' }}>
                       <a
                         href={model.url}
@@ -504,40 +675,49 @@ export const OnlineSearch: React.FC = () => {
                         style={{
                           flex: 1,
                           padding: '8px 12px',
-                          background: 'rgba(0, 210, 255, 0.1)',
-                          border: '1px solid rgba(0, 210, 255, 0.25)',
+                          background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(58, 123, 213, 0.25))',
+                          border: '1px solid rgba(0, 210, 255, 0.3)',
                           borderRadius: '8px',
-                          color: 'var(--accent-cyan)',
-                          textDecoration: 'none',
+                          color: 'var(--text-main)',
                           fontSize: '12px',
                           fontWeight: '600',
+                          textDecoration: 'none',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           gap: '6px',
-                          transition: 'background 0.15s'
+                          transition: 'all 0.15s'
                         }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(0, 210, 255, 0.25)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(0, 210, 255, 0.1)'}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.borderColor = 'var(--accent-cyan)';
+                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 210, 255, 0.3), rgba(58, 123, 213, 0.45))';
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.borderColor = 'rgba(0, 210, 255, 0.3)';
+                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(58, 123, 213, 0.25))';
+                        }}
                       >
-                        <ExternalLink size={13} /> Auf {model.platform_name} ansehen
+                        <ExternalLink size={13} />
+                        Auf {model.platform_name} ansehen
                       </a>
+
                       <button
                         onClick={() => copyUrl(model.id, model.url)}
                         title="Link kopieren"
                         style={{
                           padding: '8px 10px',
-                          background: 'rgba(255, 255, 255, 0.05)',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          background: copiedId === model.id ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: `1px solid ${copiedId === model.id ? '#2ecc71' : 'var(--border-color)'}`,
                           borderRadius: '8px',
                           color: copiedId === model.id ? '#2ecc71' : 'var(--text-muted)',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center'
+                          justifyContent: 'center',
+                          transition: 'all 0.15s'
                         }}
                       >
-                        {copiedId === model.id ? <Check size={14} /> : <Copy size={14} />}
+                        {copiedId === model.id ? <Check size={13} /> : <Copy size={13} />}
                       </button>
                     </div>
                   </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Folder, FolderOpen, Database, HardDrive, Printer, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe, Pencil } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
-import { OnlineSearch } from './OnlineSearch';
+import { OnlineSearchProvider, OnlineSearchSidebar, OnlineSearchContent } from './OnlineSearch';
 import './index.css';
 
 interface Model {
@@ -651,9 +651,10 @@ function App() {
   });
 
   return (
-    <div className="app-container">
-      {/* Sidebar */}
-      <div className="sidebar">
+    <OnlineSearchProvider>
+      <div className="app-container">
+        {/* Sidebar */}
+        <div className="sidebar">
         <div className="logo-section">
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <div style={{ width: '60px', height: '60px', background: 'linear-gradient(135deg, #00d2ff, #8e2de2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -803,6 +804,11 @@ function App() {
           </>
         )}
 
+        {/* Online Search Controls in Sidebar */}
+        {activeNav === 'online' && (
+          <OnlineSearchSidebar />
+        )}
+
         {/* Footer / Settings */}
         <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
           <button 
@@ -817,7 +823,7 @@ function App() {
 
       {/* Main Content Area: Keep both mounted to preserve search state & scroll position */}
       <div style={{ flex: 1, height: '100%', display: activeNav === 'online' ? 'flex' : 'none', flexDirection: 'column', overflow: 'hidden' }}>
-        <OnlineSearch />
+        <OnlineSearchContent />
       </div>
 
       <div className="main-content" style={{ display: activeNav === 'library' ? 'flex' : 'none' }}>
@@ -1192,7 +1198,8 @@ function App() {
           }}
         />
       )}
-    </div>
+      </div>
+    </OnlineSearchProvider>
   );
 }
 
