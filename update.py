@@ -12,11 +12,13 @@ EXCLUDE = [
     "backend/settings.json", 
     "backend/.env", 
     "backend/.cache",
+    "port.txt",
     "python_embeded", 
     "update.py", 
     "update.bat",
     "run_portable.bat",
-    "start.bat"
+    "start-manger-hidden.vbs",
+    "stop_server.bat"
 ]
 
 def download_with_retry(url, target_path, max_retries=3):

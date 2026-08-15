@@ -1,11 +1,19 @@
 @echo off
 setlocal enabledelayedexpansion
 
-title STL Manager - Portable Launcher (Port 8000)
 cd /d "%~dp0"
 
+set "PORT=8000"
+if exist "%~dp0port.txt" (
+    set /p PORT=<"%~dp0port.txt"
+    set "PORT=!PORT: =!"
+)
+if "!PORT!"=="" set "PORT=8000"
+
+title STL Manager - Portable Launcher (Port !PORT!)
+
 echo ========================================================
-echo     STL Manager - Portable Start (Port 8000)
+echo     STL Manager - Portable Start (Port !PORT!)
 echo ========================================================
 echo.
 
@@ -33,12 +41,12 @@ if not exist "%~dp0frontend\dist\index.html" (
 )
 
 REM Open Browser automatically after 2 seconds
-start "" cmd /c "ping 127.0.0.1 -n 3 >nul && start http://localhost:8000"
+start "" cmd /c "ping 127.0.0.1 -n 3 >nul && start http://localhost:!PORT!"
 echo.
-echo [STARTING] STL Manager is running at http://localhost:8000 ...
-echo [LAN ACCESS] Available in local network at http://<YOUR-IP>:8000 (e.g. http://10.10.5.40:8000)
+echo [STARTING] STL Manager is running at http://localhost:!PORT! ...
+echo [LAN ACCESS] Available in local network at http://<YOUR-IP>:!PORT! (e.g. http://10.10.5.40:!PORT!)
 echo [INFO] Press Ctrl+C or close this window to stop the server.
 echo.
 
 cd /d "%~dp0backend"
-"%PYTHON_EXE%" -m uvicorn main:app --host 0.0.0.0 --port 8000
+"%PYTHON_EXE%" -m uvicorn main:app --host 0.0.0.0 --port !PORT!

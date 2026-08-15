@@ -1,4 +1,4 @@
-' Print Manager - Startet Backend & Frontend portable und unsichtbar im Hintergrund
+' STL Manager - Startet Backend & Frontend portable und unsichtbar im Hintergrund
 Dim fso, WshShell, baseDir
 Set fso = CreateObject("Scripting.FileSystemObject")
 Set WshShell = CreateObject("WScript.Shell")
