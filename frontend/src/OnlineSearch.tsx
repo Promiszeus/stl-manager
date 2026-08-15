@@ -402,6 +402,7 @@ export const OnlineSearch: React.FC = () => {
                         src={model.thumbnail}
                         alt={model.title}
                         loading="lazy"
+                        referrerPolicy="no-referrer"
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={e => {
                           e.currentTarget.style.display = 'none';

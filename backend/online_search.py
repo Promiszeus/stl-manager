@@ -95,6 +95,29 @@ def normalize_model_url(platform: str, model_id, raw_url: str):
 
     return url
 
+def normalize_thumbnail_url(thumb: str) -> str:
+    """Unwraps proxy URLs (like image.three-drop.com and resize.thingiverse.com) into clean, direct CDN image URLs."""
+    if not thumb:
+        return ""
+    url = str(thumb).strip()
+    
+    # 1. Unwrap three-drop proxy
+    if "image.three-drop.com/" in url:
+        part = url.split("image.three-drop.com/", 1)[1]
+        url = urllib.parse.unquote(part)
+
+    # 2. Unwrap resize.thingiverse.com
+    if "resize.thingiverse.com" in url and "url=" in url:
+        m = re.search(r'url=([^&]+)', url)
+        if m:
+            url = urllib.parse.unquote(m.group(1))
+
+    # 3. Double-unquote if needed
+    if url.startswith("http%3A") or url.startswith("https%3A"):
+        url = urllib.parse.unquote(url)
+
+    return url
+
 def search_cults3d_direct(query: str, limit: int = 24):
     """Direct scraper for Cults3D search."""
     results = []
@@ -218,7 +241,8 @@ def search_threedrop_api(query: str, page: int = 1):
             website_type = (item.get("websiteType") or item.get("platform") or "unknown").lower()
             
             raw_url = item.get("url") or item.get("link") or ""
-            image = item.get("imageUrl") or item.get("thumbnailUrl") or item.get("image") or item.get("thumbnail") or item.get("previewImage") or ""
+            raw_image = item.get("imageUrl") or item.get("thumbnailUrl") or item.get("image") or item.get("thumbnail") or item.get("previewImage") or ""
+            image = normalize_thumbnail_url(raw_image)
             author = item.get("author") or item.get("creator") or item.get("user") or "3D Creator"
             if isinstance(author, dict):
                 author = author.get("name") or author.get("username") or "Creator"
