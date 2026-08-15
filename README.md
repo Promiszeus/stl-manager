@@ -1,81 +1,89 @@
 # 🚀 STL-Manager
 
-**STL-Manager** ist eine leistungsstarke, lokale Webanwendung zur Organisation, Vorschau und Verwaltung deiner 3D-Druckdateien (STL & 3MF) – inklusive integrierter Online-Modellsuche über alle großen Repositories!
+**STL-Manager** is a powerful, local web application designed to organize, preview, and manage your 3D printing files (STL & 3MF) – featuring an integrated multi-platform online search across major 3D model repositories!
 
 ---
 
-## ✨ Funktionen & Highlights
+## ✨ Features & Highlights
 
-* 📁 **Automatische Ordnerüberwachung:** Überwacht beliebig viele Ordner auf deiner Festplatte live und fügt neu heruntergeladene STL- und 3MF-Dateien sofort zur Bibliothek hinzu.
-* 👁️ **Integrierter 3D-Viewer & Thumbnails:** Automatische Generierung hochauflösender 3D-Vorschauen und interaktiver 3D-Inspektor direkt im Browser.
-* 🏷️ **Tag-System mit Farbwähler:** Kategorisiere Modelle mit Tags (inkl. anpassbarer Farben) und filtere gezielt nach Tags oder ungetaggten Dateien.
-* 🔍 **Intelligenter Duplikate-Finder:** Findet echte Inhalts-Duplikate per MD5-Content-Hash, um Speicherplatz zu sparen.
-* 🔪 **Multi-Slicer-Integration:** Öffne 3D-Dateien mit einem Klick direkt in deinem bevorzugten Slicer (*PrusaSlicer, Bambu Studio, OrcaSlicer, Cura etc.*).
-* 🌐 **Multi-Plattform Online-Suche:** Durchsuche **MakerWorld**, **Printables**, **Cults 3D**, **Thingiverse**, **MakerOnline** und **Creality Cloud** gleichzeitig mit Schnellfiltern und nahtlosem Nachladen (*"Weitere Modelle laden"*).
-* 🧩 **Chrome Extension:** Erkennt automatisch die Original-Webseite heruntergeladener Modelle und verknüpft sie mit der Bibliothek.
-* ⚙️ **Flexible Port-Konfiguration:** Frei wählbarer Server-Port über `port.txt`.
-* 🔄 **1-Klick Auto-Updater:** Automatisches Stoppen, Aktualisieren und Neustarten per `update.bat`.
-
----
-
-## 🚀 Schnellstart
-
-### 1. Normaler Start (mit Konsole)
-Doppelklicke einfach auf die Datei **`run_portable.bat`**.
-* Startet den Server portabel über das mitgelieferte Python.
-* Öffnet automatisch die Weboberfläche im Browser unter `http://localhost:8000`.
+* 📁 **Automated Directory Monitoring:** Live-monitors any number of folders on your hard drive and instantly adds newly downloaded STL and 3MF files to your library.
+* 👁️ **Built-in 3D Viewer & Thumbnails:** Generates high-resolution 3D renders automatically and includes an interactive 3D model inspector right in your browser.
+* 🏷️ **Tag System with Color Customizer:** Categorize models with custom tags and colors, with quick filters for tags or untagged files.
+* 🔍 **Smart Duplicate Finder:** Identifies true binary content duplicates using MD5 content hashing to save disk space.
+* 🔪 **Multi-Slicer Integration:** Launch 3D models with one click directly into your preferred slicer (*PrusaSlicer, Bambu Studio, OrcaSlicer, Cura, etc.*).
+* 🌐 **Multi-Platform Online Search:** Search **MakerWorld**, **Printables**, **Cults 3D**, **Thingiverse**, **MakerOnline**, and **Creality Cloud** simultaneously from the persistent sidebar with quick filters and seamless downwards pagination (*"Load More Models"*).
+* 🧩 **Chrome Extension:** Automatically captures and links the original model overview page whenever you download from 3D printing websites.
+* ⚙️ **Configurable Port (`port.txt`):** Easily customize the server port to whatever you prefer.
+* 🔄 **1-Click Auto-Updater (`update.bat`):** Automatically stops the running server, pulls updates from GitHub, updates dependencies, and restarts the server.
 
 ---
 
-### 2. Windows-Autostart (Lautlos im Hintergrund)
-Möchtest du, dass der STL-Manager bei jedem Hochfahren von Windows automatisch und **völlig unsichtbar im Hintergrund** läuft?
+## 🚀 Getting Started
 
-1. Drücke auf deiner Tastatur die Tastenkombination **`Windows-Taste + R`**.
-2. Gib **`shell:startup`** ein und drücke **Enter** (dies öffnet deinen persönlichen Windows-Autostart-Ordner).
-3. Gehe in deinen `STL-Manager`-Ordner, mache einen **Rechtsklick auf die Datei `start-manger-hidden.vbs`** und wähle **"Verknüpfung erstellen"**.
-4. Ziehe diese neu erstellte Verknüpfung in den geöffneten Autostart-Ordner.
-5. **Fertig!** Ab sofort startet der STL-Manager bei jedem Windows-Start lautlos im Hintergrund.
+### 1. Standard Start (Console Window)
+Simply double-click **`run_portable.bat`**.
+* Launches the server portably using the embedded Python environment.
+* Automatically opens your default web browser at `http://localhost:8000`.
 
 ---
 
-## ⚙️ Port anpassen (`port.txt`)
+### 2. Silent Windows Autostart (Background Execution)
+If you want STL-Manager to start automatically and **run completely invisibly in the background** on Windows boot:
 
-Standardmäßig lauscht der Server auf Port `8000`. Wenn du einen anderen Port verwenden möchtest (z. B. `8080` oder `9000`):
-
-1. Öffne die Datei **`port.txt`** im Hauptverzeichnis mit einem Texteditor.
-2. Trage deinen Wunsch-Port ein (z. B. `8080`) und speichere die Datei.
-3. Starte den Server neu – `run_portable.bat`, `stop_server.bat` und der Autostart verwenden automatisch den neuen Port!
+1. Press **`Windows Key + R`** on your keyboard.
+2. Type **`shell:startup`** and press **Enter** (this opens your Windows Startup folder).
+3. Open your `STL-Manager` directory, **right-click on `start-manger-hidden.vbs`**, and select **"Create shortcut"**.
+4. Move or drag this newly created shortcut into the Startup folder.
+5. **Done!** STL-Manager will now launch silently in the background whenever Windows starts.
 
 ---
 
-## ⏹️ Server stoppen (`stop_server.bat`)
+## ⚙️ Custom Port Configuration (`port.txt`)
 
-Doppelklicke auf **`stop_server.bat`**:
-* Beendet alle aktiven STL-Manager- und Uvicorn-Prozesse.
-* Schließt die Ports dynamisch und sprachunabhängig.
+By default, the server listens on port `8000`. If you wish to change the port (e.g., to `8080` or `9000`):
+
+1. Open the file **`port.txt`** located in the root directory with any text editor.
+2. Enter your desired port number (e.g., `8080`) and save the file.
+3. Restart the server – `run_portable.bat`, `stop_server.bat`, and the background autostart script will automatically use the new port!
+
+---
+
+## ⏹️ Stopping the Server (`stop_server.bat`)
+
+Double-click **`stop_server.bat`**:
+* Dynamically detects and terminates all active STL-Manager / Uvicorn server processes.
+* Closes the ports cleanly regardless of the port number configured.
 
 ---
 
 ## 🔄 Updates (`update.bat`)
 
-Um deinen STL-Manager auf den neuesten Stand zu bringen:
+To update your STL-Manager to the latest version:
 
-1. Doppelklicke auf **`update.bat`**.
-2. Das Skript:
-   - Stoppt den laufenden Server automatisch.
-   - Lädt die neueste Version von GitHub herunter.
-   - Aktualisiert fehlende Abhängigkeiten.
-   - **Startet den Server automatisch neu!**
-3. Deine gespeicherten Einstellungen, überwachten Ordner, Datenbank (`models.json`) und Tags bleiben dabei zu 100% erhalten.
+1. Double-click **`update.bat`**.
+2. The script will:
+   - Automatically stop any running server instance.
+   - Download the latest code from GitHub.
+   - Install/verify required Python packages.
+   - **Automatically restart the server when finished!**
+3. Your database (`models.json`), personal settings (`settings.json`), tags, cache, and custom ports remain 100% preserved.
 
 ---
 
 ## 🧩 Chrome Extension (STL-Manager Tracker)
 
-Mit der Browser-Erweiterung wird bei jedem Download von MakerWorld, Printables, Thingiverse & Co. automatisch die passende Modellseite gespeichert:
+The browser extension ensures that downloading a model from MakerWorld, Printables, Thingiverse, etc. automatically associates the original presentation webpage URL with the file:
 
-1. Öffne Google Chrome (oder Brave / Edge).
-2. Öffne `chrome://extensions` in der Adressleiste.
-3. Aktiviere oben rechts den **Entwicklermodus** (*Developer mode*).
-4. Klicke oben links auf **"Entpackte Erweiterung laden"** (*Load unpacked*).
-5. Wähle den Ordner `chrome-extension` aus deinem STL-Manager-Verzeichnis aus.
+1. Open Google Chrome (or Edge / Brave).
+2. Navigate to `chrome://extensions` in the address bar.
+3. Enable **Developer mode** (toggle in the top-right corner).
+4. Click **Load unpacked** (top-left).
+5. Select the `chrome-extension` folder inside your STL-Manager directory.
+6. Done! Future downloads will have their web source link automatically attached.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Backend:** Python (FastAPI, Uvicorn, Trimesh, PyVista)
+* **Frontend:** React, TypeScript, Vite, Lucide Icons, Three.js
