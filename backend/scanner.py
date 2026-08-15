@@ -19,8 +19,8 @@ if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
 # Limit concurrent thumbnail renders to avoid RAM/GPU exhaustion on large folders
 RENDER_SEMAPHORE = threading.Semaphore(2)
 
-CACHE_DIR = Path(".cache")
-CACHE_DIR.mkdir(exist_ok=True)
+CACHE_DIR = Path(__file__).resolve().parent / ".cache"
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 def get_file_hash(filepath):
     """MD5 hash of file PATH - used as a stable unique ID per location."""
@@ -209,6 +209,10 @@ class STLHandler(FileSystemEventHandler):
         if not event.is_directory and self._is_3d_file(event.src_path):
             threading.Thread(target=self.delayed_process, args=(event.src_path,), daemon=True).start()
 
+    def on_modified(self, event):
+        if not event.is_directory and self._is_3d_file(event.src_path):
+            threading.Thread(target=self.delayed_process, args=(event.src_path,), daemon=True).start()
+
     def on_moved(self, event):
         if not event.is_directory and self._is_3d_file(event.dest_path):
             threading.Thread(target=self.delayed_process, args=(event.dest_path,), daemon=True).start()
@@ -223,11 +227,11 @@ class STLHandler(FileSystemEventHandler):
                 print(f"Removed {event.src_path} from database.")
 
     def delayed_process(self, filepath):
-        # Wait 2 seconds to ensure large file copies are completed before reading
-        time.sleep(2)
+        # Wait 1.5 seconds to ensure file write/copy is completed
+        time.sleep(1.5)
         try:
-            # Check if it still exists and hasn't been deleted immediately
-            if Path(filepath).exists():
+            p = Path(filepath)
+            if p.exists() and p.is_file() and p.stat().st_size > 0:
                 self.process_file(filepath)
         except Exception as e:
             print(f"Error processing {filepath}: {e}")
@@ -339,6 +343,29 @@ def scan_all_directories():
     cleanup_existing_source_urls()
     settings = load_settings()
     handler = STLHandler()
+    
+    # 1. Check existing database models and auto-repair any with missing thumbnail files on disk
+    try:
+        models = load_models()
+        for mid, model in list(models.items()):
+            fpath = model.get("path")
+            if fpath and Path(fpath).exists():
+                thumbs = model.get("thumbnails", [])
+                needs_repair = not thumbs
+                if not needs_repair:
+                    # Verify thumbnail files exist in CACHE_DIR
+                    for t in thumbs:
+                        fname = t.split("/")[-1]
+                        if not (CACHE_DIR / fname).exists():
+                            needs_repair = True
+                            break
+                if needs_repair:
+                    print(f"  [Auto-Repair] Regenerating missing thumbnail for: {model.get('name')}")
+                    handler.process_file(fpath)
+    except Exception as e:
+        print(f"Error repairing thumbnails: {e}")
+
+    # 2. Scan all monitored directories on disk
     for directory in settings.get("directories", []):
         dir_path = Path(directory)
         if dir_path.exists() and dir_path.is_dir():

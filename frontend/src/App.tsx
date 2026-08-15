@@ -352,7 +352,7 @@ function App() {
 
   const fetchModels = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/models`);
+      const res = await fetch(`${API_BASE}/api/models?t=${Date.now()}`);
       const data = await res.json();
       setModels(data);
     } catch (e) {
@@ -362,7 +362,7 @@ function App() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/settings`);
+      const res = await fetch(`${API_BASE}/api/settings?t=${Date.now()}`);
       const data = await res.json();
       setSettings(data);
     } catch (e) {
@@ -372,7 +372,7 @@ function App() {
 
   const fetchTags = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/tags`);
+      const res = await fetch(`${API_BASE}/api/tags?t=${Date.now()}`);
       const data = await res.json();
       setAllTags(data);
     } catch (e) {

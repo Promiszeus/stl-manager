@@ -36,10 +36,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-Path(".cache").mkdir(exist_ok=True)
-app.mount("/cache", StaticFiles(directory=".cache"), name="cache")
+CACHE_DIR = Path(__file__).resolve().parent / ".cache"
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/cache", StaticFiles(directory=str(CACHE_DIR)), name="cache")
 
 import threading
+from fastapi import Response
 
 @app.on_event("startup")
 async def startup_event():
@@ -52,7 +54,10 @@ class DirectoryAdd(BaseModel):
     path: str
 
 @app.get("/api/models")
-def get_models():
+def get_models(response: Response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     models_db = load_models()
     models = list(models_db.values())
     models.sort(key=lambda x: x["added_at"], reverse=True)
