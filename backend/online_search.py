@@ -163,7 +163,7 @@ def search_cults3d_direct(query: str, limit: int = 24):
     return results
 
 def search_threedrop_api(query: str, page: int = 1):
-    """Query 3Drop aggregated search endpoint (covers MakerWorld, Printables, Thingiverse, MakerOnline, Creality)."""
+    """Query 3Drop aggregated search endpoint across multiple subpages in parallel (covers MakerWorld, Printables, Thingiverse, MakerOnline, Creality)."""
     results = []
     try:
         # Step 1: get dynamic path
@@ -174,60 +174,79 @@ def search_threedrop_api(query: str, page: int = 1):
         if not path:
             return results
 
-        # Step 2: query search path
-        search_url = f"https://three-drop.com{path}?query={urllib.parse.quote(query)}&page={page}"
-        search_res = requests.get(search_url, headers=HEADERS, timeout=8)
-        if search_res.status_code == 200:
-            data = search_res.json()
-            items = data.get("results", []) or data.get("models", []) or []
-            for item in items:
-                model_id = item.get("id") or item.get("modelId")
-                name = item.get("name") or item.get("title") or "Untitled"
-                website_type = (item.get("websiteType") or item.get("platform") or "unknown").lower()
-                
-                raw_url = item.get("url") or item.get("link") or ""
-                image = item.get("imageUrl") or item.get("thumbnailUrl") or item.get("image") or item.get("thumbnail") or item.get("previewImage") or ""
-                author = item.get("author") or item.get("creator") or item.get("user") or "3D Creator"
-                if isinstance(author, dict):
-                    author = author.get("name") or author.get("username") or "Creator"
+        # Step 2: query 4 subpages in parallel for high volume of results
+        start_sp = (page - 1) * 4 + 1
+        subpages = [start_sp, start_sp + 1, start_sp + 2, start_sp + 3]
 
-                likes = item.get("likes") or item.get("likeCount") or item.get("favorites") or 0
-                downloads = item.get("downloads") or item.get("downloadCount") or item.get("prints") or 0
-                is_free = item.get("isFree", True)
-                price = item.get("price")
+        def fetch_single_page(sp_num):
+            try:
+                search_url = f"https://three-drop.com{path}?query={urllib.parse.quote(query)}&page={sp_num}"
+                search_res = requests.get(search_url, headers=HEADERS, timeout=8)
+                if search_res.status_code == 200:
+                    data = search_res.json()
+                    return data.get("results", []) or data.get("models", []) or []
+            except Exception:
+                pass
+            return []
 
-                # Map platform codes to readable names
-                plat_map = {
-                    "makerworld": "MakerWorld",
-                    "printables": "Printables",
-                    "thingiverse": "Thingiverse",
-                    "cults": "Cults 3D",
-                    "cults3d": "Cults 3D",
-                    "makeronline": "MakerOnline",
-                    "crealitycloud": "Creality Cloud",
-                    "cratly": "Creality Cloud",
-                    "thangs": "Thangs",
-                    "myminifactory": "MyMiniFactory"
-                }
-                plat_code = "cults3d" if website_type == "cults" else website_type
-                plat_name = plat_map.get(plat_code, website_type.capitalize())
+        raw_items = []
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            futs = [ex.submit(fetch_single_page, sp) for sp in subpages]
+            for f in futs:
+                try:
+                    raw_items.extend(f.result())
+                except Exception:
+                    pass
 
-                # Normalize URL so it always points directly to the model
-                direct_url = normalize_model_url(plat_code, model_id, raw_url)
+        # Plat map
+        plat_map = {
+            "makerworld": "MakerWorld",
+            "printables": "Printables",
+            "thingiverse": "Thingiverse",
+            "cults": "Cults 3D",
+            "cults3d": "Cults 3D",
+            "makeronline": "MakerOnline",
+            "crealitycloud": "Creality Cloud",
+            "cratly": "Creality Cloud",
+            "thangs": "Thangs",
+            "myminifactory": "MyMiniFactory"
+        }
 
-                results.append({
-                    "id": f"{plat_code}_{model_id}",
-                    "title": name,
-                    "platform": plat_code,
-                    "platform_name": plat_name,
-                    "url": direct_url,
-                    "thumbnail": image,
-                    "author": str(author),
-                    "likes": int(likes) if str(likes).isdigit() else 0,
-                    "downloads": int(downloads) if str(downloads).isdigit() else 0,
-                    "is_free": is_free,
-                    "price": str(price) if price else None
-                })
+        for item in raw_items:
+            model_id = item.get("id") or item.get("modelId")
+            name = item.get("name") or item.get("title") or "Untitled"
+            website_type = (item.get("websiteType") or item.get("platform") or "unknown").lower()
+            
+            raw_url = item.get("url") or item.get("link") or ""
+            image = item.get("imageUrl") or item.get("thumbnailUrl") or item.get("image") or item.get("thumbnail") or item.get("previewImage") or ""
+            author = item.get("author") or item.get("creator") or item.get("user") or "3D Creator"
+            if isinstance(author, dict):
+                author = author.get("name") or author.get("username") or "Creator"
+
+            likes = item.get("likes") or item.get("likeCount") or item.get("favorites") or 0
+            downloads = item.get("downloads") or item.get("downloadCount") or item.get("prints") or 0
+            is_free = item.get("isFree", True)
+            price = item.get("price")
+
+            plat_code = "cults3d" if website_type == "cults" else website_type
+            plat_name = plat_map.get(plat_code, website_type.capitalize())
+
+            # Normalize URL so it always points directly to the model
+            direct_url = normalize_model_url(plat_code, model_id, raw_url)
+
+            results.append({
+                "id": f"{plat_code}_{model_id}",
+                "title": name,
+                "platform": plat_code,
+                "platform_name": plat_name,
+                "url": direct_url,
+                "thumbnail": image,
+                "author": str(author),
+                "likes": int(likes) if str(likes).isdigit() else 0,
+                "downloads": int(downloads) if str(downloads).isdigit() else 0,
+                "is_free": is_free,
+                "price": str(price) if price else None
+            })
     except Exception as e:
         print(f"3Drop API error: {e}")
     return results

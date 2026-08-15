@@ -28,9 +28,13 @@ const POPULAR_TAGS = ['Benchy', 'Gridfinity', 'Bambu Lab', 'Voron', 'Kabelclip',
 
 export const OnlineSearch: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentQuery, setCurrentQuery] = useState('');
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
   const [results, setResults] = useState<OnlineModel[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -46,18 +50,52 @@ export const OnlineSearch: React.FC = () => {
     setLoading(true);
     setError(null);
     setHasSearched(true);
+    setCurrentQuery(query.trim());
+    setPage(1);
 
     try {
       const platParam = activePlatforms.length > 0 ? `&platforms=${activePlatforms.join(',')}` : '';
-      const res = await fetch(`${API_BASE}/api/online/search?q=${encodeURIComponent(query.trim())}${platParam}`);
+      const res = await fetch(`${API_BASE}/api/online/search?q=${encodeURIComponent(query.trim())}${platParam}&page=1`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setResults(Array.isArray(data) ? data : []);
+      const list: OnlineModel[] = Array.isArray(data) ? data : [];
+      setResults(list);
+      setHasMore(list.length >= 10);
     } catch (err: any) {
       console.error('Search error:', err);
       setError('Fehler bei der Suche. Bitte überprüfe deine Internetverbindung und versuche es erneut.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    if (!currentQuery || loadingMore) return;
+    const nextPage = page + 1;
+    setLoadingMore(true);
+
+    try {
+      const platParam = activePlatforms.length > 0 ? `&platforms=${activePlatforms.join(',')}` : '';
+      const res = await fetch(`${API_BASE}/api/online/search?q=${encodeURIComponent(currentQuery)}${platParam}&page=${nextPage}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const newItems: OnlineModel[] = Array.isArray(data) ? data : [];
+
+      if (newItems.length > 0) {
+        setResults(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const filteredNew = newItems.filter(p => !existingIds.has(p.id));
+          return [...prev, ...filteredNew];
+        });
+        setPage(nextPage);
+        setHasMore(newItems.length >= 10);
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error('Load more error:', err);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -505,6 +543,49 @@ export const OnlineSearch: React.FC = () => {
               );
             })}
           </div>
+
+          {/* Load More Button */}
+          {hasMore && (
+            <div style={{ textAlign: 'center', marginTop: '36px', marginBottom: '24px' }}>
+              <button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                style={{
+                  padding: '13px 32px',
+                  background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(58, 123, 213, 0.35))',
+                  border: '1px solid var(--accent-cyan)',
+                  borderRadius: '12px',
+                  color: '#fff',
+                  fontWeight: '700',
+                  fontSize: '14px',
+                  cursor: loadingMore ? 'not-allowed' : 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 20px rgba(0, 210, 255, 0.25)'
+                }}
+                onMouseEnter={e => {
+                  if (!loadingMore) e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={e => {
+                  if (!loadingMore) e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                {loadingMore ? (
+                  <>
+                    <Loader2 size={18} className="spin" />
+                    Lade weitere Modelle...
+                  </>
+                ) : (
+                  <>
+                    <Download size={18} />
+                    Weitere Modelle laden (+80 weitere Vorlagen)
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
