@@ -19,8 +19,8 @@ if not exist "%PYTHON_EXE%" (
 )
 
 echo [1/4] Stoppe laufenden STL Manager Server...
-if exist "%~dp0tools\stop_server.bat" (
-    call "%~dp0tools\stop_server.bat"
+if exist "%~dp0stop_server.bat" (
+    call "%~dp0stop_server.bat"
 ) else (
     powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*uvicorn*' -and $_.CommandLine -like '*main:app*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1
 )

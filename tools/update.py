@@ -23,7 +23,9 @@ EXCLUDE = [
     "update.bat",
     "run_portable.bat",
     "start-manger-hidden.vbs",
-    "tools/stop_server.bat"
+    "stop_server.bat",
+    "README.md",
+    ".gitignore"
 ]
 
 def download_with_retry(url, target_path, max_retries=3):
