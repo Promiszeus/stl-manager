@@ -4,9 +4,14 @@ import os
 import shutil
 import tempfile
 import time
+from pathlib import Path
 
 REPO_ZIP_URL = "https://github.com/Promiszeus/stl-manager/archive/refs/heads/main.zip"
-# Dateien und Ordner, die beim Update NICHT überschrieben werden dürfen:
+
+# Base directory is parent of the tools folder (STL-Manager root)
+ROOT_DIR = Path(__file__).resolve().parent.parent
+
+# Files and folders to NEVER overwrite during updates:
 EXCLUDE = [
     "backend/models.json", 
     "backend/settings.json", 
@@ -14,11 +19,11 @@ EXCLUDE = [
     "backend/.cache",
     "port.txt",
     "python_embeded", 
-    "update.py", 
+    "tools/update.py", 
     "update.bat",
     "run_portable.bat",
     "start-manger-hidden.vbs",
-    "stop_server.bat"
+    "tools/stop_server.bat"
 ]
 
 def download_with_retry(url, target_path, max_retries=3):
@@ -60,7 +65,7 @@ def update():
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(td)
                 
-            # GitHub ZIPs haben immer einen Hauptordner (z.B. stl-manager-main)
+            # GitHub ZIPs have a top-level directory (e.g. stl-manager-main)
             extracted_folder = os.path.join(td, os.listdir(td)[0])
             
             print("Installiere Update...")
@@ -72,16 +77,16 @@ def update():
                     rel_path_normalized = rel_path.replace("\\", "/")
                     
                     # Check if file is excluded
-                    if any(rel_path_normalized.startswith(ex) for ex in EXCLUDE):
+                    if any(rel_path_normalized == ex or rel_path_normalized.startswith(ex + "/") for ex in EXCLUDE):
                         continue
                         
-                    dst = os.path.join(os.getcwd(), rel_path)
+                    dst = ROOT_DIR / rel_path
                     
-                    # Ordnerstruktur erstellen falls nicht vorhanden
-                    os.makedirs(os.path.dirname(dst), exist_ok=True)
+                    # Ensure destination directory exists
+                    dst.parent.mkdir(parents=True, exist_ok=True)
                     
-                    # Kopieren und überschreiben
-                    shutil.copy2(src, dst)
+                    # Copy and overwrite
+                    shutil.copy2(src, str(dst))
                     updated_files += 1
                     
             print(f"\n[OK] Update erfolgreich abgeschlossen! ({updated_files} Dateien aktualisiert)")

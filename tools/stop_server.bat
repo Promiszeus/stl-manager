@@ -7,8 +7,8 @@ echo ========================================================
 echo.
 
 set "PORT=8000"
-if exist "%~dp0port.txt" (
-    set /p PORT=<"%~dp0port.txt"
+if exist "%~dp0..\port.txt" (
+    set /p PORT=<"%~dp0..\port.txt"
     set "PORT=!PORT: =!"
 )
 if "!PORT!"=="" set "PORT=8000"

@@ -19,11 +19,15 @@ if not exist "%PYTHON_EXE%" (
 )
 
 echo [1/4] Stoppe laufenden STL Manager Server...
-call "%~dp0stop_server.bat"
+if exist "%~dp0tools\stop_server.bat" (
+    call "%~dp0tools\stop_server.bat"
+) else (
+    powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*uvicorn*' -and $_.CommandLine -like '*main:app*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1
+)
 
 echo.
 echo [2/4] Lade Aktualisierungen herunter...
-"%PYTHON_EXE%" "%~dp0update.py"
+"%PYTHON_EXE%" "%~dp0tools\update.py"
 
 echo.
 echo [3/4] Pruefe und installiere Python-Abhaengigkeiten...
