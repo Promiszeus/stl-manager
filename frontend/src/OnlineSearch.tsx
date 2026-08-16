@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2, TrendingUp, Rocket, History, ChevronRight, Trophy } from 'lucide-react';
+import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2, TrendingUp, Rocket, History, ChevronRight, Trophy, Gamepad2, Palette, Wrench, Home, Car, Smile, Layers } from 'lucide-react';
 import { useI18n } from './i18n';
 
 export interface OnlineModel {
@@ -84,6 +84,113 @@ export const CONTEST_PORTALS = [
   }
 ];
 
+export const CATEGORY_EXPLORE_CARDS = [
+  {
+    id: 'toys',
+    titleKey: 'catToys',
+    descKey: 'catToysDesc',
+    query: 'Toy Fidget Articulated Figure',
+    icon: Smile,
+    color: '#f59e0b',
+    bg: 'rgba(245, 158, 11, 0.15)',
+    border: 'rgba(245, 158, 11, 0.3)',
+    activeGradient: 'linear-gradient(135deg, #422616 0%, #2b170c 100%)',
+    idleGradient: 'linear-gradient(135deg, #2a1a11 0%, #1e130c 100%)',
+    shadow: 'rgba(245, 158, 11, 0.35)'
+  },
+  {
+    id: 'fashion',
+    titleKey: 'catFashion',
+    descKey: 'catFashionDesc',
+    query: 'Fashion Jewelry Ring Bracelet Wearable',
+    icon: Sparkles,
+    color: '#ec4899',
+    bg: 'rgba(236, 72, 153, 0.15)',
+    border: 'rgba(236, 72, 153, 0.3)',
+    activeGradient: 'linear-gradient(135deg, #441634 0%, #2b0b20 100%)',
+    idleGradient: 'linear-gradient(135deg, #2b1022 0%, #1c0a16 100%)',
+    shadow: 'rgba(236, 72, 153, 0.35)'
+  },
+  {
+    id: 'art',
+    titleKey: 'catArt',
+    descKey: 'catArtDesc',
+    query: 'Art Sculpture Design Decor Statue',
+    icon: Palette,
+    color: '#a855f7',
+    bg: 'rgba(168, 85, 247, 0.15)',
+    border: 'rgba(168, 85, 247, 0.3)',
+    activeGradient: 'linear-gradient(135deg, #2e1548 0%, #1b0a2c 100%)',
+    idleGradient: 'linear-gradient(135deg, #1e0f30 0%, #140820 100%)',
+    shadow: 'rgba(168, 85, 247, 0.35)'
+  },
+  {
+    id: 'tools',
+    titleKey: 'catTools',
+    descKey: 'catToolsDesc',
+    query: 'Functional Tool Mechanical Gadget Clamp',
+    icon: Wrench,
+    color: '#06b6d4',
+    bg: 'rgba(6, 182, 212, 0.15)',
+    border: 'rgba(6, 182, 212, 0.3)',
+    activeGradient: 'linear-gradient(135deg, #0e3742 0%, #082129 100%)',
+    idleGradient: 'linear-gradient(135deg, #0a252d 0%, #06181d 100%)',
+    shadow: 'rgba(6, 182, 212, 0.35)'
+  },
+  {
+    id: 'home',
+    titleKey: 'catHome',
+    descKey: 'catHomeDesc',
+    query: 'Home Storage Organizer Gridfinity Mount Box',
+    icon: Home,
+    color: '#10b981',
+    bg: 'rgba(16, 185, 129, 0.15)',
+    border: 'rgba(16, 185, 129, 0.3)',
+    activeGradient: 'linear-gradient(135deg, #123d30 0%, #0a251d 100%)',
+    idleGradient: 'linear-gradient(135deg, #0e271f 0%, #081a14 100%)',
+    shadow: 'rgba(16, 185, 129, 0.35)'
+  },
+  {
+    id: 'gaming',
+    titleKey: 'catGaming',
+    descKey: 'catGamingDesc',
+    query: 'Gaming Controller Stand Cosplay Prop Figure',
+    icon: Gamepad2,
+    color: '#6366f1',
+    bg: 'rgba(99, 102, 241, 0.15)',
+    border: 'rgba(99, 102, 241, 0.3)',
+    activeGradient: 'linear-gradient(135deg, #1f2048 0%, #12132d 100%)',
+    idleGradient: 'linear-gradient(135deg, #151633 0%, #0e0e22 100%)',
+    shadow: 'rgba(99, 102, 241, 0.35)'
+  },
+  {
+    id: 'plants',
+    titleKey: 'catPlants',
+    descKey: 'catPlantsDesc',
+    query: 'Planter Flower Pot Vase Hydroponics Garden',
+    icon: Layers,
+    color: '#84cc16',
+    bg: 'rgba(132, 204, 22, 0.15)',
+    border: 'rgba(132, 204, 22, 0.3)',
+    activeGradient: 'linear-gradient(135deg, #2b3a10 0%, #1a2408 100%)',
+    idleGradient: 'linear-gradient(135deg, #1d280a 0%, #121a05 100%)',
+    shadow: 'rgba(132, 204, 22, 0.35)'
+  },
+  {
+    id: 'hobby',
+    titleKey: 'catHobby',
+    descKey: 'catHobbyDesc',
+    query: 'RC Car Drone Plane Model Vehicle Hobby',
+    icon: Car,
+    color: '#38bdf8',
+    bg: 'rgba(56, 189, 248, 0.15)',
+    border: 'rgba(56, 189, 248, 0.3)',
+    activeGradient: 'linear-gradient(135deg, #0e3048 0%, #081d2c 100%)',
+    idleGradient: 'linear-gradient(135deg, #0a2132 0%, #061520 100%)',
+    shadow: 'rgba(56, 189, 248, 0.35)'
+  }
+];
+
 interface OnlineSearchContextType {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
@@ -107,8 +214,8 @@ interface OnlineSearchContextType {
   searchHistory: string[];
   clearHistory: () => void;
   removeFromHistory: (term: string) => void;
-  activeCategory: 'daily' | 'monthly' | 'newest' | 'history' | null;
-  handleCategoryClick: (cat: 'daily' | 'monthly' | 'newest' | 'history') => void;
+  activeCategory: string | null;
+  handleCategoryClick: (cat: string) => void;
   handleSearch: (termToSearch?: string) => Promise<void>;
   handleLoadMore: () => Promise<void>;
   copyUrl: (id: string, url: string) => void;
@@ -131,7 +238,7 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'popular' | 'likes' | 'name'>('popular');
   const [freeOnly, setFreeOnly] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<'daily' | 'monthly' | 'newest' | 'history' | null>('daily');
+  const [activeCategory, setActiveCategory] = useState<string | null>('daily');
 
   // Search History Persistence
   const [searchHistory, setSearchHistory] = useState<string[]>(() => {
@@ -223,8 +330,14 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   };
 
-  const handleCategoryClick = (cat: 'daily' | 'monthly' | 'newest' | 'history') => {
+  const handleCategoryClick = (cat: string) => {
     setActiveCategory(cat);
+    const catCard = CATEGORY_EXPLORE_CARDS.find(c => c.id === cat);
+    if (catCard) {
+      setSearchTerm(catCard.query);
+      handleSearch(catCard.query);
+      return;
+    }
     if (cat === 'daily') {
       const randomDaily = TREND_QUERIES.daily[Math.floor(Math.random() * TREND_QUERIES.daily.length)];
       setSearchTerm(randomDaily);
@@ -237,6 +350,9 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
       const randomNew = TREND_QUERIES.newest[Math.floor(Math.random() * TREND_QUERIES.newest.length)];
       setSearchTerm(randomNew);
       handleSearch(randomNew);
+    } else if (cat === 'history' && searchHistory.length > 0) {
+      setSearchTerm(searchHistory[0]);
+      handleSearch(searchHistory[0]);
     }
   };
 
@@ -967,6 +1083,58 @@ export const OnlineSearchContent: React.FC = () => {
             <div style={{ fontSize: '10px', color: '#818cf8', marginTop: '2px' }}>{searchHistory.length} Suchen</div>
           </div>
         </button>
+      </div>
+
+      {/* 3. Kategorien & Themenwelten Grid (Spielzeug, Mode, Kunst, Werkzeuge, Haushalt, Gaming, Pflanzen, Hobby) */}
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <div style={{ fontSize: '13px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Sparkles size={14} color="var(--accent-cyan)" />
+            {t('categories')}
+          </div>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t('categoriesDesc')}</span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+          {CATEGORY_EXPLORE_CARDS.map(cat => {
+            const Icon = cat.icon;
+            const isActive = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => handleCategoryClick(cat.id)}
+                style={{
+                  padding: '12px 10px',
+                  borderRadius: '14px',
+                  background: isActive ? cat.activeGradient : cat.idleGradient,
+                  border: isActive ? `1px solid ${cat.color}` : `1px solid ${cat.border}`,
+                  boxShadow: isActive ? `0 4px 16px ${cat.shadow}` : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: cat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon size={17} color={cat.color} />
+                </div>
+                <div style={{ overflow: 'hidden' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {t(cat.titleKey as any)}
+                  </div>
+                  <div style={{ fontSize: '10px', color: cat.color, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {t(cat.descKey as any)}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Header Info Bar */}

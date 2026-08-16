@@ -1,17 +1,38 @@
 # 🚀 STL-Manager
 
-**STL-Manager** is a powerful, local web application designed to organize, preview, and manage your 3D printing files (STL & 3MF) – featuring an integrated multi-platform online search across major 3D model repositories!
+**STL-Manager** is a modern, high-performance web application designed to organize, preview, and manage your 3D printing files (STL & 3MF) – featuring an integrated multi-platform online model explorer across major 3D printing repositories!
 
 ---
 
 ## ✨ Features & Highlights
 
-* 📁 **Automated Directory Monitoring:** Live-monitors any number of folders on your hard drive and instantly adds newly downloaded STL and 3MF files to your library.
-* 👁️ **Built-in 3D Viewer & Thumbnails:** Generates high-resolution 3D renders automatically and includes an interactive 3D model inspector right in your browser.
-* 🏷️ **Tag System with Color Customizer:** Categorize models with custom tags and colors, with quick filters for tags or untagged files.
-* 🔍 **Smart Duplicate Finder:** Identifies true binary content duplicates using MD5 content hashing to save disk space.
-* 🔪 **Multi-Slicer Integration:** Launch 3D models with one click directly into your preferred slicer (*PrusaSlicer, Bambu Studio, OrcaSlicer, Cura, etc.*).
-* 🌐 **Multi-Platform Online Search:** Search **MakerWorld**, **Printables**, **Cults 3D**, **Thingiverse**, **MakerOnline**, and **Creality Cloud** simultaneously from the persistent sidebar with quick filters and seamless downwards pagination (*"Load More Models"*).
+### 📁 Local Library & Management
+* 📂 **Automated Directory Monitoring:** Live-monitors local and network folders, automatically registering new STL and 3MF files into your library.
+* 👁️ **Built-in 3D Viewer & High-Res Thumbnails:** Automatically generates multi-angle 3D renders and includes an interactive 3D model inspector right in your browser.
+* 🕒 **Windows File Modification Date Sorting:** Sort your models by actual filesystem modification timestamps (`mtime`), date added, file size, or alphabetically.
+* 🏷️ **Tag System with Color Customizer:** Categorize models with custom tags and custom colors, with instant 1-click filters for tags or untagged files.
+* 🔍 **Smart Duplicate Finder:** Identifies true binary content duplicates using MD5 content hashing to save valuable disk storage.
+* 🔪 **Multi-Slicer 1-Click Launch:** Send 3D models directly into your preferred slicer (*PrusaSlicer, Bambu Studio, OrcaSlicer, Cura, etc.*).
+* 🎯 **Modern Batch Action Bar:** Sleek floating toolbar for multi-selecting models, batch toggling printed status, or batch deleting.
+* ⌨️ **Search Command Palette (`Ctrl + K` / `/`):** Fast, centered popup search with auto-focus, tag filters, category shortcuts, and search history.
+
+### 🌐 Multi-Platform Online Model Hub (MakerWorld Aesthetic)
+* 🔍 **Simultaneous Multi-Platform Search:** Search **MakerWorld**, **Printables**, **Cults 3D**, **Thingiverse**, **MakerOnline**, and **Creality Cloud** simultaneously with live result counters and infinite pagination (*"Load More Models"*).
+* 🏆 **3D Design Contests Hub:** Explore official 3D design competitions and challenges across MakerWorld, Printables, Cults 3D, and Creality with 1-click contest model searches and direct portal links.
+* 🗂️ **Explore Categories & Topics:** Dedicated category cards to explore popular 3D printing themes:
+  - 🧸 **Toys & Fidgets** (*Figuren, Spielzeug & Fidgets*)
+  - 👗 **Fashion & Jewelry** (*Ringe, Schmuck & Wearables*)
+  - 🎨 **Art & Design** (*Skulpturen, Deko & Miniaturen*)
+  - 🔧 **Tools & Gadgets** (*Funktionale Hilfen & Mechanik*)
+  - 🏠 **Home & Storage** (*Gridfinity, Halter & Organizer*)
+  - 🎮 **Gaming & Pop Culture** (*Controller, Cosplay & Zubehör*)
+  - 🌿 **Planters & Vases** (*Blumentöpfe, Vasen & Deko*)
+  - 🚗 **RC, Cars & Models** (*Drohnen, Autos & RC-Modelle*)
+* 📈 **Trend Discovery:** 1-Click access to *Daily Trends (24h Top)*, *Monthly Trends*, and *Newest* releases.
+* 🌍 **Bilingual Support (DE / EN):** Seamlessly toggle between German (`🇩🇪 Deutsch`) and English (`🇬🇧 English`) with persistent language storage.
+* 📱 **Full Responsive Design:** Tailored for Desktop workstations, Tablets, and Smartphones with a floating glassmorphic bottom dock and elevated center search action.
+
+### 🧩 Integrations & Portability
 * 🧩 **Chrome Extension:** Automatically captures and links the original model overview page whenever you download from 3D printing websites.
 * ⚙️ **Configurable Port (`port.txt`):** Easily customize the server port to whatever you prefer.
 * 🔄 **1-Click Auto-Updater (`update.bat`):** Automatically stops the running server, pulls updates from GitHub, updates dependencies, and restarts the server.
@@ -85,5 +106,5 @@ The browser extension ensures that downloading a model from MakerWorld, Printabl
 
 ## 🛠️ Tech Stack
 
-* **Backend:** Python (FastAPI, Uvicorn, Trimesh, PyVista)
-* **Frontend:** React, TypeScript, Vite, Lucide Icons, Three.js
+* **Backend:** Python (FastAPI, Uvicorn, Trimesh, PyVista, Pillow)
+* **Frontend:** React 19, TypeScript, Vite, Lucide Icons, Three.js
