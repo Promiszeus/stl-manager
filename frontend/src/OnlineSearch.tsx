@@ -461,7 +461,7 @@ export const OnlineSearchContent: React.FC = () => {
   } = useOnlineSearch();
 
   return (
-    <div style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '24px 32px', background: 'var(--bg-dark)' }}>
+    <div className="online-search-container" style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '24px 32px', background: 'var(--bg-dark)' }}>
       {/* Header Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
@@ -519,23 +519,15 @@ export const OnlineSearchContent: React.FC = () => {
                   handleSearch(t);
                 }}
                 style={{
-                  padding: '8px 14px',
-                  borderRadius: '10px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  padding: '6px 14px',
                   background: 'rgba(255, 255, 255, 0.05)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: 'var(--text-main)',
-                  fontSize: '13px',
-                  fontWeight: '600',
+                  borderRadius: '10px',
+                  color: 'var(--accent-cyan)',
                   cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'var(--accent-cyan)';
-                  e.currentTarget.style.color = 'var(--accent-cyan)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  e.currentTarget.style.color = 'var(--text-main)';
+                  transition: 'all 0.15s'
                 }}
               >
                 {t} suchen →
@@ -557,7 +549,7 @@ export const OnlineSearchContent: React.FC = () => {
       {/* Results Grid */}
       {!loading && displayedResults.length > 0 && (
         <div>
-          <div style={{
+          <div className="online-models-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
             gap: '20px'

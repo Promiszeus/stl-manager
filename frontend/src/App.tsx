@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Folder, FolderOpen, Database, HardDrive, Printer, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe, Pencil } from 'lucide-react';
+import { Search, Folder, FolderOpen, Database, HardDrive, Printer, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe, Pencil, Menu, SlidersHorizontal } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import { OnlineSearchProvider, OnlineSearchSidebar, OnlineSearchContent } from './OnlineSearch';
@@ -336,6 +336,7 @@ function App() {
   const [newTagInput, setNewTagInput] = useState('');
   const [fileBrowserMode, setFileBrowserMode] = useState<'none' | 'folder' | 'slicer'>('none');
   const [activeNav, setActiveNav] = useState<'library' | 'online'>('library');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     document.title = "STL Manager";
@@ -653,74 +654,117 @@ function App() {
   return (
     <OnlineSearchProvider>
       <div className="app-container">
-        {/* Sidebar */}
-        <div className="sidebar">
-        <div className="logo-section">
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{ width: '60px', height: '60px', background: 'linear-gradient(135deg, #00d2ff, #8e2de2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-               <Database size={32} color="white" />
+        {/* Mobile Header Bar (<= 860px) */}
+        <div className="mobile-header">
+          <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} title="Menü öffnen">
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '28px', height: '28px', background: 'linear-gradient(135deg, #00d2ff, #8e2de2)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Database size={16} color="white" />
             </div>
+            <span style={{ fontWeight: '800', fontSize: '16px', color: '#fff', letterSpacing: '0.5px' }}>STL Manager</span>
           </div>
-          <div className="logo-text">STL Manager</div>
-          <div className="logo-sub">{models.length} models total</div>
-        </div>
-
-        {/* Navigation Tabs - Larger, Modern & Clean */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
-          <button 
-            onClick={() => setActiveNav('library')}
-            style={{
-              padding: '12px 16px',
-              borderRadius: '12px',
-              border: activeNav === 'library' ? '1px solid var(--accent-blue)' : '1px solid rgba(255, 255, 255, 0.05)',
-              background: activeNav === 'library' ? 'rgba(58, 123, 213, 0.25)' : 'rgba(255, 255, 255, 0.03)',
-              color: activeNav === 'library' ? '#fff' : 'var(--text-muted)',
-              fontWeight: '700',
-              fontSize: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              boxShadow: activeNav === 'library' ? '0 4px 15px rgba(58, 123, 213, 0.25)' : 'none',
-              transition: 'all 0.2s'
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Folder size={18} color={activeNav === 'library' ? 'var(--accent-cyan)' : 'var(--text-muted)'} /> 
-              Meine Bibliothek
-            </span>
-            <span style={{ fontSize: '11px', fontWeight: '700', background: 'rgba(255,255,255,0.08)', padding: '3px 8px', borderRadius: '12px', color: 'var(--text-main)' }}>
-              {models.length}
-            </span>
-          </button>
 
           <button 
-            onClick={() => setActiveNav('online')}
+            onClick={() => setMobileMenuOpen(true)}
             style={{
-              padding: '12px 16px',
-              borderRadius: '12px',
-              border: activeNav === 'online' ? '1px solid var(--accent-cyan)' : '1px solid rgba(255, 255, 255, 0.05)',
-              background: activeNav === 'online' ? 'rgba(0, 210, 255, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-              color: activeNav === 'online' ? '#fff' : 'var(--text-muted)',
+              background: 'rgba(0, 210, 255, 0.15)',
+              border: '1px solid rgba(0, 210, 255, 0.3)',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              color: 'var(--accent-cyan)',
+              fontSize: '12px',
               fontWeight: '700',
-              fontSize: '14px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              boxShadow: activeNav === 'online' ? '0 4px 15px rgba(0, 210, 255, 0.25)' : 'none',
-              transition: 'all 0.2s'
+              gap: '6px',
+              cursor: 'pointer'
             }}
           >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Globe size={18} color={activeNav === 'online' ? 'var(--accent-cyan)' : 'var(--text-muted)'} /> 
-              Online-Modelle
-            </span>
-            <span style={{ fontSize: '10px', fontWeight: '800', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', padding: '2px 7px', borderRadius: '10px', color: '#fff' }}>
-              NEU
-            </span>
+            <Search size={14} /> Suche
           </button>
         </div>
+
+        {/* Sidebar (Permanent on Desktop, Slide-Drawer on Mobile) */}
+        <div className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
+          {/* Logo Section / Mobile Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #00d2ff, #8e2de2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0, 210, 255, 0.25)' }}>
+                <Database size={26} color="white" />
+              </div>
+              <div>
+                <div style={{ fontWeight: '800', fontSize: '18px', letterSpacing: '1px', color: '#fff' }}>STL Manager</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{models.length} Modelle gesamt</div>
+              </div>
+            </div>
+            <button
+              className="mobile-close-btn"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Navigation Tabs - Larger, Modern & Clean */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+            <button 
+              onClick={() => { setActiveNav('library'); setMobileMenuOpen(false); }}
+              style={{
+                padding: '12px 16px',
+                borderRadius: '12px',
+                border: activeNav === 'library' ? '1px solid var(--accent-blue)' : '1px solid rgba(255, 255, 255, 0.05)',
+                background: activeNav === 'library' ? 'rgba(58, 123, 213, 0.25)' : 'rgba(255, 255, 255, 0.03)',
+                color: activeNav === 'library' ? '#fff' : 'var(--text-muted)',
+                fontWeight: '700',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                boxShadow: activeNav === 'library' ? '0 4px 15px rgba(58, 123, 213, 0.25)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Folder size={18} color={activeNav === 'library' ? 'var(--accent-cyan)' : 'var(--text-muted)'} /> 
+                Meine Bibliothek
+              </span>
+              <span style={{ fontSize: '11px', fontWeight: '700', background: 'rgba(255,255,255,0.08)', padding: '3px 8px', borderRadius: '12px', color: 'var(--text-main)' }}>
+                {models.length}
+              </span>
+            </button>
+
+            <button 
+              onClick={() => { setActiveNav('online'); setMobileMenuOpen(false); }}
+              style={{
+                padding: '12px 16px',
+                borderRadius: '12px',
+                border: activeNav === 'online' ? '1px solid var(--accent-cyan)' : '1px solid rgba(255, 255, 255, 0.05)',
+                background: activeNav === 'online' ? 'rgba(0, 210, 255, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                color: activeNav === 'online' ? '#fff' : 'var(--text-muted)',
+                fontWeight: '700',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                boxShadow: activeNav === 'online' ? '0 4px 15px rgba(0, 210, 255, 0.25)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Globe size={18} color={activeNav === 'online' ? 'var(--accent-cyan)' : 'var(--text-muted)'} /> 
+                Online-Modelle
+              </span>
+              <span style={{ fontSize: '10px', fontWeight: '800', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', padding: '2px 7px', borderRadius: '10px', color: '#fff' }}>
+                NEU
+              </span>
+            </button>
+          </div>
 
         {/* Library Controls (Search, Tags, Duplicates) */}
         {activeNav === 'library' && (
@@ -837,12 +881,17 @@ function App() {
           <button 
             className="button-secondary" 
             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '11px', borderRadius: '10px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)' }} 
-            onClick={() => setShowSettings(true)}
+            onClick={() => { setShowSettings(true); setMobileMenuOpen(false); }}
           >
              <Settings size={16} /> Einstellungen
           </button>
         </div>
       </div>
+
+      {/* Mobile Drawer Backdrop */}
+      {mobileMenuOpen && (
+        <div className="mobile-backdrop" onClick={() => setMobileMenuOpen(false)} />
+      )}
 
       {/* Main Content Area: Keep both mounted to preserve search state & scroll position */}
       <div style={{ flex: 1, height: '100%', display: activeNav === 'online' ? 'flex' : 'none', flexDirection: 'column', overflow: 'hidden' }}>
@@ -1221,6 +1270,41 @@ function App() {
           }}
         />
       )}
+
+      {/* Mobile Bottom Navigation Bar (Visible on Phones & Tablets <= 860px) */}
+      <div className="mobile-bottom-nav">
+        <button 
+          className={`mobile-nav-item ${activeNav === 'library' ? 'active' : ''}`}
+          onClick={() => { setActiveNav('library'); setMobileMenuOpen(false); }}
+        >
+          <Folder size={18} />
+          <span>Bibliothek</span>
+        </button>
+
+        <button 
+          className={`mobile-nav-item ${activeNav === 'online' ? 'active' : ''}`}
+          onClick={() => { setActiveNav('online'); setMobileMenuOpen(false); }}
+        >
+          <Globe size={18} />
+          <span>Online</span>
+        </button>
+
+        <button 
+          className="mobile-nav-item"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <SlidersHorizontal size={18} />
+          <span>Filter & Suche</span>
+        </button>
+
+        <button 
+          className="mobile-nav-item"
+          onClick={() => { setShowSettings(true); setMobileMenuOpen(false); }}
+        >
+          <Settings size={18} />
+          <span>Optionen</span>
+        </button>
+      </div>
       </div>
     </OnlineSearchProvider>
   );
