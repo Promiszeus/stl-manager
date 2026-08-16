@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2, TrendingUp, Rocket, History, ChevronRight } from 'lucide-react';
+import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2, TrendingUp, Rocket, History, ChevronRight, Trophy } from 'lucide-react';
 import { useI18n } from './i18n';
 
 export interface OnlineModel {
@@ -32,6 +32,57 @@ const TREND_QUERIES = {
   monthly: ['Gridfinity Modular', 'Voron 2.4 Mod', 'Desk Organizer', 'Skull Planter', 'Hydroponic Tower'],
   newest: ['Functional 3D Print', 'Mechanical Toy', 'Home Decor 3D', 'Phone Stand']
 };
+
+export const CONTEST_PORTALS = [
+  {
+    id: 'makerworld',
+    name: 'MakerWorld 3D-Druck Contests',
+    platform: 'MakerWorld',
+    color: '#00ae42',
+    bg: 'rgba(0, 174, 66, 0.15)',
+    border: 'rgba(0, 174, 66, 0.35)',
+    url: 'https://makerworld.com/en/contests',
+    query: 'MakerWorld Contest',
+    desc: 'Offizielle Bambu Lab & MakerWorld Wettbewerbe mit Prämienpunkten, Filament & Druckern.',
+    badge: 'Bambu Lab Official'
+  },
+  {
+    id: 'printables',
+    name: 'Printables Community Contests',
+    platform: 'Printables',
+    color: '#fa6b05',
+    bg: 'rgba(250, 107, 5, 0.15)',
+    border: 'rgba(250, 107, 5, 0.35)',
+    url: 'https://www.printables.com/contest',
+    query: 'Printables Contest',
+    desc: 'Wöchentliche Flash Contests & große Wettbewerbe mit Prusametern und Original Prusa 3D-Druckern.',
+    badge: 'Prusa Community'
+  },
+  {
+    id: 'cults3d',
+    name: 'Cults 3D Design Challenges',
+    platform: 'Cults 3D',
+    color: '#a855f7',
+    bg: 'rgba(168, 85, 247, 0.15)',
+    border: 'rgba(168, 85, 247, 0.35)',
+    url: 'https://cults3d.com/en/design-contests',
+    query: 'Cults 3D Contest',
+    desc: 'Kreative Design-Wettbewerbe mit Geldpreisen, Auszeichnungen und weltweiten Markenpartnern.',
+    badge: 'Geldpreise & Awards'
+  },
+  {
+    id: 'crealitycloud',
+    name: 'Creality Cloud Competitions',
+    platform: 'Creality Cloud',
+    color: '#0284c7',
+    bg: 'rgba(2, 132, 199, 0.15)',
+    border: 'rgba(2, 132, 199, 0.35)',
+    url: 'https://www.crealitycloud.com/contest',
+    query: 'Creality Contest',
+    desc: 'Offizielle Creality 3D-Druck Wettbewerbe mit Creality K1 Max, Zubehör & Filament.',
+    badge: 'Creality Official'
+  }
+];
 
 interface OnlineSearchContextType {
   searchTerm: string;
@@ -548,46 +599,262 @@ export const OnlineSearchContent: React.FC = () => {
     setSearchTerm
   } = useOnlineSearch();
 
+  const [showContestsModal, setShowContestsModal] = useState(false);
+
   return (
     <div className="online-search-container">
-      {/* 1. Hero Feature Banner (MakerWorld Contest / Design Spotlight) */}
+      {/* 1. Interactive Hero Feature Banner (MakerWorld Contest / Design Spotlight) */}
       <div
+        onClick={() => setShowContestsModal(true)}
+        className="contest-hero-banner"
         style={{
           position: 'relative',
           borderRadius: '16px',
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, #1e243b 0%, #151829 100%)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+          background: 'linear-gradient(135deg, #1b263b 0%, #111827 100%)',
+          border: '1px solid rgba(0, 210, 255, 0.3)',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.45), 0 0 20px rgba(0, 210, 255, 0.1)',
           marginBottom: '20px',
-          padding: '24px 20px',
+          padding: '22px 20px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',
-          minHeight: '140px'
+          minHeight: '145px',
+          cursor: 'pointer',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease'
         }}
       >
         {/* Glow overlay */}
-        <div style={{ position: 'absolute', top: 0, right: 0, width: '220px', height: '100%', background: 'radial-gradient(circle at top right, rgba(0, 210, 255, 0.18), transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: 0, right: 0, width: '260px', height: '100%', background: 'radial-gradient(circle at top right, rgba(0, 210, 255, 0.22), transparent 70%)', pointerEvents: 'none' }} />
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 77, 77, 0.2)', border: '1px solid rgba(255, 77, 77, 0.4)', color: '#ff6b6b', padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 77, 77, 0.25)', border: '1px solid rgba(255, 77, 77, 0.45)', color: '#ff6b6b', padding: '4px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff6b6b' }} />
             {t('featuredContest')}
           </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600' }}>
-            <span>{t('contests')}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--accent-cyan)', fontSize: '12px', fontWeight: '700', background: 'rgba(0, 210, 255, 0.12)', border: '1px solid rgba(0, 210, 255, 0.25)', padding: '4px 10px', borderRadius: '8px' }}>
+            <Trophy size={13} />
+            <span>{t('allContests')}</span>
             <ChevronRight size={14} />
           </div>
         </div>
 
-        <h2 style={{ fontSize: '17px', fontWeight: '800', color: '#fff', margin: '0 0 6px 0', lineHeight: '1.3' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#fff', margin: '0 0 6px 0', lineHeight: '1.3' }}>
           {t('contestTitle')}
         </h2>
-        <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 14px 0' }}>
           MakerWorld • Printables • Thingiverse • Cults 3D • MakerOnline • Creality
         </p>
+
+        {/* Quick Action Pill Buttons on the Banner */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', zIndex: 10 }} onClick={e => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => setShowContestsModal(true)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 14px',
+              color: '#fff',
+              fontSize: '12px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0, 210, 255, 0.3)'
+            }}
+          >
+            <Trophy size={14} /> {t('allContests')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSearch('MakerWorld Contest')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '8px',
+              padding: '6px 14px',
+              color: '#fff',
+              fontSize: '12px',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+          >
+            <Search size={14} /> {t('exploreContestModels')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => window.open('https://makerworld.com/en/contests', '_blank')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(0, 174, 66, 0.2)',
+              border: '1px solid rgba(0, 174, 66, 0.4)',
+              borderRadius: '8px',
+              padding: '6px 14px',
+              color: '#4ade80',
+              fontSize: '12px',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+            title="MakerWorld Contest Portal öffnen"
+          >
+            <ExternalLink size={13} /> MakerWorld Portal
+          </button>
+        </div>
       </div>
+
+      {/* Contests Hub Modal Dialog */}
+      {showContestsModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowContestsModal(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(5, 7, 15, 0.8)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+        >
+          <div
+            className="modal-content"
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '680px',
+              maxHeight: '85vh',
+              background: 'linear-gradient(180deg, #182035 0%, #0f1322 100%)',
+              border: '1px solid rgba(0, 210, 255, 0.35)',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 210, 255, 0.2)',
+              borderRadius: '20px',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(0, 0, 0, 0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 10px rgba(245, 158, 11, 0.4)' }}>
+                  <Trophy size={18} color="#fff" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#fff' }}>{t('allContests')}</h3>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t('contestsHubDesc')}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowContestsModal(false)}
+                style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal Body: List of Portals */}
+            <div style={{ padding: '18px 22px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {CONTEST_PORTALS.map(portal => (
+                <div
+                  key={portal.id}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: `1px solid ${portal.border}`,
+                    borderRadius: '14px',
+                    padding: '16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ background: portal.bg, color: portal.color, fontSize: '11px', fontWeight: '800', padding: '2px 8px', borderRadius: '6px', border: `1px solid ${portal.color}44` }}>
+                        {portal.platform}
+                      </span>
+                      <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>
+                        {portal.name}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-muted)' }}>
+                      {portal.badge}
+                    </span>
+                  </div>
+
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                    {portal.desc}
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowContestsModal(false);
+                        handleSearch(portal.query);
+                      }}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(58, 123, 213, 0.25))',
+                        border: '1px solid var(--accent-cyan)',
+                        color: '#fff',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Search size={14} color="var(--accent-cyan)" />
+                      {t('exploreContestModels')}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => window.open(portal.url, '_blank')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        padding: '8px 14px',
+                        borderRadius: '10px',
+                        background: portal.bg,
+                        border: `1px solid ${portal.color}55`,
+                        color: portal.color,
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <ExternalLink size={13} />
+                      {t('openContestPortal')}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2. Four MakerWorld-Style Category Action Cards (2x2 Grid) */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', marginBottom: '24px' }}>

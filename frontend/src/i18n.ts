@@ -32,6 +32,11 @@ export const translations = {
     contests: 'Wettbewerbe',
     featuredContest: 'Empfohlener 3D-Design Wettbewerb',
     contestTitle: 'MakerWorld 3D-Druck Contest: Innovative Modelle',
+    allContests: '3D-Druck Wettbewerbe & Contests',
+    exploreContestModels: 'Contest-Modelle durchsuchen',
+    openContestPortal: 'Im Portal öffnen',
+    contestsHubDesc: 'Entdecke offizielle 3D-Design Wettbewerbe von MakerWorld, Printables, Cults 3D und Creality.',
+    activeCompetitions: 'Aktive Wettbewerbe & Herausforderungen',
     popularTags: 'Beliebte Suchbegriffe',
     quickSearch: 'Schnellsuche',
 
@@ -126,6 +131,11 @@ export const translations = {
     contests: 'Contests',
     featuredContest: 'Featured 3D Design Contest',
     contestTitle: 'MakerWorld 3D Print Contest: Innovative Creations',
+    allContests: '3D Print Design Contests',
+    exploreContestModels: 'Search Contest Models',
+    openContestPortal: 'Open Portal',
+    contestsHubDesc: 'Discover official 3D design contests and challenges from MakerWorld, Printables, Cults 3D and Creality.',
+    activeCompetitions: 'Active Competitions & Challenges',
     popularTags: 'Popular Tags',
     quickSearch: 'Quick Search',
 
