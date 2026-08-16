@@ -724,53 +724,60 @@ function App() {
 
         {/* Library Controls (Search, Tags, Duplicates) */}
         {activeNav === 'library' && (
-          <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Search Input */}
-            <div className="form-group" style={{ marginBottom: '18px' }}>
-              <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                Lokale Modelle durchsuchen:
-              </label>
-              <div style={{ position: 'relative' }}>
+            <div>
+              <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>
+                Lokale Modelle Suchen
+              </div>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <Search size={15} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
                 <input 
                   type="text" 
                   className="input-field" 
-                  placeholder="Modellname oder Ordner..." 
+                  placeholder="Name oder Ordner..." 
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  style={{ paddingRight: '36px', borderRadius: '10px' }}
+                  style={{
+                    paddingLeft: '34px',
+                    paddingRight: '36px',
+                    borderRadius: '10px',
+                    height: '38px',
+                    fontSize: '13px',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                  }}
                 />
-                {searchTerm ? (
-                  <X size={16} onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: '12px', top: '12px', color: 'var(--text-muted)', cursor: 'pointer' }} />
-                ) : (
-                  <Search size={16} style={{ position: 'absolute', right: '12px', top: '12px', color: 'var(--text-muted)' }} />
+                {searchTerm && (
+                  <X size={15} onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: '12px', color: 'var(--text-muted)', cursor: 'pointer' }} />
                 )}
               </div>
             </div>
 
             {/* Tag Filter */}
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                  <Tag size={13} /> Tags:
-                </label>
+            <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <Tag size={12} /> Tags Filtern
+                </span>
                 {activeTagFilter && (
-                  <span 
+                  <button 
                     onClick={() => setActiveTagFilter(null)} 
-                    style={{ color: 'var(--accent-cyan)', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }}
+                    style={{ background: 'none', border: 'none', color: 'var(--accent-cyan)', fontSize: '11px', fontWeight: '600', cursor: 'pointer', padding: 0 }}
                   >
                     Filter aufheben
-                  </span>
+                  </button>
                 )}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                 <span 
                   onClick={() => setActiveTagFilter(activeTagFilter === '__untagged__' ? null : '__untagged__')}
                   style={{
-                    background: activeTagFilter === '__untagged__' ? 'rgba(255, 77, 77, 0.3)' : 'rgba(255, 77, 77, 0.1)',
+                    background: activeTagFilter === '__untagged__' ? 'rgba(255, 77, 77, 0.3)' : 'rgba(255, 77, 77, 0.08)',
                     color: '#ff6b6b',
-                    border: `1px solid ${activeTagFilter === '__untagged__' ? '#ff6b6b' : 'rgba(255, 77, 77, 0.3)'}`,
-                    borderRadius: '10px',
-                    padding: '3px 9px',
+                    border: `1px solid ${activeTagFilter === '__untagged__' ? '#ff6b6b' : 'rgba(255, 77, 77, 0.2)'}`,
+                    borderRadius: '8px',
+                    padding: '3px 8px',
                     fontSize: '11px',
                     fontWeight: '600',
                     cursor: 'pointer',
@@ -784,7 +791,7 @@ function App() {
                   const c = tagColor(t, settings?.tag_colors);
                   const isSelected = activeTagFilter === t;
                   return (
-                    <div key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: isSelected ? c+'44' : c+'18', color: c, border: `1px solid ${c}${isSelected ? 'bb' : '44'}`, borderRadius: '10px', padding: '3px 8px', fontSize: '11px', fontWeight: '600' }}>
+                    <div key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: isSelected ? c+'44' : c+'14', color: c, border: `1px solid ${c}${isSelected ? 'bb' : '33'}`, borderRadius: '8px', padding: '3px 8px', fontSize: '11px', fontWeight: '600' }}>
                       <span onClick={() => setActiveTagFilter(isSelected ? null : t)} style={{ cursor: 'pointer' }}>{t}</span>
                       <TagColorPicker tag={t} initialColor={c} onSave={handleUpdateTagColor} size={12} />
                     </div>
@@ -796,12 +803,12 @@ function App() {
             {/* Duplicates Tool Button */}
             <button 
               className="button-secondary" 
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '10px', fontSize: '13px', marginBottom: '16px' }} 
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '10px', fontSize: '13px', margin: 0, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }} 
               onClick={handleFindDuplicates}
             >
               <Copy size={15} /> Duplikate finden
             </button>
-          </>
+          </div>
         )}
 
         {/* Online Search Controls in Sidebar */}

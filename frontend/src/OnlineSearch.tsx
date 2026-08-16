@@ -230,133 +230,131 @@ export const OnlineSearchSidebar: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Search Input Box */}
-      <div className="form-group" style={{ marginBottom: 0 }}>
-        <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px' }}>
-          Online nach 3D-Modellen suchen:
-        </label>
-        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ position: 'relative' }}>
-            <input
-              type="text"
-              className="input-field"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder="z. B. Skull, Benchy, Halterung..."
-              style={{ paddingRight: '36px', borderRadius: '10px' }}
-              autoFocus
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* 1. Integrated Search Bar */}
+      <div>
+        <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>
+          Modelle Suchen
+        </div>
+        <form onSubmit={onSubmit} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <Search size={15} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+          <input
+            type="text"
+            className="input-field"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="z. B. Skull, Benchy..."
+            style={{
+              paddingLeft: '34px',
+              paddingRight: '68px',
+              borderRadius: '10px',
+              height: '38px',
+              fontSize: '13px',
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid rgba(255, 255, 255, 0.08)'
+            }}
+            autoFocus
+          />
+          {searchTerm && (
+            <X
+              size={14}
+              onClick={() => setSearchTerm('')}
+              style={{ position: 'absolute', right: '38px', color: 'var(--text-muted)', cursor: 'pointer' }}
             />
-            {searchTerm ? (
-              <X
-                size={16}
-                onClick={() => setSearchTerm('')}
-                style={{ position: 'absolute', right: '12px', top: '12px', color: 'var(--text-muted)', cursor: 'pointer' }}
-              />
-            ) : (
-              <Search size={16} style={{ position: 'absolute', right: '12px', top: '12px', color: 'var(--text-muted)' }} />
-            )}
-          </div>
+          )}
           <button
             type="submit"
             disabled={loading || !searchTerm.trim()}
+            title="Suchen"
             style={{
-              padding: '10px 16px',
-              background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
-              color: '#fff',
+              position: 'absolute',
+              right: '4px',
+              width: '30px',
+              height: '30px',
+              borderRadius: '8px',
               border: 'none',
-              borderRadius: '10px',
-              fontWeight: '700',
-              fontSize: '13px',
-              cursor: loading || !searchTerm.trim() ? 'not-allowed' : 'pointer',
-              opacity: loading || !searchTerm.trim() ? 0.6 : 1,
+              background: searchTerm.trim() ? 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))' : 'rgba(255,255,255,0.06)',
+              color: '#fff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(0, 210, 255, 0.2)',
+              cursor: loading || !searchTerm.trim() ? 'not-allowed' : 'pointer',
+              opacity: loading || !searchTerm.trim() ? 0.4 : 1,
               transition: 'all 0.15s'
             }}
           >
-            {loading ? <Loader2 size={16} className="spin" /> : <Search size={16} />}
-            {loading ? 'Suche läuft...' : 'Suchen'}
+            {loading ? <Loader2 size={14} className="spin" /> : <Search size={14} />}
           </button>
         </form>
       </div>
 
-      {/* Platform Filter Pills */}
-      <div className="form-group" style={{ marginBottom: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-            <Filter size={13} /> Plattformen:
-          </label>
-          {activePlatforms.length > 0 && (
-            <span
-              onClick={selectAllPlatforms}
-              style={{ color: 'var(--accent-cyan)', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }}
-            >
-              Alle wählen
-            </span>
-          )}
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+      {/* 2. Platform Selection (2-Column Grid) */}
+      <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Filter size={12} /> Plattformen
+          </span>
           <button
             onClick={selectAllPlatforms}
             style={{
+              background: 'none',
+              border: 'none',
+              color: activePlatforms.length === 0 ? 'var(--accent-cyan)' : 'var(--text-muted)',
               fontSize: '11px',
               fontWeight: '600',
-              padding: '3px 8px',
-              borderRadius: '8px',
-              border: activePlatforms.length === 0 ? '1px solid var(--accent-cyan)' : '1px solid rgba(255, 255, 255, 0.1)',
-              background: activePlatforms.length === 0 ? 'rgba(0, 210, 255, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-              color: activePlatforms.length === 0 ? 'var(--accent-cyan)' : 'var(--text-muted)',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              padding: 0
             }}
           >
-            Alle ({PLATFORMS.length})
+            {activePlatforms.length === 0 ? '✓ Alle aktiv' : 'Alle wählen'}
           </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
           {PLATFORMS.map(p => {
-            const isSelected = activePlatforms.includes(p.id);
+            const isSelected = activePlatforms.length === 0 || activePlatforms.includes(p.id);
             return (
               <button
                 key={p.id}
                 onClick={() => togglePlatform(p.id)}
                 style={{
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  padding: '3px 8px',
+                  padding: '7px 8px',
                   borderRadius: '8px',
-                  border: isSelected ? `1px solid ${p.color}` : '1px solid rgba(255, 255, 255, 0.08)',
-                  background: isSelected ? p.bg : 'rgba(255, 255, 255, 0.03)',
-                  color: isSelected ? p.color : 'var(--text-muted)',
+                  border: isSelected ? `1px solid ${p.color}66` : '1px solid rgba(255, 255, 255, 0.05)',
+                  background: isSelected ? p.bg : 'rgba(255, 255, 255, 0.02)',
+                  color: isSelected ? '#fff' : 'var(--text-muted)',
+                  fontSize: '11px',
+                  fontWeight: isSelected ? '700' : '500',
                   cursor: 'pointer',
-                  display: 'inline-flex',
+                  display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  transition: 'all 0.15s'
+                  gap: '6px',
+                  transition: 'all 0.15s',
+                  textAlign: 'left'
                 }}
               >
-                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: p.color }} />
-                {p.name}
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isSelected ? p.color : 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Options & Sort */}
-      <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', margin: 0 }}>
-          Sortierung & Filter:
-        </label>
+      {/* 3. Filter & Sort Options */}
+      <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          Optionen & Sortierung
+        </div>
+
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value as any)}
           style={{
             width: '100%',
-            padding: '7px 10px',
-            background: 'var(--bg-input)',
-            border: '1px solid var(--border-color)',
+            padding: '8px 10px',
+            background: 'var(--bg-card)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '8px',
             color: 'var(--text-main)',
             fontSize: '12px',
@@ -368,25 +366,26 @@ export const OnlineSearchSidebar: React.FC = () => {
           <option value="likes">Sortieren: Meiste Likes</option>
           <option value="name">Sortieren: Name (A-Z)</option>
         </select>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)', cursor: 'pointer', marginTop: '2px' }}>
+
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-main)', cursor: 'pointer', userSelect: 'none' }}>
           <input
             type="checkbox"
             checked={freeOnly}
             onChange={e => setFreeOnly(e.target.checked)}
-            style={{ cursor: 'pointer', accentColor: 'var(--accent-cyan)' }}
+            style={{ width: '15px', height: '15px', cursor: 'pointer', accentColor: 'var(--accent-cyan)' }}
           />
           Nur kostenlose Vorlagen
         </label>
       </div>
 
-      {/* Popular Quick-Search Tags */}
-      <div className="form-group" style={{ marginBottom: 0 }}>
-        <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-          <Sparkles size={13} color="var(--accent-cyan)" /> Beliebte Suchbegriffe:
-        </label>
+      {/* 4. Quick-Search Suggestions */}
+      <div>
+        <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <Sparkles size={12} color="var(--accent-cyan)" /> Schnellsuche
+        </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
           {POPULAR_TAGS.map(tag => (
-            <span
+            <button
               key={tag}
               onClick={() => {
                 setSearchTerm(tag);
@@ -394,25 +393,28 @@ export const OnlineSearchSidebar: React.FC = () => {
               }}
               style={{
                 fontSize: '11px',
-                padding: '3px 8px',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                fontWeight: '500',
+                padding: '4px 9px',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
                 borderRadius: '8px',
                 color: 'var(--text-muted)',
                 cursor: 'pointer',
                 transition: 'all 0.15s'
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(0, 210, 255, 0.15)';
+                e.currentTarget.style.background = 'rgba(0, 210, 255, 0.12)';
+                e.currentTarget.style.borderColor = 'rgba(0, 210, 255, 0.3)';
                 e.currentTarget.style.color = 'var(--accent-cyan)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)';
                 e.currentTarget.style.color = 'var(--text-muted)';
               }}
             >
               {tag}
-            </span>
+            </button>
           ))}
         </div>
       </div>
