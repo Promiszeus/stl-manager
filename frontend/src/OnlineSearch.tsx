@@ -211,6 +211,7 @@ export const OnlineSearchSidebar: React.FC = () => {
   const {
     searchTerm,
     setSearchTerm,
+    currentQuery,
     activePlatforms,
     togglePlatform,
     selectAllPlatforms,
@@ -231,35 +232,51 @@ export const OnlineSearchSidebar: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* 1. Integrated Search Bar */}
-      <div>
-        <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>
-          Modelle Suchen
+      {/* 1. Prominently Highlighted Search Hub */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(58, 123, 213, 0.15))',
+        border: '1px solid rgba(0, 210, 255, 0.35)',
+        boxShadow: '0 4px 20px rgba(0, 210, 255, 0.18)',
+        borderRadius: '14px',
+        padding: '12px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', color: 'var(--accent-cyan)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Search size={13} color="var(--accent-cyan)" /> 3D-Modelle Suchen
+          </span>
+          {currentQuery && (
+            <span style={{ fontSize: '10px', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.15)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
+              Aktiv: "{currentQuery}"
+            </span>
+          )}
         </div>
         <form onSubmit={onSubmit} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <Search size={15} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+          <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--accent-cyan)', pointerEvents: 'none' }} />
           <input
             type="text"
             className="input-field"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder="z. B. Skull, Benchy..."
+            placeholder="z. B. Skull, Benchy, Halterung..."
             style={{
-              paddingLeft: '34px',
-              paddingRight: '68px',
+              paddingLeft: '38px',
+              paddingRight: '74px',
               borderRadius: '10px',
-              height: '38px',
+              height: '42px',
               fontSize: '13px',
-              background: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid rgba(255, 255, 255, 0.08)'
+              fontWeight: '500',
+              background: 'var(--bg-dark)',
+              border: '1px solid rgba(0, 210, 255, 0.3)',
+              color: '#fff',
+              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
             }}
             autoFocus
           />
           {searchTerm && (
             <X
-              size={14}
+              size={15}
               onClick={() => setSearchTerm('')}
-              style={{ position: 'absolute', right: '38px', color: 'var(--text-muted)', cursor: 'pointer' }}
+              style={{ position: 'absolute', right: '42px', color: 'var(--text-muted)', cursor: 'pointer' }}
             />
           )}
           <button
@@ -269,8 +286,8 @@ export const OnlineSearchSidebar: React.FC = () => {
             style={{
               position: 'absolute',
               right: '4px',
-              width: '30px',
-              height: '30px',
+              width: '34px',
+              height: '34px',
               borderRadius: '8px',
               border: 'none',
               background: searchTerm.trim() ? 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))' : 'rgba(255,255,255,0.06)',
@@ -280,10 +297,11 @@ export const OnlineSearchSidebar: React.FC = () => {
               justifyContent: 'center',
               cursor: loading || !searchTerm.trim() ? 'not-allowed' : 'pointer',
               opacity: loading || !searchTerm.trim() ? 0.4 : 1,
+              boxShadow: searchTerm.trim() ? '0 2px 10px rgba(0, 210, 255, 0.4)' : 'none',
               transition: 'all 0.15s'
             }}
           >
-            {loading ? <Loader2 size={14} className="spin" /> : <Search size={14} />}
+            {loading ? <Loader2 size={16} className="spin" /> : <Search size={16} />}
           </button>
         </form>
       </div>

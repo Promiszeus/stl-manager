@@ -725,13 +725,26 @@ function App() {
         {/* Library Controls (Search, Tags, Duplicates) */}
         {activeNav === 'library' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Search Input */}
-            <div>
-              <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>
-                Lokale Modelle Suchen
+            {/* 1. Prominently Highlighted Local Search Hub */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(58, 123, 213, 0.12), rgba(0, 210, 255, 0.08))',
+              border: '1px solid rgba(58, 123, 213, 0.35)',
+              boxShadow: '0 4px 20px rgba(58, 123, 213, 0.18)',
+              borderRadius: '14px',
+              padding: '12px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', color: 'var(--accent-cyan)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Search size={13} color="var(--accent-cyan)" /> Bibliothek Durchsuchen
+                </span>
+                {searchTerm && (
+                  <span style={{ fontSize: '10px', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.15)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
+                    Filter aktiv
+                  </span>
+                )}
               </div>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Search size={15} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--accent-cyan)', pointerEvents: 'none' }} />
                 <input 
                   type="text" 
                   className="input-field" 
@@ -739,13 +752,16 @@ function App() {
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   style={{
-                    paddingLeft: '34px',
-                    paddingRight: '36px',
+                    paddingLeft: '38px',
+                    paddingRight: '38px',
                     borderRadius: '10px',
-                    height: '38px',
+                    height: '42px',
                     fontSize: '13px',
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                    fontWeight: '500',
+                    background: 'var(--bg-dark)',
+                    border: '1px solid rgba(58, 123, 213, 0.3)',
+                    color: '#fff',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
                   }}
                 />
                 {searchTerm && (
