@@ -185,7 +185,7 @@ def search_cults3d_direct(query: str, limit: int = 24):
         print(f"Cults3D search error: {e}")
     return results
 
-def search_threedrop_api(query: str, page: int = 1):
+def search_threedrop_api(query: str, page: int = 1, sort: str = "popular"):
     """Query 3Drop aggregated search endpoint across multiple subpages in parallel (covers MakerWorld, Printables, Thingiverse, MakerOnline, Creality)."""
     results = []
     try:
@@ -203,7 +203,8 @@ def search_threedrop_api(query: str, page: int = 1):
 
         def fetch_single_page(sp_num):
             try:
-                search_url = f"https://three-drop.com{path}?query={urllib.parse.quote(query)}&page={sp_num}"
+                sort_param = f"&sort={urllib.parse.quote(sort)}" if sort else ""
+                search_url = f"https://three-drop.com{path}?query={urllib.parse.quote(query)}{sort_param}&page={sp_num}"
                 search_res = requests.get(search_url, headers=HEADERS, timeout=8)
                 if search_res.status_code == 200:
                     data = search_res.json()
@@ -275,19 +276,33 @@ def search_threedrop_api(query: str, page: int = 1):
         print(f"3Drop API error: {e}")
     return results
 
-def search_online_models(query: str, platforms=None, page: int = 1):
+def search_online_models(query: str, platforms=None, page: int = 1, sort: str = "", mode: str = ""):
     """
     Search models across MakerWorld, Printables, Cults 3D, Thingiverse, MakerOnline, Creality Cloud.
-    Uses multi-threading and smart caching.
+    Supports genuine platform trend feeds (mode="daily", mode="monthly", mode="newest").
     """
-    if not query or not query.strip():
-        return []
+    effective_query = query.strip() if query else ""
+    effective_sort = sort.strip() if sort else "popular"
 
-    query = query.strip()
+    # Map trend modes to genuine exploration queries
+    if mode == "daily" or effective_query.lower() in ("__daily__", "daily_trends"):
+        effective_query = "trending"
+        effective_sort = "popular"
+    elif mode == "monthly" or effective_query.lower() in ("__monthly__", "monthly_trends"):
+        effective_query = "featured"
+        effective_sort = "popular"
+    elif mode == "newest" or effective_query.lower() in ("__newest__", "newest_models"):
+        effective_query = "new"
+        effective_sort = "newest"
+    elif not effective_query:
+        effective_query = "trending"
+        effective_sort = "popular"
+
+    cache_key_query = f"{mode}:{effective_query}:{effective_sort}"
     plat_key = ",".join(sorted(platforms)) if platforms else "all"
     
     # Check cache first
-    cached = get_cached(query, plat_key, page)
+    cached = get_cached(cache_key_query, plat_key, page)
     if cached is not None:
         return cached
 
@@ -295,8 +310,8 @@ def search_online_models(query: str, platforms=None, page: int = 1):
     
     # Launch parallel search workers
     with ThreadPoolExecutor(max_workers=2) as executor:
-        f_3drop = executor.submit(search_threedrop_api, query, page)
-        f_cults = executor.submit(search_cults3d_direct, query, 24)
+        f_3drop = executor.submit(search_threedrop_api, effective_query, page, effective_sort)
+        f_cults = executor.submit(search_cults3d_direct, effective_query, 24)
 
         try:
             r_3drop = f_3drop.result()
@@ -324,11 +339,16 @@ def search_online_models(query: str, platforms=None, page: int = 1):
                 deduped.append(r)
 
     # Sort: items with thumbnails first, then by popularity (downloads + likes)
-    deduped.sort(key=lambda x: (
-        bool(x.get("thumbnail")),
-        x.get("downloads", 0) + x.get("likes", 0)
-    ), reverse=True)
+    if effective_sort != "newest":
+        deduped.sort(key=lambda x: (
+            bool(x.get("thumbnail")),
+            x.get("downloads", 0) + x.get("likes", 0)
+        ), reverse=True)
+    else:
+        deduped.sort(key=lambda x: (
+            bool(x.get("thumbnail")),
+        ), reverse=True)
 
     # Save to cache
-    set_cached(query, plat_key, page, deduped)
+    set_cached(cache_key_query, plat_key, page, deduped)
     return deduped

@@ -64,11 +64,9 @@ def get_models(response: Response):
     return models
 
 @app.get("/api/online/search")
-def api_online_search(q: str = "", platforms: str = "", page: int = 1):
-    if not q or not q.strip():
-        return []
+def api_online_search(q: str = "", platforms: str = "", page: int = 1, sort: str = "", mode: str = ""):
     plat_list = [p.strip().lower() for p in platforms.split(",") if p.strip()] if platforms else None
-    return search_online_models(q.strip(), platforms=plat_list, page=page)
+    return search_online_models(q.strip(), platforms=plat_list, page=page, sort=sort, mode=mode)
 
 @app.get("/api/settings")
 def get_settings():

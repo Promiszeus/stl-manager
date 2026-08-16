@@ -27,12 +27,6 @@ export const PLATFORMS = [
 
 export const POPULAR_TAGS = ['Benchy', 'Gridfinity', 'Bambu Lab', 'Voron', 'Kabelclip', 'Wandhalterung', 'Toolbox', 'Fidget'];
 
-const TREND_QUERIES = {
-  daily: ['Articulated Dragon', 'Fidget Toy', 'Cable Clip', 'Bambu Lab Scraper', 'Keychain Organizer'],
-  monthly: ['Gridfinity Modular', 'Voron 2.4 Mod', 'Desk Organizer', 'Skull Planter', 'Hydroponic Tower'],
-  newest: ['Functional 3D Print', 'Mechanical Toy', 'Home Decor 3D', 'Phone Stand']
-};
-
 export const CONTEST_PORTALS = [
   {
     id: 'makerworld',
@@ -215,8 +209,9 @@ interface OnlineSearchContextType {
   clearHistory: () => void;
   removeFromHistory: (term: string) => void;
   activeCategory: string | null;
+  activeMode: string;
   handleCategoryClick: (cat: string) => void;
-  handleSearch: (termToSearch?: string) => Promise<void>;
+  handleSearch: (termToSearch?: string, modeOverride?: string, sortOverride?: string) => Promise<void>;
   handleLoadMore: () => Promise<void>;
   copyUrl: (id: string, url: string) => void;
   getPlatformStyle: (plat: string) => { color: string; bg: string };
@@ -227,6 +222,7 @@ const OnlineSearchContext = createContext<OnlineSearchContextType | undefined>(u
 export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentQuery, setCurrentQuery] = useState('');
+  const [activeMode, setActiveMode] = useState<string>('daily');
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
   const [results, setResults] = useState<OnlineModel[]>([]);
   const [loading, setLoading] = useState(false);
@@ -273,20 +269,31 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   const API_BASE = window.location.port === '5173' ? 'http://127.0.0.1:8000' : '';
 
-  const handleSearch = async (termToSearch?: string) => {
+  const handleSearch = async (termToSearch?: string, modeOverride?: string, sortOverride?: string) => {
     const query = termToSearch !== undefined ? termToSearch : searchTerm;
-    if (!query.trim()) return;
+    const mode = modeOverride !== undefined ? modeOverride : (query ? '' : activeMode);
+    const sort = sortOverride !== undefined ? sortOverride : sortBy;
 
-    addToHistory(query.trim());
+    if (query.trim()) {
+      addToHistory(query.trim());
+    }
+
     setLoading(true);
     setError(null);
     setHasSearched(true);
     setCurrentQuery(query.trim());
+    setActiveMode(mode);
     setPage(1);
 
     try {
-      const platParam = activePlatforms.length > 0 ? `&platforms=${activePlatforms.join(',')}` : '';
-      const res = await fetch(`${API_BASE}/api/online/search?q=${encodeURIComponent(query.trim())}${platParam}&page=1`);
+      const params = new URLSearchParams();
+      if (query.trim()) params.set('q', query.trim());
+      if (mode) params.set('mode', mode);
+      if (sort) params.set('sort', sort);
+      if (activePlatforms.length > 0) params.set('platforms', activePlatforms.join(','));
+      params.set('page', '1');
+
+      const res = await fetch(`${API_BASE}/api/online/search?${params.toString()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const list: OnlineModel[] = Array.isArray(data) ? data : [];
@@ -301,13 +308,19 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
   };
 
   const handleLoadMore = async () => {
-    if (!currentQuery || loadingMore) return;
+    if (loadingMore) return;
     const nextPage = page + 1;
     setLoadingMore(true);
 
     try {
-      const platParam = activePlatforms.length > 0 ? `&platforms=${activePlatforms.join(',')}` : '';
-      const res = await fetch(`${API_BASE}/api/online/search?q=${encodeURIComponent(currentQuery)}${platParam}&page=${nextPage}`);
+      const params = new URLSearchParams();
+      if (currentQuery) params.set('q', currentQuery);
+      if (activeMode) params.set('mode', activeMode);
+      if (sortBy) params.set('sort', sortBy);
+      if (activePlatforms.length > 0) params.set('platforms', activePlatforms.join(','));
+      params.set('page', String(nextPage));
+
+      const res = await fetch(`${API_BASE}/api/online/search?${params.toString()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const newItems: OnlineModel[] = Array.isArray(data) ? data : [];
@@ -332,34 +345,31 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   const handleCategoryClick = (cat: string) => {
     setActiveCategory(cat);
-    const catCard = CATEGORY_EXPLORE_CARDS.find(c => c.id === cat);
-    if (catCard) {
-      setSearchTerm(catCard.query);
-      handleSearch(catCard.query);
-      return;
-    }
     if (cat === 'daily') {
-      const randomDaily = TREND_QUERIES.daily[Math.floor(Math.random() * TREND_QUERIES.daily.length)];
-      setSearchTerm(randomDaily);
-      handleSearch(randomDaily);
+      setSearchTerm('');
+      handleSearch('', 'daily', 'popular');
     } else if (cat === 'monthly') {
-      const randomMonthly = TREND_QUERIES.monthly[Math.floor(Math.random() * TREND_QUERIES.monthly.length)];
-      setSearchTerm(randomMonthly);
-      handleSearch(randomMonthly);
+      setSearchTerm('');
+      handleSearch('', 'monthly', 'popular');
     } else if (cat === 'newest') {
-      const randomNew = TREND_QUERIES.newest[Math.floor(Math.random() * TREND_QUERIES.newest.length)];
-      setSearchTerm(randomNew);
-      handleSearch(randomNew);
+      setSearchTerm('');
+      handleSearch('', 'newest', 'newest');
     } else if (cat === 'history' && searchHistory.length > 0) {
       setSearchTerm(searchHistory[0]);
-      handleSearch(searchHistory[0]);
+      handleSearch(searchHistory[0], '', 'popular');
+    } else {
+      const catCard = CATEGORY_EXPLORE_CARDS.find(c => c.id === cat);
+      if (catCard) {
+        setSearchTerm(catCard.query);
+        handleSearch(catCard.query, '', 'popular');
+      }
     }
   };
 
-  // Pre-populate trending models on initial mount so search is never empty!
+  // Pre-populate genuine trending models on initial mount so search is never empty!
   useEffect(() => {
     if (results.length === 0 && !hasSearched && !loading) {
-      handleSearch('Trending 3D');
+      handleSearch('', 'daily', 'popular');
     }
   }, []);
 
@@ -422,6 +432,7 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
         clearHistory,
         removeFromHistory,
         activeCategory,
+        activeMode,
         handleCategoryClick,
         handleSearch,
         handleLoadMore,
@@ -716,6 +727,16 @@ export const OnlineSearchContent: React.FC = () => {
   } = useOnlineSearch();
 
   const [showContestsModal, setShowContestsModal] = useState(false);
+
+  const getHeadingTitle = () => {
+    if (activeCategory === 'daily') return `${t('dailyTrends')} (24h Top)`;
+    if (activeCategory === 'monthly') return `${t('monthlyTrends')} (Monats-Hits)`;
+    if (activeCategory === 'newest') return `${t('newest')} (Frisch online)`;
+    const catCard = CATEGORY_EXPLORE_CARDS.find(c => c.id === activeCategory);
+    if (catCard) return t(catCard.titleKey as any);
+    if (currentQuery) return `${t('onlineSearch')}: "${currentQuery}"`;
+    return t('onlineSearch');
+  };
 
   return (
     <div className="online-search-container">
@@ -1142,7 +1163,7 @@ export const OnlineSearchContent: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <h1 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Globe size={20} color="var(--accent-cyan)" />
-            {currentQuery ? `${t('onlineSearch')}: "${currentQuery}"` : t('onlineSearch')}
+            {getHeadingTitle()}
           </h1>
         </div>
 
