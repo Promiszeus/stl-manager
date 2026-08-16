@@ -3,6 +3,7 @@ import { Search, Folder, FolderOpen, Database, HardDrive, Printer, X, Settings, 
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import { OnlineSearchProvider, OnlineSearchSidebar, OnlineSearchContent } from './OnlineSearch';
+import { SearchModal } from './SearchModal';
 import { useI18n } from './i18n';
 import './index.css';
 
@@ -191,19 +192,29 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
   return (
     <div onContextMenu={e => onContextMenu(e, model)} className={`model-card ${isSelected ? 'is-selected' : ''}`} style={{ border: isSelected ? '2px solid var(--accent-blue)' : undefined }}>
       <div className="card-image-container">
-        <div className="select-checkbox-container">
-          <input type="checkbox" checked={isSelected} onChange={() => handleToggleSelect(model.id)} style={{ cursor: 'pointer', width: '18px', height: '18px', accentColor: 'var(--accent-blue)' }} />
+        {/* Top-Left: Checkbox & Status Badge (Clean row, no overlap) */}
+        <div className="card-top-left">
+          <div className="select-checkbox-container" onClick={e => e.stopPropagation()}>
+            <input 
+              type="checkbox" 
+              checked={isSelected} 
+              onChange={() => handleToggleSelect(model.id)} 
+              style={{ cursor: 'pointer', width: '14px', height: '14px', accentColor: 'var(--accent-blue)', margin: 0 }} 
+            />
+          </div>
+          <span 
+             className="badge" 
+             style={{ 
+               cursor: 'pointer', 
+               background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.25)' : 'rgba(15, 18, 30, 0.85)', 
+               color: model.status === 'Printed' ? '#2ecc71' : '#fff' 
+             }}
+             onClick={() => handleToggleStatus(model.id, model.status)}
+             title="Status umschalten"
+          >
+            {model.status === 'Printed' ? t('printedStatus') : t('notPrintedStatus')}
+          </span>
         </div>
-        
-        {/* Top-Left: Status Badge */}
-        <span 
-           className="badge" 
-           style={{ cursor: 'pointer', background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.25)' : 'rgba(18, 21, 36, 0.85)', color: model.status === 'Printed' ? '#2ecc71' : '#fff' }}
-           onClick={() => handleToggleStatus(model.id, model.status)}
-           title="Toggle Status"
-        >
-          {model.status === 'Printed' ? t('printedStatus') : t('notPrintedStatus')}
-        </span>
 
         {/* Top-Right: File Extension Badge & Image Count */}
         <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '4px', zIndex: 10 }}>
@@ -385,13 +396,14 @@ function App() {
   const [allTags, setAllTags] = useState<string[]>([]);
   const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<string>('date_desc');
+  const [sortBy, setSortBy] = useState<string>('mod_desc');
   const [slicerNameInput, setSlicerNameInput] = useState('');
   const [slicerPathInput, setSlicerPathInput] = useState('');
   const [newTagInput, setNewTagInput] = useState('');
   const [fileBrowserMode, setFileBrowserMode] = useState<'none' | 'folder' | 'slicer'>('none');
   const [activeNav, setActiveNav] = useState<'library' | 'online'>('library');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   useEffect(() => {
     fetchModels();
@@ -399,6 +411,20 @@ function App() {
     fetchTags();
     const interval = setInterval(fetchModels, 2500);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleGlobalKeys = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchModalOpen(prev => !prev);
+      } else if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        setIsSearchModalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeys);
+    return () => window.removeEventListener('keydown', handleGlobalKeys);
   }, []);
 
   const fetchModels = async () => {
@@ -989,21 +1015,21 @@ function App() {
           {/* Left / Selection Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {selectedIds.length > 0 ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0, 210, 255, 0.1)', border: '1px solid var(--accent-blue)', borderRadius: '8px', padding: '6px 14px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-blue)' }}>
+              <div className="batch-action-bar">
+                <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.15)', padding: '3px 8px', borderRadius: '6px' }}>
                   {selectedIds.length} {t('modelSelected')}
                 </span>
-                <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleSelectAll}>
+                <button className="batch-pill-btn default" onClick={handleSelectAll}>
                   {selectedIds.length === sortedModels.length ? t('deselectAllBtn') : t('selectAllBtn')}
                 </button>
-                <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px', color: '#2ecc71', borderColor: 'rgba(46, 204, 113, 0.4)' }} onClick={() => handleBatchStatus('Printed')}>
+                <button className="batch-pill-btn success" onClick={() => handleBatchStatus('Printed')}>
                   ✓ {t('markPrinted')}
                 </button>
-                <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => handleBatchStatus('Not Printed')}>
+                <button className="batch-pill-btn warning" onClick={() => handleBatchStatus('Not Printed')}>
                   ✗ {t('markNotPrinted')}
                 </button>
-                <button className="danger-btn" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleBatchDelete}>
-                  <Trash2 size={13} style={{ marginRight: '4px' }} /> {t('deleteSelected')}
+                <button className="batch-pill-btn danger" onClick={handleBatchDelete}>
+                  <Trash2 size={13} /> {t('deleteSelected')}
                 </button>
               </div>
             ) : (
@@ -1013,8 +1039,29 @@ function App() {
             )}
           </div>
 
-          {/* Right: Sort & View Mode */}
+          {/* Right: Sort & View Mode & Search Trigger */}
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              onClick={() => setIsSearchModalOpen(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(0, 210, 255, 0.12)',
+                border: '1px solid rgba(0, 210, 255, 0.3)',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                color: 'var(--accent-cyan)',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Suche öffnen (Strg + K)"
+            >
+              <Search size={14} /> {t('searchButton')}
+              <kbd style={{ fontSize: '10px', background: 'rgba(0, 210, 255, 0.2)', padding: '1px 4px', borderRadius: '4px', marginLeft: '2px' }}>Ctrl+K</kbd>
+            </button>
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <ArrowUpDown size={14} color="var(--text-muted)" />
               <select 
@@ -1022,9 +1069,12 @@ function App() {
                 onChange={e => setSortBy(e.target.value)}
                 style={{ background: 'var(--bg-card)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
               >
+                <option value="mod_desc">{t('sortModDesc')}</option>
+                <option value="mod_asc">{t('sortModAsc')}</option>
                 <option value="date_desc">{t('sortDateDesc')}</option>
                 <option value="date_asc">{t('sortDateAsc')}</option>
                 <option value="name_asc">{t('sortName')}</option>
+                <option value="name_desc">{t('sortNameDesc')}</option>
                 <option value="size_desc">{t('sortSizeDesc')}</option>
                 <option value="size_asc">{t('sortSizeAsc')}</option>
               </select>
@@ -1058,30 +1108,7 @@ function App() {
                 {t('settings')}
                 <button className="icon-button" onClick={() => setShowSettings(false)}><X size={20} /></button>
              </div>
-             
-             {/* Language Option */}
-             <div className="form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg-input)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                 <Languages size={18} color="var(--accent-cyan)" />
-                 <span style={{ fontSize: '13px', fontWeight: '700' }}>{t('language')}</span>
-               </div>
-               <button
-                 onClick={toggleLanguage}
-                 style={{
-                   background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
-                   border: 'none',
-                   borderRadius: '8px',
-                   color: '#fff',
-                   padding: '6px 14px',
-                   fontSize: '12px',
-                   fontWeight: '800',
-                   cursor: 'pointer'
-                 }}
-               >
-                 {lang === 'de' ? '🇩🇪 Deutsch' : '🇬🇧 English'}
-               </button>
-             </div>
-             
+
              <div className="form-group">
                 <label className="form-label">{t('slicers')}:</label>
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
@@ -1349,10 +1376,10 @@ function App() {
           <span>{t('onlineModels')}</span>
         </button>
 
-        {/* Center Floating Elevated Search FAB */}
+        {/* Center Floating Elevated Search FAB -> Opens Search Popup */}
         <button 
           className="mobile-fab-search"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onClick={() => setIsSearchModalOpen(true)}
           title={t('searchButton')}
         >
           <Search size={22} />
@@ -1375,8 +1402,23 @@ function App() {
           <span>{t('options')}</span>
         </button>
       </div>
+
+      {/* Modern Search Modal Popup (Command Palette) */}
+      <SearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        activeNav={activeNav}
+        setActiveNav={setActiveNav}
+        allTags={allTags}
+        activeTagFilter={activeTagFilter}
+        setActiveTagFilter={setActiveTagFilter}
+      />
       </div>
     </OnlineSearchProvider>
   );
 }
+
 export default App;
+

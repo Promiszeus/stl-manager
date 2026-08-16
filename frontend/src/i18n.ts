@@ -48,6 +48,9 @@ export const translations = {
     sortPopular: 'Sortieren: Beliebteste',
     sortLikes: 'Sortieren: Meiste Likes',
     sortName: 'Sortieren: Name (A-Z)',
+    sortNameDesc: 'Sortieren: Name (Z-A)',
+    sortModDesc: 'Sortieren: Änderungsdatum (Neueste)',
+    sortModAsc: 'Sortieren: Änderungsdatum (Älteste)',
     sortDateDesc: 'Sortieren: Hinzugefügt (Neueste)',
     sortDateAsc: 'Sortieren: Hinzugefügt (Älteste)',
     sortSizeDesc: 'Sortieren: Größe (Größte)',
@@ -91,8 +94,8 @@ export const translations = {
     openFolder: 'Ordner öffnen',
     deleteModel: 'Modell löschen',
     free: 'Kostenlos',
-    notPrintedStatus: 'Not Printed',
-    printedStatus: 'Printed'
+    notPrintedStatus: 'Nicht gedruckt',
+    printedStatus: 'Gedruckt'
   },
   en: {
     // Navigation
@@ -139,6 +142,9 @@ export const translations = {
     sortPopular: 'Sort by: Most Popular',
     sortLikes: 'Sort by: Most Likes',
     sortName: 'Sort by: Name (A-Z)',
+    sortNameDesc: 'Sort by: Name (Z-A)',
+    sortModDesc: 'Sort by: Date Modified (Newest)',
+    sortModAsc: 'Sort by: Date Modified (Oldest)',
     sortDateDesc: 'Sort by: Date Added (Newest)',
     sortDateAsc: 'Sort by: Date Added (Oldest)',
     sortSizeDesc: 'Sort by: File Size (Largest)',
