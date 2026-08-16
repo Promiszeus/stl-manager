@@ -1,5 +1,7 @@
 {
-    "directories": [],
+    "directories": [
+        "F:\\STL-Manager\\test"
+    ],
     "slicers": [],
     "tag_colors": {},
     "predefined_tags": []

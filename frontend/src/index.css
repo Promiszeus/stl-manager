@@ -786,21 +786,23 @@ body {
     gap: 14px;
   }
 
-  /* Fixed Bottom Thumb-Navigation */
+  /* MakerWorld-Style Floating Bottom Navigation */
   .mobile-bottom-nav {
     display: flex;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background: rgba(23, 27, 45, 0.96);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    height: 64px;
+    background: rgba(22, 26, 44, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
     z-index: 990;
     justify-content: space-around;
     align-items: center;
-    padding: 0 6px env(safe-area-inset-bottom, 0px);
+    padding: 0 6px;
   }
 
   .mobile-nav-item {
@@ -823,6 +825,29 @@ body {
 
   .mobile-nav-item.active {
     color: var(--accent-cyan);
+  }
+
+  /* Center Floating Search FAB */
+  .mobile-fab-search {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+    border: none;
+    box-shadow: 0 4px 16px rgba(0, 210, 255, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    transform: translateY(-8px);
+    transition: transform 0.15s;
+    flex-shrink: 0;
+    margin: 0 4px;
+  }
+
+  .mobile-fab-search:active {
+    transform: translateY(-5px) scale(0.95);
   }
 
   .modal-content {

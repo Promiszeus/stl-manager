@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Folder, FolderOpen, Database, HardDrive, Printer, Heart, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, Plus, ArrowUpDown, Globe, Pencil, Menu, SlidersHorizontal } from 'lucide-react';
+import { Search, Folder, FolderOpen, Database, HardDrive, Printer, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, ArrowUpDown, Globe, Pencil, Menu, Languages } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import { OnlineSearchProvider, OnlineSearchSidebar, OnlineSearchContent } from './OnlineSearch';
+import { useI18n } from './i18n';
 import './index.css';
 
 interface Model {
@@ -68,7 +69,8 @@ const TagColorPicker = ({ tag, initialColor, onSave, size = 14 }: { tag: string,
   );
 };
 
-const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, handleToggleSelect, handleSlice, handleDeleteModel, handleToggleStatus, handlePreview, handleUpdateTags, handleOpenFolder, onContextMenu, handleSetSearchTerm }: { model: Model, slicers: any[], viewMode: string, isSelected: boolean, allTags: string[], tagColors?: Record<string, string>, handleToggleSelect: (id: string) => void, handleSlice: (id: string, path: string) => void, handleDeleteModel: (id: string, name: string) => void, handleToggleStatus: (id: string, current: string) => void, handlePreview: (m: Model) => void, handleUpdateTags: (id: string, tags: string[]) => void, handleOpenFolder: (id: string) => void, onContextMenu: (e: React.MouseEvent, m: Model) => void, handleSetSearchTerm: (term: string) => void }) => {
+const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColors, handleToggleSelect, handleSlice, handleDeleteModel, handleToggleStatus, handlePreview, handleUpdateTags, handleOpenFolder, onContextMenu, handleSetSearchTerm }: { model: Model, slicers: any[], viewMode: string, isSelected: boolean, allTags?: string[], tagColors?: Record<string, string>, handleToggleSelect: (id: string) => void, handleSlice: (id: string, path: string) => void, handleDeleteModel: (id: string, name: string) => void, handleToggleStatus: (id: string, current: string) => void, handlePreview: (m: Model) => void, handleUpdateTags: (id: string, tags: string[]) => void, handleOpenFolder: (id: string) => void, onContextMenu: (e: React.MouseEvent, m: Model) => void, handleSetSearchTerm: (term: string) => void }) => {
+  const { t } = useI18n();
   const [imgIdx, setImgIdx] = useState(0);
   const thumbs = model.thumbnails && model.thumbnails.length > 0 ? model.thumbnails : (model.thumbnail ? [model.thumbnail] : []);
   const currentThumb = thumbs[imgIdx] || '';
@@ -101,6 +103,9 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
       setShowSlicerMenu(!showSlicerMenu);
     }
   };
+
+  const fileExt = model.name.split('.').pop()?.toUpperCase() || '3D';
+  const folderName = model.rel_path ? model.rel_path.split(/[\/\\]/).pop() || '3d' : '3d';
 
   if (viewMode === 'list') {
     return (
@@ -140,7 +145,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
            })}
          </div>
          <span className="badge" style={{ cursor: 'pointer', background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.2)' : undefined, color: model.status === 'Printed' ? '#2ecc71' : undefined }} onClick={() => handleToggleStatus(model.id, model.status)}>
-            {model.status}
+            {model.status === 'Printed' ? t('printedStatus') : t('notPrintedStatus')}
          </span>
          <div style={{ color: 'var(--text-muted)', fontSize: '12px', width: '80px' }}>{model.size_kb} KB</div>
          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative', width: '100%', flex: 1 }}>
@@ -189,24 +194,61 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
         <div className="select-checkbox-container">
           <input type="checkbox" checked={isSelected} onChange={() => handleToggleSelect(model.id)} style={{ cursor: 'pointer', width: '18px', height: '18px', accentColor: 'var(--accent-blue)' }} />
         </div>
+        
+        {/* Top-Left: Status Badge */}
         <span 
            className="badge" 
-           style={{ cursor: 'pointer', background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.2)' : undefined, color: model.status === 'Printed' ? '#2ecc71' : undefined }}
+           style={{ cursor: 'pointer', background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.25)' : 'rgba(18, 21, 36, 0.85)', color: model.status === 'Printed' ? '#2ecc71' : '#fff' }}
            onClick={() => handleToggleStatus(model.id, model.status)}
            title="Toggle Status"
         >
-          {model.status}
+          {model.status === 'Printed' ? t('printedStatus') : t('notPrintedStatus')}
         </span>
+
+        {/* Top-Right: File Extension Badge & Image Count */}
+        <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '4px', zIndex: 10 }}>
+          <span style={{ background: 'rgba(18, 21, 36, 0.85)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--accent-cyan)', fontSize: '10px', fontWeight: '800', padding: '2px 6px', borderRadius: '6px' }}>
+            .{fileExt}
+          </span>
+          {total > 1 && (
+            <span className="badge-count">{imgIdx + 1}/{total}</span>
+          )}
+        </div>
+
         {total > 1 && (
             <>
               <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '30%', zIndex: 15, cursor: 'w-resize' }} onClick={() => setImgIdx(i => (i > 0 ? i - 1 : total - 1))} />
               <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '30%', zIndex: 15, cursor: 'e-resize' }} onClick={() => setImgIdx(i => (i < total - 1 ? i + 1 : 0))} />
             </>
         )}
-        <span className="badge-count">{imgIdx + 1}/{total}</span>
+
+        {/* Bottom-Left: Folder Badge Overlay */}
+        <div style={{
+          position: 'absolute',
+          bottom: '8px',
+          left: '8px',
+          maxWidth: '85%',
+          background: 'rgba(15, 18, 30, 0.85)',
+          backdropFilter: 'blur(6px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '20px',
+          padding: '2px 8px 2px 4px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+          zIndex: 10
+        }}>
+          <Folder size={12} color="#8e2de2" />
+          <span style={{ fontSize: '10px', fontWeight: '600', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {folderName}
+          </span>
+        </div>
+
         <img src={currentThumb} alt={model.name} className="card-image" style={{ cursor: 'pointer' }} onClick={() => handlePreview(model)} onError={(e) => { e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='%231a1d2f'/%3E%3Ctext x='50%25' y='50%25' fill='%23949db2' font-family='sans-serif' font-size='14' text-anchor='middle' dominant-baseline='middle'%3ENo Thumbnail%3C/text%3E%3C/svg%3E" }} />
       </div>
-      <div className="model-title-box" title={model.name}>{model.name}</div>
+
+      <div className="model-title-box" title={model.name} onClick={() => handlePreview(model)} style={{ cursor: 'pointer' }}>{model.name}</div>
       <div className="card-content">
         <div className="model-meta">
           <div className="meta-item" style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
@@ -226,87 +268,100 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
               ))
             ) : '3d'}
           </div>
-          <div className="meta-item"><HardDrive size={14} color="#3a7bd5" /> {model.size_kb} KB</div>
+          <div className="meta-item" style={{ flexShrink: 0, marginLeft: 'auto' }}>
+            <HardDrive size={14} /> {model.size_kb} KB
+          </div>
         </div>
-        <div className="card-actions" style={{ paddingTop: '8px', borderTop: 'none', marginTop: '10px' }}>
-           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative', width: '100%' }}>
-              <button
-                className="icon-button"
-                onClick={() => handleToggleStatus(model.id, model.status)}
-                title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
-                style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
-              >
-                <CheckCircle size={14} />
-              </button>
-              {model.source_url && (
-                <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={14} /></button>
-              )}
-              <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={14} /></button>
-              <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
-              <button className="icon-button"><Heart size={14} /></button>
-               <div style={{ position: 'relative', display: 'flex', marginLeft: 'auto' }}
-                 onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
-                 onMouseLeave={() => setShowSlicerMenu(false)}>
-               <button className="icon-button" onClick={onSendClick} title="Send to Slicer" style={{ color: 'var(--accent-blue)' }}>
-                  <Printer size={16} strokeWidth={2.5} />
-               </button>
-               {showSlicerMenu && (
-                  <div style={{ position: 'absolute', bottom: '100%', left: '0', paddingBottom: '4px', zIndex: 100 }}>
-                  <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content' }}>
-                     {slicers.map((s: any) => (
-                        <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
-                             onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
-                             onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
-                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                           {s.name}
-                        </div>
-                     ))}
-                  </div>
-                  </div>
-               )}
-               </div>
-           </div>
-        </div>
-        {/* Tags row */}
-        {/* Tags row */}
-        <div style={{ padding: '4px 10px 8px', display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', minHeight: '28px', position: 'relative' }}>
+
+        {/* Tags Row */}
+        <div className="model-tags" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', marginTop: '6px', minHeight: '22px' }}>
           {tags.map(t => {
             const c = tagColor(t, tagColors);
             return (
-              <span key={t} onClick={() => removeTag(t)} title="Tag entfernen" style={{ background: c+'22', color: c, border: `1px solid ${c}55`, borderRadius: '10px', padding: '1px 8px', fontSize: '10px', cursor: 'pointer', fontWeight: '600', transition: 'opacity .15s' }}
-                onMouseEnter={e => e.currentTarget.style.opacity='0.6'} onMouseLeave={e => e.currentTarget.style.opacity='1'}>
+              <span key={t} onClick={() => removeTag(t)} title="Tag entfernen" style={{ background: c+'22', color: c, border: `1px solid ${c}55`, borderRadius: '10px', padding: '1px 8px', fontSize: '10px', cursor: 'pointer', fontWeight: '600' }}>
                 {t} ×
               </span>
             );
           })}
           {showTagInput ? (
             <div style={{ position: 'relative', display: 'inline-block' }}>
-              <input ref={tagInputRef} value={tagInput} onChange={e => setTagInput(e.target.value)}
-                onKeyDown={e => { if(e.key==='Enter') addTag(tagInput); if(e.key==='Escape') setShowTagInput(false); }}
-                autoFocus placeholder="Tag..." style={{ width: '80px', fontSize: '10px', background: 'var(--bg-dark)', border: '1px solid var(--accent-blue)', borderRadius: '10px', padding: '1px 8px', color: 'white', outline: 'none' }} />
-              
-              {/* Autocomplete Dropdown Popover for existing tags */}
-              <div style={{ position: 'absolute', bottom: '100%', left: 0, background: '#171b2d', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '6px', zIndex: 120, maxHeight: '130px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '130px', marginBottom: '4px', boxShadow: '0 6px 16px rgba(0,0,0,0.5)' }}>
-                <div style={{ fontSize: '9px', color: 'var(--text-muted)', fontWeight: 'bold', marginBottom: '2px' }}>Vorhandene Tags:</div>
-                {allTags.filter(t => !tags.includes(t) && (!tagInput || t.includes(tagInput.toLowerCase()))).map(t => {
-                  const tc = tagColor(t, tagColors);
-                  return (
-                    <div key={t} onMouseDown={(e) => { e.preventDefault(); addTag(t); }}
-                      style={{ background: tc + '22', color: tc, border: `1px solid ${tc}44`, borderRadius: '6px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span>+ {t}</span>
-                    </div>
-                  );
-                })}
-                {allTags.filter(t => !tags.includes(t) && (!tagInput || t.includes(tagInput.toLowerCase()))).length === 0 && (
-                  <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>Keine passenden Tags</div>
-                )}
-              </div>
+              <input
+                ref={tagInputRef}
+                type="text"
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') addTag(tagInput); if (e.key === 'Escape') setShowTagInput(false); }}
+                onBlur={() => {
+                  setTimeout(() => {
+                    if (tagInput.trim()) addTag(tagInput);
+                    else setShowTagInput(false);
+                  }, 150);
+                }}
+                placeholder="Tag..."
+                style={{ width: '70px', padding: '1px 6px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--accent-blue)', background: 'var(--bg-input)', color: '#fff', outline: 'none' }}
+                autoFocus
+              />
+              {allTags && allTags.length > 0 && (
+                <div style={{ position: 'absolute', bottom: '100%', left: 0, background: '#171b2d', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', zIndex: 120, maxHeight: '100px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px', minWidth: '110px', marginBottom: '4px', boxShadow: '0 6px 16px rgba(0,0,0,0.5)' }}>
+                  {allTags.filter(t => !tags.includes(t) && (!tagInput || t.includes(tagInput.toLowerCase()))).map(t => {
+                    const tc = tagColor(t, tagColors);
+                    return (
+                      <div key={t} onMouseDown={(e) => { e.preventDefault(); addTag(t); }}
+                        style={{ background: tc + '22', color: tc, border: `1px solid ${tc}44`, borderRadius: '6px', padding: '2px 6px', fontSize: '9px', cursor: 'pointer', fontWeight: '600' }}>
+                        + {t}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ) : (
-            <button onClick={() => setShowTagInput(true)} title="Tag hinzufügen" style={{ background: 'none', border: '1px dashed var(--border-color)', borderRadius: '10px', padding: '1px 6px', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '10px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-              <Plus size={9}/> Tag
+            <button
+              onClick={() => { setShowTagInput(true); setTimeout(() => tagInputRef.current?.focus(), 50); }}
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px dashed var(--border-color)', borderRadius: '10px', padding: '1px 6px', fontSize: '10px', color: 'var(--text-muted)', cursor: 'pointer' }}
+              title="Tag hinzufügen"
+            >
+              + Tag
             </button>
           )}
+        </div>
+
+        {/* Actions Toolbar */}
+        <div className="card-actions" style={{ position: 'relative', marginTop: '10px' }}>
+          <button
+            className="icon-button"
+            onClick={() => handleToggleStatus(model.id, model.status)}
+            title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
+            style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
+          >
+            <CheckCircle size={16} />
+          </button>
+          {model.source_url && (
+            <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
+          )}
+          <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
+          <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
+          <div style={{ position: 'relative', display: 'flex', marginLeft: 'auto' }}
+            onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
+            onMouseLeave={() => setShowSlicerMenu(false)}>
+          <button className="icon-button" onClick={onSendClick} title="Send to Slicer" style={{ color: 'var(--accent-blue)' }}>
+             <Printer size={18} strokeWidth={2.5} />
+          </button>
+          {showSlicerMenu && (
+             <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
+             <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content' }}>
+                {slicers.map((s: any) => (
+                   <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
+                        onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      {s.name}
+                   </div>
+                ))}
+             </div>
+             </div>
+          )}
+          </div>
         </div>
       </div>
     </div>
@@ -316,6 +371,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags, tagColors, h
 const API_BASE = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
 
 function App() {
+  const { lang, toggleLanguage, t } = useI18n();
   const [models, setModels] = useState<Model[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [directoryInput, setDirectoryInput] = useState('');
@@ -330,7 +386,6 @@ function App() {
   const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>('date_desc');
-  const [showPreviewSlicerMenu, setShowPreviewSlicerMenu] = useState(false);
   const [slicerNameInput, setSlicerNameInput] = useState('');
   const [slicerPathInput, setSlicerPathInput] = useState('');
   const [newTagInput, setNewTagInput] = useState('');
@@ -339,16 +394,11 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    document.title = "STL Manager";
     fetchModels();
     fetchSettings();
     fetchTags();
-    
-    const intervalId = setInterval(() => {
-      fetchModels();
-    }, 2500);
-    
-    return () => clearInterval(intervalId);
+    const interval = setInterval(fetchModels, 2500);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchModels = async () => {
@@ -363,7 +413,7 @@ function App() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/settings?t=${Date.now()}`);
+      const res = await fetch(`${API_BASE}/api/settings`);
       const data = await res.json();
       setSettings(data);
     } catch (e) {
@@ -373,11 +423,24 @@ function App() {
 
   const fetchTags = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/tags?t=${Date.now()}`);
+      const res = await fetch(`${API_BASE}/api/tags`);
       const data = await res.json();
       setAllTags(data);
     } catch (e) {
       console.error("Error fetching tags", e);
+    }
+  };
+
+  const handleUpdateTagColor = async (tag: string, color: string) => {
+    try {
+      await fetch(`${API_BASE}/api/settings/tag-color`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag, color })
+      });
+      fetchSettings();
+    } catch (e) {
+      console.error("Error updating tag color", e);
     }
   };
 
@@ -467,7 +530,7 @@ function App() {
 
   const handleUpdateUrl = async (id: string, currentUrl?: string) => {
     const newUrl = window.prompt("Neue Quell-URL für dieses Modell eingeben:", currentUrl || "");
-    if (newUrl === null) return; // cancelled
+    if (newUrl === null) return;
     try {
       await fetch(`${API_BASE}/api/models/${id}/url`, {
         method: 'PUT',
@@ -475,9 +538,6 @@ function App() {
         body: JSON.stringify({ url: newUrl })
       });
       fetchModels();
-      if (previewModel && previewModel.id === id) {
-         setPreviewModel(prev => prev ? {...prev, source_url: newUrl} : null);
-      }
     } catch (err) {
       console.error("Failed to update URL", err);
     }
@@ -595,23 +655,8 @@ function App() {
         body: JSON.stringify({ tags })
       });
       fetchModels();
-      fetchTags();
-    } catch (e) { console.error('Error updating tags', e); }
-  };
-
-  const handleUpdateTagColor = async (tag: string, color: string) => {
-    try {
-      const res = await fetch(`${API_BASE}/api/tags/${encodeURIComponent(tag)}/color`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ color })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSettings((prev: any) => ({ ...prev, ...data }));
-      }
     } catch (e) {
-      console.error("Error updating tag color", e);
+      console.error("Error updating tags", e);
     }
   };
 
@@ -667,24 +712,46 @@ function App() {
             <span style={{ fontWeight: '800', fontSize: '16px', color: '#fff', letterSpacing: '0.5px' }}>STL Manager</span>
           </div>
 
-          <button 
-            onClick={() => setMobileMenuOpen(true)}
-            style={{
-              background: 'rgba(0, 210, 255, 0.15)',
-              border: '1px solid rgba(0, 210, 255, 0.3)',
-              borderRadius: '8px',
-              padding: '6px 12px',
-              color: 'var(--accent-cyan)',
-              fontSize: '12px',
-              fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer'
-            }}
-          >
-            <Search size={14} /> Suche
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              onClick={toggleLanguage}
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderRadius: '8px',
+                color: '#fff',
+                padding: '5px 8px',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title="Sprache wechseln / Switch Language"
+            >
+              {lang === 'de' ? '🇩🇪 DE' : '🇬🇧 EN'}
+            </button>
+
+            <button 
+              onClick={() => setMobileMenuOpen(true)}
+              style={{
+                background: 'rgba(0, 210, 255, 0.15)',
+                border: '1px solid rgba(0, 210, 255, 0.3)',
+                borderRadius: '8px',
+                padding: '6px 10px',
+                color: 'var(--accent-cyan)',
+                fontSize: '12px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              <Search size={14} /> {t('searchButton')}
+            </button>
+          </div>
         </div>
 
         {/* Sidebar (Permanent on Desktop, Slide-Drawer on Mobile) */}
@@ -697,7 +764,25 @@ function App() {
               </div>
               <div>
                 <div style={{ fontWeight: '800', fontSize: '18px', letterSpacing: '1px', color: '#fff' }}>STL Manager</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{models.length} Modelle gesamt</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{models.length} {t('modelsTotal')}</span>
+                  <button
+                    onClick={toggleLanguage}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      borderRadius: '6px',
+                      color: 'var(--accent-cyan)',
+                      padding: '1px 5px',
+                      fontSize: '9px',
+                      fontWeight: '800',
+                      cursor: 'pointer'
+                    }}
+                    title="Sprache wechseln / Switch Language"
+                  >
+                    {lang === 'de' ? '🇩🇪 DE' : '🇬🇧 EN'}
+                  </button>
+                </div>
               </div>
             </div>
             <button
@@ -731,7 +816,7 @@ function App() {
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Folder size={18} color={activeNav === 'library' ? 'var(--accent-cyan)' : 'var(--text-muted)'} /> 
-                Meine Bibliothek
+                {t('library')}
               </span>
               <span style={{ fontSize: '11px', fontWeight: '700', background: 'rgba(255,255,255,0.08)', padding: '3px 8px', borderRadius: '12px', color: 'var(--text-main)' }}>
                 {models.length}
@@ -758,7 +843,7 @@ function App() {
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Globe size={18} color={activeNav === 'online' ? 'var(--accent-cyan)' : 'var(--text-muted)'} /> 
-                Online-Modelle
+                {t('onlineModels')}
               </span>
               <span style={{ fontSize: '10px', fontWeight: '800', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', padding: '2px 7px', borderRadius: '10px', color: '#fff' }}>
                 NEU
@@ -779,11 +864,11 @@ function App() {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', color: 'var(--accent-cyan)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Search size={13} color="var(--accent-cyan)" /> Bibliothek Durchsuchen
+                  <Search size={13} color="var(--accent-cyan)" /> {t('librarySearch')}
                 </span>
                 {searchTerm && (
                   <span style={{ fontSize: '10px', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.15)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
-                    Filter aktiv
+                    {t('activeSearch')}
                   </span>
                 )}
               </div>
@@ -792,7 +877,7 @@ function App() {
                 <input 
                   type="text" 
                   className="input-field" 
-                  placeholder="Name oder Ordner..." 
+                  placeholder={t('searchLocalPlaceholder')} 
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   style={{
@@ -818,14 +903,14 @@ function App() {
             <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                 <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <Tag size={12} /> Tags Filtern
+                  <Tag size={12} /> {t('filterTags')}
                 </span>
                 {activeTagFilter && (
                   <button 
                     onClick={() => setActiveTagFilter(null)} 
                     style={{ background: 'none', border: 'none', color: 'var(--accent-cyan)', fontSize: '11px', fontWeight: '600', cursor: 'pointer', padding: 0 }}
                   >
-                    Filter aufheben
+                    {t('clearFilter')}
                   </button>
                 )}
               </div>
@@ -845,7 +930,7 @@ function App() {
                   }}
                   title="Zeige nur Modelle ohne Tags"
                 >
-                  Ohne Tag
+                  {t('untagged')}
                 </span>
                 {allTags.map(t => {
                   const c = tagColor(t, settings?.tag_colors);
@@ -866,7 +951,7 @@ function App() {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '10px', fontSize: '13px', margin: 0, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }} 
               onClick={handleFindDuplicates}
             >
-              <Copy size={15} /> Duplikate finden
+              <Copy size={15} /> {t('findDuplicates')}
             </button>
           </div>
         )}
@@ -883,7 +968,7 @@ function App() {
             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '11px', borderRadius: '10px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)' }} 
             onClick={() => { setShowSettings(true); setMobileMenuOpen(false); }}
           >
-             <Settings size={16} /> Einstellungen
+             <Settings size={16} /> {t('settings')}
           </button>
         </div>
       </div>
@@ -906,24 +991,24 @@ function App() {
             {selectedIds.length > 0 ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0, 210, 255, 0.1)', border: '1px solid var(--accent-blue)', borderRadius: '8px', padding: '6px 14px' }}>
                 <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-blue)' }}>
-                  {selectedIds.length} ausgewählt
+                  {selectedIds.length} {t('modelSelected')}
                 </span>
                 <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleSelectAll}>
-                  {selectedIds.length === sortedModels.length ? 'Auswahl aufheben' : 'Alle auswählen'}
+                  {selectedIds.length === sortedModels.length ? t('deselectAllBtn') : t('selectAllBtn')}
                 </button>
                 <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px', color: '#2ecc71', borderColor: 'rgba(46, 204, 113, 0.4)' }} onClick={() => handleBatchStatus('Printed')}>
-                  ✓ Als gedruckt
+                  ✓ {t('markPrinted')}
                 </button>
                 <button className="button-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => handleBatchStatus('Not Printed')}>
-                  ✗ Als nicht gedruckt
+                  ✗ {t('markNotPrinted')}
                 </button>
                 <button className="danger-btn" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleBatchDelete}>
-                  <Trash2 size={13} style={{ marginRight: '4px' }} /> Löschen (von Festplatte)
+                  <Trash2 size={13} style={{ marginRight: '4px' }} /> {t('deleteSelected')}
                 </button>
               </div>
             ) : (
               <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                {sortedModels.length} Modell{sortedModels.length !== 1 ? 'e' : ''} angezeigt
+                {sortedModels.length} {t('modelsDisplayed')}
               </div>
             )}
           </div>
@@ -937,14 +1022,11 @@ function App() {
                 onChange={e => setSortBy(e.target.value)}
                 style={{ background: 'var(--bg-card)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
               >
-                <option value="name_asc">Sortieren: Name (A - Z)</option>
-                <option value="name_desc">Sortieren: Name (Z - A)</option>
-                <option value="date_desc">Sortieren: Hinzugefügt (Neueste)</option>
-                <option value="date_asc">Sortieren: Hinzugefügt (Älteste)</option>
-                <option value="mod_desc">Sortieren: Änderungsdatum (Neueste)</option>
-                <option value="mod_asc">Sortieren: Änderungsdatum (Älteste)</option>
-                <option value="size_desc">Sortieren: Größe (Absteigend)</option>
-                <option value="size_asc">Sortieren: Größe (Aufsteigend)</option>
+                <option value="date_desc">{t('sortDateDesc')}</option>
+                <option value="date_asc">{t('sortDateAsc')}</option>
+                <option value="name_asc">{t('sortName')}</option>
+                <option value="size_desc">{t('sortSizeDesc')}</option>
+                <option value="size_asc">{t('sortSizeAsc')}</option>
               </select>
             </div>
 
@@ -963,7 +1045,7 @@ function App() {
           ))}
           {sortedModels.length === 0 && (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-              No models found. Add a directory to start scanning.
+              {t('noModelsFound')}
             </div>
           )}
         </div>
@@ -973,19 +1055,42 @@ function App() {
         <div className="modal-overlay" onClick={() => setShowSettings(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
              <div className="modal-header">
-                Settings
+                {t('settings')}
                 <button className="icon-button" onClick={() => setShowSettings(false)}><X size={20} /></button>
              </div>
              
+             {/* Language Option */}
+             <div className="form-group" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg-input)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <Languages size={18} color="var(--accent-cyan)" />
+                 <span style={{ fontSize: '13px', fontWeight: '700' }}>{t('language')}</span>
+               </div>
+               <button
+                 onClick={toggleLanguage}
+                 style={{
+                   background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
+                   border: 'none',
+                   borderRadius: '8px',
+                   color: '#fff',
+                   padding: '6px 14px',
+                   fontSize: '12px',
+                   fontWeight: '800',
+                   cursor: 'pointer'
+                 }}
+               >
+                 {lang === 'de' ? '🇩🇪 Deutsch' : '🇬🇧 English'}
+               </button>
+             </div>
+             
              <div className="form-group">
-                <label className="form-label">Manage Slicers:</label>
+                <label className="form-label">{t('slicers')}:</label>
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
                   <input 
                     type="text" 
                     className="input-field" 
                     value={slicerNameInput}
                     onChange={e => setSlicerNameInput(e.target.value)}
-                    placeholder="Name (z.B. PrusaSlicer)"
+                    placeholder="Name (z.B. PrusaSlicer / Bambu Studio)"
                     style={{ flex: 1, minWidth: '120px' }}
                   />
                   <div style={{ flex: 2, display: 'flex', gap: '4px', minWidth: '200px' }}>
@@ -1016,7 +1121,7 @@ function App() {
              </div>
 
              <div className="form-group">
-                 <label className="form-label">Manage Monitored Folders:</label>
+                 <label className="form-label">{t('monitoredFolders')}:</label>
                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                    <input 
                      type="text" 
@@ -1027,7 +1132,7 @@ function App() {
                      style={{ flex: 1 }}
                    />
                    <button className="slice-btn" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', whiteSpace: 'nowrap' }} onClick={handleBrowseDirectory} title="Ordner auf Festplatte auswählen">
-                     📁 Ordner wählen
+                     📁 {t('addFolder')}
                    </button>
                    <button className="slice-btn" onClick={handleAddDirectory}>Add Folder</button>
                  </div>
@@ -1098,57 +1203,20 @@ function App() {
                         <Globe size={10} /> {previewModel.source_url}
                       </a>
                     ) : (
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Keine URL hinterlegt</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Keine Quell-URL hinterlegt</span>
                     )}
-                    <button className="icon-button" style={{ padding: '2px', opacity: 0.7 }} onClick={(e) => { e.stopPropagation(); handleUpdateUrl(previewModel.id, previewModel.source_url); }} title="URL bearbeiten/hinzufügen" onMouseEnter={e => e.currentTarget.style.opacity='1'} onMouseLeave={e => e.currentTarget.style.opacity='0.7'}>
-                      <Pencil size={10} />
+                    <button 
+                      onClick={() => handleUpdateUrl(previewModel.id, previewModel.source_url)} 
+                      title="Quell-URL anpassen oder hinzufügen" 
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', color: 'var(--accent-cyan)' }}
+                    >
+                      <Pencil size={11} />
                     </button>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ position: 'relative' }}
-                    onMouseEnter={() => { if (settings.slicers && settings.slicers.length > 0) setShowPreviewSlicerMenu(true); }}
-                    onMouseLeave={() => setShowPreviewSlicerMenu(false)}>
-                    <button className="slice-btn" onClick={() => {
-                        if (!settings.slicers || settings.slicers.length === 0) {
-                          alert("Bitte hinterlege zuerst einen Slicer in den Einstellungen.");
-                          return;
-                        }
-                        if (settings.slicers.length === 1) {
-                          handleSlice(previewModel.id, settings.slicers[0].path);
-                        } else {
-                          setShowPreviewSlicerMenu(!showPreviewSlicerMenu);
-                        }
-                      }} title="An Drucker/Slicer senden">
-                      <Printer size={18} />
-                    </button>
-                    {showPreviewSlicerMenu && (
-                      <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
-                      <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content' }}>
-                        {settings.slicers.map((s: any) => (
-                          <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
-                               onClick={() => { setShowPreviewSlicerMenu(false); handleSlice(previewModel.id, s.path); }}
-                               onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
-                               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                            {s.name}
-                          </div>
-                        ))}
-                      </div>
-                      </div>
-                    )}
-                  </div>
-                  {previewModel.source_url && (
-                    <button className="button-secondary" onClick={() => window.open(previewModel.source_url, '_blank')} title="Download-Seite öffnen" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', margin: 0, padding: '6px 12px' }}>
-                      <Globe size={14} /> Quelle öffnen
-                    </button>
-                  )}
-                  <button className="button-secondary" onClick={() => handleOpenFolder(previewModel.id)} title="Speicherort im Explorer öffnen" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', margin: 0, padding: '6px 12px' }}>
-                    <FolderOpen size={14} /> Speicherort öffnen
-                  </button>
-                  <button className="icon-button" onClick={() => setPreviewModel(null)}><X size={20} /></button>
-                </div>
+                <button className="icon-button" onClick={() => setPreviewModel(null)}><X size={20} /></button>
              </div>
-             <div style={{ flex: 1, position: 'relative', background: '#1a1d2f', borderRadius: '8px' }}>
+             <div style={{ flex: 1, position: 'relative', width: '100%', height: '100%', minHeight: 0 }}>
                 <ThreeViewer url={`${API_BASE}/api/download/${previewModel.id}`} filename={previewModel.name} />
              </div>
           </div>
@@ -1157,29 +1225,21 @@ function App() {
 
       {showDuplicates && (
         <div className="modal-overlay" onClick={() => setShowDuplicates(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '75%', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '800px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
             <div className="modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Copy size={20} color="var(--accent-blue)" />
-                Duplicate Files
-                {duplicates.length > 0 && (
-                  <span style={{ background: '#ff4d4d22', color: '#ff4d4d', borderRadius: '12px', padding: '2px 10px', fontSize: '12px', fontWeight: 'bold' }}>
-                    {duplicates.length} group{duplicates.length > 1 ? 's' : ''} found
-                  </span>
-                )}
-              </div>
+              <span>{t('findDuplicates')}</span>
               <button className="icon-button" onClick={() => setShowDuplicates(false)}><X size={20} /></button>
             </div>
-            <div style={{ overflowY: 'auto', flex: 1, padding: '4px 0' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
               {duplicates.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                  âœ… No duplicate files found. Your library is clean!
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
+                  No duplicate models found. All files are unique!
                 </div>
               ) : (
-                duplicates.map((group, gi) => (
+                duplicates.map((group: Model[], gi: number) => (
                   <div key={gi} style={{ marginBottom: '20px', border: '1px solid var(--border-color)', borderRadius: '10px', overflow: 'hidden' }}>
                     <div style={{ background: 'rgba(255,77,77,0.08)', padding: '8px 16px', fontSize: '12px', color: '#ff8888', fontWeight: 'bold', borderBottom: '1px solid var(--border-color)' }}>
-                      {group.length} duplicate files â€” same content hash
+                      {group.length} duplicate files — same content hash
                     </div>
                     {group.map((m: Model) => {
                       const thumb = (m.thumbnails && m.thumbnails.length > 0) ? m.thumbnails[0] : '';
@@ -1271,14 +1331,14 @@ function App() {
         />
       )}
 
-      {/* Mobile Bottom Navigation Bar (Visible on Phones & Tablets <= 860px) */}
+      {/* MakerWorld Floating Bottom Navigation Bar (Phones & Tablets) */}
       <div className="mobile-bottom-nav">
         <button 
           className={`mobile-nav-item ${activeNav === 'library' ? 'active' : ''}`}
           onClick={() => { setActiveNav('library'); setMobileMenuOpen(false); }}
         >
           <Folder size={18} />
-          <span>Bibliothek</span>
+          <span>{t('library')}</span>
         </button>
 
         <button 
@@ -1286,15 +1346,25 @@ function App() {
           onClick={() => { setActiveNav('online'); setMobileMenuOpen(false); }}
         >
           <Globe size={18} />
-          <span>Online</span>
+          <span>{t('onlineModels')}</span>
+        </button>
+
+        {/* Center Floating Elevated Search FAB */}
+        <button 
+          className="mobile-fab-search"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          title={t('searchButton')}
+        >
+          <Search size={22} />
         </button>
 
         <button 
           className="mobile-nav-item"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onClick={toggleLanguage}
+          title="Sprache / Language"
         >
-          <SlidersHorizontal size={18} />
-          <span>Filter & Suche</span>
+          <Languages size={18} />
+          <span>{lang === 'de' ? '🇩🇪 DE' : '🇬🇧 EN'}</span>
         </button>
 
         <button 
@@ -1302,15 +1372,11 @@ function App() {
           onClick={() => { setShowSettings(true); setMobileMenuOpen(false); }}
         >
           <Settings size={18} />
-          <span>Optionen</span>
+          <span>{t('options')}</span>
         </button>
       </div>
       </div>
     </OnlineSearchProvider>
   );
 }
-
 export default App;
-
-
-

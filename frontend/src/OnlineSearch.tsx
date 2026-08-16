@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
-import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2, TrendingUp, Rocket, History, ChevronRight } from 'lucide-react';
+import { useI18n } from './i18n';
 
 export interface OnlineModel {
   id: string;
@@ -26,6 +27,12 @@ export const PLATFORMS = [
 
 export const POPULAR_TAGS = ['Benchy', 'Gridfinity', 'Bambu Lab', 'Voron', 'Kabelclip', 'Wandhalterung', 'Toolbox', 'Fidget'];
 
+const TREND_QUERIES = {
+  daily: ['Articulated Dragon', 'Fidget Toy', 'Cable Clip', 'Bambu Lab Scraper', 'Keychain Organizer'],
+  monthly: ['Gridfinity Modular', 'Voron 2.4 Mod', 'Desk Organizer', 'Skull Planter', 'Hydroponic Tower'],
+  newest: ['Functional 3D Print', 'Mechanical Toy', 'Home Decor 3D', 'Phone Stand']
+};
+
 interface OnlineSearchContextType {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
@@ -46,6 +53,11 @@ interface OnlineSearchContextType {
   setSortBy: (sort: 'popular' | 'likes' | 'name') => void;
   freeOnly: boolean;
   setFreeOnly: (val: boolean) => void;
+  searchHistory: string[];
+  clearHistory: () => void;
+  removeFromHistory: (term: string) => void;
+  activeCategory: 'daily' | 'monthly' | 'newest' | 'history' | null;
+  handleCategoryClick: (cat: 'daily' | 'monthly' | 'newest' | 'history') => void;
   handleSearch: (termToSearch?: string) => Promise<void>;
   handleLoadMore: () => Promise<void>;
   copyUrl: (id: string, url: string) => void;
@@ -68,6 +80,38 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'popular' | 'likes' | 'name'>('popular');
   const [freeOnly, setFreeOnly] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<'daily' | 'monthly' | 'newest' | 'history' | null>('daily');
+
+  // Search History Persistence
+  const [searchHistory, setSearchHistory] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('stl_search_history');
+      return stored ? JSON.parse(stored) : ['Benchy', 'Gridfinity', 'Bambu Lab', 'Skull'];
+    } catch {
+      return ['Benchy', 'Gridfinity', 'Bambu Lab', 'Skull'];
+    }
+  });
+
+  const saveHistory = (items: string[]) => {
+    setSearchHistory(items);
+    localStorage.setItem('stl_search_history', JSON.stringify(items));
+  };
+
+  const addToHistory = (term: string) => {
+    const clean = term.trim();
+    if (!clean) return;
+    const filtered = searchHistory.filter(t => t.toLowerCase() !== clean.toLowerCase());
+    const updated = [clean, ...filtered].slice(0, 15);
+    saveHistory(updated);
+  };
+
+  const clearHistory = () => {
+    saveHistory([]);
+  };
+
+  const removeFromHistory = (term: string) => {
+    saveHistory(searchHistory.filter(t => t !== term));
+  };
 
   const API_BASE = window.location.port === '5173' ? 'http://127.0.0.1:8000' : '';
 
@@ -75,6 +119,7 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
     const query = termToSearch !== undefined ? termToSearch : searchTerm;
     if (!query.trim()) return;
 
+    addToHistory(query.trim());
     setLoading(true);
     setError(null);
     setHasSearched(true);
@@ -127,6 +172,30 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   };
 
+  const handleCategoryClick = (cat: 'daily' | 'monthly' | 'newest' | 'history') => {
+    setActiveCategory(cat);
+    if (cat === 'daily') {
+      const randomDaily = TREND_QUERIES.daily[Math.floor(Math.random() * TREND_QUERIES.daily.length)];
+      setSearchTerm(randomDaily);
+      handleSearch(randomDaily);
+    } else if (cat === 'monthly') {
+      const randomMonthly = TREND_QUERIES.monthly[Math.floor(Math.random() * TREND_QUERIES.monthly.length)];
+      setSearchTerm(randomMonthly);
+      handleSearch(randomMonthly);
+    } else if (cat === 'newest') {
+      const randomNew = TREND_QUERIES.newest[Math.floor(Math.random() * TREND_QUERIES.newest.length)];
+      setSearchTerm(randomNew);
+      handleSearch(randomNew);
+    }
+  };
+
+  // Pre-populate trending models on initial mount so search is never empty!
+  useEffect(() => {
+    if (results.length === 0 && !hasSearched && !loading) {
+      handleSearch('Trending 3D');
+    }
+  }, []);
+
   const togglePlatform = (platId: string) => {
     setActivePlatforms(prev => 
       prev.includes(platId) ? prev.filter(p => p !== platId) : [...prev, platId]
@@ -148,19 +217,17 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
     return found || { color: 'var(--accent-cyan)', bg: 'rgba(0, 210, 255, 0.15)' };
   };
 
-  // Filter and sort results
-  const displayedResults = results
-    .filter(m => {
-      if (freeOnly && !m.is_free) return false;
-      if (activePlatforms.length > 0 && !activePlatforms.includes(m.platform)) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'likes') return b.likes - a.likes;
-      if (sortBy === 'name') return a.title.localeCompare(b.title);
-      // For 'popular' (default), preserve batch order from backend so clicking "Load More" appends downwards without reshuffling
-      return 0;
-    });
+  // Filter & Sorting logic
+  let displayedResults = results.filter(m => {
+    if (freeOnly && !m.is_free) return false;
+    return true;
+  });
+
+  if (sortBy === 'likes') {
+    displayedResults = [...displayedResults].sort((a, b) => b.likes - a.likes);
+  } else if (sortBy === 'name') {
+    displayedResults = [...displayedResults].sort((a, b) => a.title.localeCompare(b.title));
+  }
 
   return (
     <OnlineSearchContext.Provider
@@ -184,6 +251,11 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
         setSortBy,
         freeOnly,
         setFreeOnly,
+        searchHistory,
+        clearHistory,
+        removeFromHistory,
+        activeCategory,
+        handleCategoryClick,
         handleSearch,
         handleLoadMore,
         copyUrl,
@@ -205,9 +277,9 @@ export const useOnlineSearch = () => {
 
 /**
  * Online Search Sidebar Controls
- * Rendered in the fixed sidebar when "Online-Modelle" tab is active.
  */
 export const OnlineSearchSidebar: React.FC = () => {
+  const { t } = useI18n();
   const {
     searchTerm,
     setSearchTerm,
@@ -220,6 +292,9 @@ export const OnlineSearchSidebar: React.FC = () => {
     setSortBy,
     freeOnly,
     setFreeOnly,
+    searchHistory,
+    clearHistory,
+    removeFromHistory,
     handleSearch
   } = useOnlineSearch();
 
@@ -242,11 +317,11 @@ export const OnlineSearchSidebar: React.FC = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
           <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', color: 'var(--accent-cyan)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Search size={13} color="var(--accent-cyan)" /> 3D-Modelle Suchen
+            <Search size={13} color="var(--accent-cyan)" /> {t('searchModels')}
           </span>
           {currentQuery && (
             <span style={{ fontSize: '10px', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.15)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
-              Aktiv: "{currentQuery}"
+              {t('activeSearch')}: "{currentQuery}"
             </span>
           )}
         </div>
@@ -257,7 +332,7 @@ export const OnlineSearchSidebar: React.FC = () => {
             className="input-field"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder="z. B. Skull, Benchy, Halterung..."
+            placeholder={t('searchPlaceholder')}
             style={{
               paddingLeft: '38px',
               paddingRight: '74px',
@@ -282,7 +357,7 @@ export const OnlineSearchSidebar: React.FC = () => {
           <button
             type="submit"
             disabled={loading || !searchTerm.trim()}
-            title="Suchen"
+            title={t('searchButton')}
             style={{
               position: 'absolute',
               right: '4px',
@@ -310,7 +385,7 @@ export const OnlineSearchSidebar: React.FC = () => {
       <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
           <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <Filter size={12} /> Plattformen
+            <Filter size={12} /> {t('platforms')}
           </span>
           <button
             onClick={selectAllPlatforms}
@@ -324,7 +399,7 @@ export const OnlineSearchSidebar: React.FC = () => {
               padding: 0
             }}
           >
-            {activePlatforms.length === 0 ? '✓ Alle aktiv' : 'Alle wählen'}
+            {activePlatforms.length === 0 ? `✓ ${t('allActive')}` : t('selectAll')}
           </button>
         </div>
 
@@ -362,7 +437,7 @@ export const OnlineSearchSidebar: React.FC = () => {
       {/* 3. Filter & Sort Options */}
       <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-          Optionen & Sortierung
+          {t('sortBy')}
         </div>
 
         <select
@@ -380,9 +455,9 @@ export const OnlineSearchSidebar: React.FC = () => {
             cursor: 'pointer'
           }}
         >
-          <option value="popular">Sortieren: Beliebteste</option>
-          <option value="likes">Sortieren: Meiste Likes</option>
-          <option value="name">Sortieren: Name (A-Z)</option>
+          <option value="popular">{t('sortPopular')}</option>
+          <option value="likes">{t('sortLikes')}</option>
+          <option value="name">{t('sortName')}</option>
         </select>
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-main)', cursor: 'pointer', userSelect: 'none' }}>
@@ -392,58 +467,68 @@ export const OnlineSearchSidebar: React.FC = () => {
             onChange={e => setFreeOnly(e.target.checked)}
             style={{ width: '15px', height: '15px', cursor: 'pointer', accentColor: 'var(--accent-cyan)' }}
           />
-          Nur kostenlose Vorlagen
+          {t('freeOnly')}
         </label>
       </div>
 
-      {/* 4. Quick-Search Suggestions */}
-      <div>
-        <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <Sparkles size={12} color="var(--accent-cyan)" /> Schnellsuche
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-          {POPULAR_TAGS.map(tag => (
+      {/* 4. Search History (Verlauf) */}
+      {searchHistory.length > 0 && (
+        <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <History size={12} /> {t('history')}
+            </span>
             <button
-              key={tag}
-              onClick={() => {
-                setSearchTerm(tag);
-                handleSearch(tag);
-              }}
-              style={{
-                fontSize: '11px',
-                fontWeight: '500',
-                padding: '4px 9px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                borderRadius: '8px',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                transition: 'all 0.15s'
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(0, 210, 255, 0.12)';
-                e.currentTarget.style.borderColor = 'rgba(0, 210, 255, 0.3)';
-                e.currentTarget.style.color = 'var(--accent-cyan)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)';
-                e.currentTarget.style.color = 'var(--text-muted)';
-              }}
+              onClick={clearHistory}
+              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: 0 }}
             >
-              {tag}
+              {t('clearHistory')}
             </button>
-          ))}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+            {searchHistory.slice(0, 8).map(term => (
+              <div
+                key={term}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '6px',
+                  padding: '3px 7px',
+                  fontSize: '11px',
+                  color: 'var(--text-muted)'
+                }}
+              >
+                <span
+                  onClick={() => {
+                    setSearchTerm(term);
+                    handleSearch(term);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {term}
+                </span>
+                <X
+                  size={11}
+                  onClick={() => removeFromHistory(term)}
+                  style={{ cursor: 'pointer', opacity: 0.6 }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
 /**
- * Main Online Search Content View
+ * Main Online Search Content View (MakerWorld Inspired)
  */
 export const OnlineSearchContent: React.FC = () => {
+  const { t } = useI18n();
   const {
     currentQuery,
     displayedResults,
@@ -453,6 +538,9 @@ export const OnlineSearchContent: React.FC = () => {
     hasSearched,
     error,
     copiedId,
+    searchHistory,
+    activeCategory,
+    handleCategoryClick,
     handleLoadMore,
     copyUrl,
     getPlatformStyle,
@@ -461,99 +549,205 @@ export const OnlineSearchContent: React.FC = () => {
   } = useOnlineSearch();
 
   return (
-    <div className="online-search-container" style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '24px 32px', background: 'var(--bg-dark)' }}>
-      {/* Header Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-        <div>
-          <h1 style={{ fontSize: '22px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)', margin: 0 }}>
-            <Globe size={24} color="var(--accent-cyan)" /> 
-            {currentQuery ? `Online-Modelle: "${currentQuery}"` : 'Online 3D-Modell-Suche'}
+    <div className="online-search-container">
+      {/* 1. Hero Feature Banner (MakerWorld Contest / Design Spotlight) */}
+      <div
+        style={{
+          position: 'relative',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, #1e243b 0%, #151829 100%)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+          marginBottom: '20px',
+          padding: '24px 20px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          minHeight: '140px'
+        }}
+      >
+        {/* Glow overlay */}
+        <div style={{ position: 'absolute', top: 0, right: 0, width: '220px', height: '100%', background: 'radial-gradient(circle at top right, rgba(0, 210, 255, 0.18), transparent 70%)', pointerEvents: 'none' }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 77, 77, 0.2)', border: '1px solid rgba(255, 77, 77, 0.4)', color: '#ff6b6b', padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff6b6b' }} />
+            {t('featuredContest')}
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600' }}>
+            <span>{t('contests')}</span>
+            <ChevronRight size={14} />
+          </div>
+        </div>
+
+        <h2 style={{ fontSize: '17px', fontWeight: '800', color: '#fff', margin: '0 0 6px 0', lineHeight: '1.3' }}>
+          {t('contestTitle')}
+        </h2>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+          MakerWorld • Printables • Thingiverse • Cults 3D • MakerOnline • Creality
+        </p>
+      </div>
+
+      {/* 2. Four MakerWorld-Style Category Action Cards (2x2 Grid) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', marginBottom: '24px' }}>
+        {/* Card 1: Daily Trends */}
+        <button
+          onClick={() => handleCategoryClick('daily')}
+          style={{
+            padding: '14px 12px',
+            borderRadius: '14px',
+            background: activeCategory === 'daily' ? 'linear-gradient(135deg, #422616 0%, #2b170c 100%)' : 'linear-gradient(135deg, #2a1a11 0%, #1e130c 100%)',
+            border: activeCategory === 'daily' ? '1px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.25)',
+            boxShadow: activeCategory === 'daily' ? '0 4px 16px rgba(245, 158, 11, 0.3)' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'pointer',
+            textAlign: 'left',
+            transition: 'all 0.2s'
+          }}
+        >
+          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <TrendingUp size={18} color="#f59e0b" />
+          </div>
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{t('dailyTrends')}</div>
+            <div style={{ fontSize: '10px', color: '#d97706', marginTop: '2px' }}>24h Top</div>
+          </div>
+        </button>
+
+        {/* Card 2: Monthly Trends */}
+        <button
+          onClick={() => handleCategoryClick('monthly')}
+          style={{
+            padding: '14px 12px',
+            borderRadius: '14px',
+            background: activeCategory === 'monthly' ? 'linear-gradient(135deg, #441634 0%, #2b0b20 100%)' : 'linear-gradient(135deg, #2b1022 0%, #1c0a16 100%)',
+            border: activeCategory === 'monthly' ? '1px solid #ec4899' : '1px solid rgba(236, 72, 153, 0.25)',
+            boxShadow: activeCategory === 'monthly' ? '0 4px 16px rgba(236, 72, 153, 0.3)' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'pointer',
+            textAlign: 'left',
+            transition: 'all 0.2s'
+          }}
+        >
+          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(236, 72, 153, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Rocket size={18} color="#ec4899" />
+          </div>
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{t('monthlyTrends')}</div>
+            <div style={{ fontSize: '10px', color: '#db2777', marginTop: '2px' }}>Monats-Hits</div>
+          </div>
+        </button>
+
+        {/* Card 3: Newest */}
+        <button
+          onClick={() => handleCategoryClick('newest')}
+          style={{
+            padding: '14px 12px',
+            borderRadius: '14px',
+            background: activeCategory === 'newest' ? 'linear-gradient(135deg, #123d30 0%, #0a251d 100%)' : 'linear-gradient(135deg, #0e271f 0%, #081a14 100%)',
+            border: activeCategory === 'newest' ? '1px solid #10b981' : '1px solid rgba(16, 185, 129, 0.25)',
+            boxShadow: activeCategory === 'newest' ? '0 4px 16px rgba(16, 185, 129, 0.3)' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'pointer',
+            textAlign: 'left',
+            transition: 'all 0.2s'
+          }}
+        >
+          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Sparkles size={18} color="#10b981" />
+          </div>
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{t('newest')}</div>
+            <div style={{ fontSize: '10px', color: '#059669', marginTop: '2px' }}>Frisch online</div>
+          </div>
+        </button>
+
+        {/* Card 4: History / Search History */}
+        <button
+          onClick={() => {
+            handleCategoryClick('history');
+            if (searchHistory.length > 0) {
+              setSearchTerm(searchHistory[0]);
+              handleSearch(searchHistory[0]);
+            }
+          }}
+          style={{
+            padding: '14px 12px',
+            borderRadius: '14px',
+            background: activeCategory === 'history' ? 'linear-gradient(135deg, #242c4c 0%, #151a30 100%)' : 'linear-gradient(135deg, #181d33 0%, #101424 100%)',
+            border: activeCategory === 'history' ? '1px solid #6366f1' : '1px solid rgba(99, 102, 241, 0.25)',
+            boxShadow: activeCategory === 'history' ? '0 4px 16px rgba(99, 102, 241, 0.3)' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'pointer',
+            textAlign: 'left',
+            transition: 'all 0.2s'
+          }}
+        >
+          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <History size={18} color="#6366f1" />
+          </div>
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{t('history')}</div>
+            <div style={{ fontSize: '10px', color: '#818cf8', marginTop: '2px' }}>{searchHistory.length} Suchen</div>
+          </div>
+        </button>
+      </div>
+
+      {/* Header Info Bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h1 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Globe size={20} color="var(--accent-cyan)" />
+            {currentQuery ? `${t('onlineSearch')}: "${currentQuery}"` : t('onlineSearch')}
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '3px', margin: 0 }}>
-            MakerWorld • Printables • Cults 3D • Thingiverse • MakerOnline • Creality Cloud
-          </p>
         </div>
 
         {displayedResults.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '12px', fontWeight: '700', background: 'rgba(0, 210, 255, 0.15)', color: 'var(--accent-cyan)', border: '1px solid rgba(0, 210, 255, 0.3)', padding: '5px 12px', borderRadius: '12px' }}>
-              {displayedResults.length} Vorlagen geladen
-            </span>
-          </div>
+          <span style={{ fontSize: '11px', fontWeight: '700', background: 'rgba(0, 210, 255, 0.15)', color: 'var(--accent-cyan)', border: '1px solid rgba(0, 210, 255, 0.3)', padding: '4px 10px', borderRadius: '10px' }}>
+            {displayedResults.length} {t('modelsLoaded')}
+          </span>
         )}
       </div>
 
       {/* Error Message */}
       {error && (
-        <div style={{ padding: '16px', background: 'rgba(255, 77, 77, 0.1)', border: '1px solid rgba(255, 77, 77, 0.3)', borderRadius: '10px', color: '#ff6b6b', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
-          <AlertCircle size={20} />
-          <span>{error}</span>
+        <div style={{ padding: '14px', background: 'rgba(255, 77, 77, 0.1)', border: '1px solid rgba(255, 77, 77, 0.3)', borderRadius: '10px', color: '#ff6b6b', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+          <AlertCircle size={18} />
+          <span style={{ fontSize: '13px' }}>{error}</span>
         </div>
       )}
 
       {/* Loading State */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
-          <Loader2 size={40} className="spin" style={{ color: 'var(--accent-cyan)', margin: '0 auto 16px' }} />
-          <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-main)' }}>Suche auf allen Plattformen...</div>
-          <div style={{ fontSize: '13px', marginTop: '6px' }}>MakerWorld, Printables, Cults 3D, Thingiverse, MakerOnline & Creality Cloud werden durchsucht...</div>
-        </div>
-      )}
-
-      {/* Empty State / Initial State */}
-      {!loading && !hasSearched && (
-        <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
-          <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(0, 210, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <Globe size={36} color="var(--accent-cyan)" />
-          </div>
-          <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>Finde Millionen 3D-Modelle im Web</h3>
-          <p style={{ fontSize: '13px', maxWidth: '480px', margin: '0 auto', lineHeight: '1.6' }}>
-            Nutze die Suchleiste links in der Seitenleiste, um nach Stichworten wie <b>Benchy</b>, <b>Skull</b>, <b>Halterung</b> oder <b>Gridfinity</b> zu suchen.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '24px', flexWrap: 'wrap' }}>
-            {POPULAR_TAGS.map(t => (
-              <button
-                key={t}
-                onClick={() => {
-                  setSearchTerm(t);
-                  handleSearch(t);
-                }}
-                style={{
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  padding: '6px 14px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '10px',
-                  color: 'var(--accent-cyan)',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s'
-                }}
-              >
-                {t} suchen →
-              </button>
-            ))}
-          </div>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+          <Loader2 size={36} className="spin" style={{ color: 'var(--accent-cyan)', margin: '0 auto 12px' }} />
+          <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)' }}>{t('searchingAllPlatforms')}</div>
+          <div style={{ fontSize: '12px', marginTop: '4px' }}>{t('searchingPlatformsDetail')}</div>
         </div>
       )}
 
       {/* No Results State */}
       {!loading && hasSearched && displayedResults.length === 0 && !error && (
-        <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-muted)' }}>
-          <Search size={40} style={{ opacity: 0.3, margin: '0 auto 16px' }} />
-          <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-main)' }}>Keine Modelle gefunden</div>
-          <div style={{ fontSize: '13px', marginTop: '6px' }}>Versuche es mit einem allgemeineren Begriff in der Seitenleiste.</div>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+          <Search size={36} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
+          <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>{t('noModelsFound')}</div>
+          <div style={{ fontSize: '13px', marginTop: '6px' }}>{t('noModelsFoundSubtitle')}</div>
         </div>
       )}
 
-      {/* Results Grid */}
+      {/* Results Grid - MakerWorld 2-Column Vertical Cards */}
       {!loading && displayedResults.length > 0 && (
         <div>
-          <div className="online-models-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: '20px'
-          }}>
+          <div className="online-models-grid">
             {displayedResults.map(model => {
               const platStyle = getPlatformStyle(model.platform);
               return (
@@ -561,27 +755,27 @@ export const OnlineSearchContent: React.FC = () => {
                   key={model.id}
                   style={{
                     background: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.07)',
+                    borderRadius: '16px',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                     transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
                   }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 10px 24px rgba(0,0,0,0.3)';
-                    e.currentTarget.style.borderColor = 'rgba(0, 210, 255, 0.3)';
+                    e.currentTarget.style.transform = 'translateY(-3px)';
+                    e.currentTarget.style.boxShadow = '0 10px 24px rgba(0,0,0,0.35)';
+                    e.currentTarget.style.borderColor = 'rgba(0, 210, 255, 0.35)';
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.transform = 'none';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                    e.currentTarget.style.borderColor = 'var(--border-color)';
+                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.07)';
                   }}
                 >
-                  {/* Thumbnail with Badge */}
-                  <div style={{ position: 'relative', width: '100%', height: '180px', background: '#181b2c', overflow: 'hidden' }}>
+                  {/* Image Container with Badges */}
+                  <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', background: '#16192b', overflow: 'hidden' }}>
                     {model.thumbnail ? (
                       <img
                         src={model.thumbnail}
@@ -590,28 +784,28 @@ export const OnlineSearchContent: React.FC = () => {
                         referrerPolicy="no-referrer"
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={e => {
-                          e.currentTarget.style.display = 'none';
+                          (e.target as HTMLElement).style.display = 'none';
                         }}
                       />
                     ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-                        Kein Vorschaubild
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                        <Globe size={40} style={{ opacity: 0.3 }} />
                       </div>
                     )}
 
-                    {/* Platform Badge */}
+                    {/* Top-Left: Platform Badge */}
                     <div style={{
                       position: 'absolute',
-                      top: '10px',
-                      left: '10px',
+                      top: '8px',
+                      left: '8px',
                       background: 'rgba(18, 21, 36, 0.85)',
-                      backdropFilter: 'blur(4px)',
+                      backdropFilter: 'blur(6px)',
                       border: `1px solid ${platStyle.color}66`,
                       color: platStyle.color,
-                      padding: '3px 8px',
-                      borderRadius: '8px',
+                      padding: '3px 7px',
+                      borderRadius: '7px',
                       fontSize: '10px',
-                      fontWeight: '700',
+                      fontWeight: '800',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
@@ -621,103 +815,130 @@ export const OnlineSearchContent: React.FC = () => {
                       {model.platform_name}
                     </div>
 
-                    {/* Free / Price Badge */}
+                    {/* Top-Right: Likes & Bookmark Stat */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <div style={{
+                        background: 'rgba(18, 21, 36, 0.85)',
+                        backdropFilter: 'blur(6px)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        padding: '3px 7px',
+                        borderRadius: '7px',
+                        fontSize: '10px',
+                        fontWeight: '700',
+                        color: '#ff6b81',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '3px',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.4)'
+                      }}>
+                        <Heart size={11} fill="#ff6b81" />
+                        <span>{model.likes || 12}</span>
+                      </div>
+                    </div>
+
+                    {/* Bottom-Left: Creator Avatar & Name Overlay */}
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '8px',
+                      left: '8px',
+                      maxWidth: '85%',
+                      background: 'rgba(15, 18, 30, 0.85)',
+                      backdropFilter: 'blur(6px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '20px',
+                      padding: '2px 8px 2px 3px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.5)'
+                    }}>
+                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'linear-gradient(135deg, #00d2ff, #8e2de2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: '800', color: '#fff' }}>
+                        {model.author ? model.author.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {model.author || 'Creator'}
+                      </span>
+                    </div>
+
+                    {/* Bottom-Right: Free / Price */}
                     {model.price && (
                       <div style={{
                         position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        background: 'rgba(18, 21, 36, 0.85)',
-                        border: '1px solid rgba(255,255,255,0.15)',
-                        color: '#f1c40f',
-                        padding: '3px 8px',
-                        borderRadius: '8px',
+                        bottom: '8px',
+                        right: '8px',
+                        background: 'rgba(15, 18, 30, 0.85)',
+                        backdropFilter: 'blur(6px)',
+                        border: '1px solid rgba(255, 215, 0, 0.4)',
+                        color: '#ffd700',
+                        padding: '2px 7px',
+                        borderRadius: '6px',
                         fontSize: '10px',
-                        fontWeight: '700'
+                        fontWeight: '800'
                       }}>
                         {model.price}
                       </div>
                     )}
                   </div>
 
-                  {/* Card Content */}
-                  <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  {/* Card Body */}
+                  <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <h3
                       title={model.title}
                       style={{
-                        fontSize: '14px',
+                        fontSize: '13px',
                         fontWeight: '700',
                         color: 'var(--text-main)',
-                        marginBottom: '6px',
+                        marginBottom: '8px',
                         lineHeight: '1.3',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
-                        height: '36px'
+                        height: '34px'
                       }}
                     >
                       {model.title}
                     </h3>
 
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
-                        von {model.author}
-                      </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                        {model.likes > 0 && (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '2px', color: '#ff6b81' }}>
-                            <Heart size={11} fill="#ff6b81" /> {model.likes}
-                          </span>
-                        )}
-                        {model.downloads > 0 && (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--accent-cyan)' }}>
-                            <Download size={11} /> {model.downloads}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div style={{ marginTop: 'auto', display: 'flex', gap: '8px' }}>
+                    {/* Action Row */}
+                    <div style={{ marginTop: 'auto', display: 'flex', gap: '6px' }}>
                       <a
                         href={model.url}
                         target="_blank"
                         rel="noreferrer"
                         style={{
                           flex: 1,
-                          padding: '8px 12px',
+                          padding: '7px 10px',
                           background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(58, 123, 213, 0.25))',
                           border: '1px solid rgba(0, 210, 255, 0.3)',
                           borderRadius: '8px',
-                          color: 'var(--text-main)',
-                          fontSize: '12px',
-                          fontWeight: '600',
+                          color: '#fff',
+                          fontSize: '11px',
+                          fontWeight: '700',
                           textDecoration: 'none',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: '6px',
+                          gap: '5px',
                           transition: 'all 0.15s'
                         }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.borderColor = 'var(--accent-cyan)';
-                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 210, 255, 0.3), rgba(58, 123, 213, 0.45))';
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.borderColor = 'rgba(0, 210, 255, 0.3)';
-                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(58, 123, 213, 0.25))';
-                        }}
                       >
-                        <ExternalLink size={13} />
-                        Auf {model.platform_name} ansehen
+                        <ExternalLink size={12} />
+                        {t('viewOn', { platform: model.platform_name })}
                       </a>
 
                       <button
                         onClick={() => copyUrl(model.id, model.url)}
-                        title="Link kopieren"
+                        title={t('copyLink')}
                         style={{
-                          padding: '8px 10px',
+                          padding: '7px 9px',
                           background: copiedId === model.id ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255, 255, 255, 0.05)',
                           border: `1px solid ${copiedId === model.id ? '#2ecc71' : 'var(--border-color)'}`,
                           borderRadius: '8px',
@@ -729,7 +950,7 @@ export const OnlineSearchContent: React.FC = () => {
                           transition: 'all 0.15s'
                         }}
                       >
-                        {copiedId === model.id ? <Check size={13} /> : <Copy size={13} />}
+                        {copiedId === model.id ? <Check size={12} /> : <Copy size={12} />}
                       </button>
                     </div>
                   </div>
@@ -740,41 +961,35 @@ export const OnlineSearchContent: React.FC = () => {
 
           {/* Load More Button */}
           {hasMore && (
-            <div style={{ textAlign: 'center', marginTop: '36px', marginBottom: '24px' }}>
+            <div style={{ textAlign: 'center', marginTop: '32px', marginBottom: '24px' }}>
               <button
                 onClick={handleLoadMore}
                 disabled={loadingMore}
                 style={{
-                  padding: '13px 32px',
+                  padding: '12px 28px',
                   background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(58, 123, 213, 0.35))',
                   border: '1px solid var(--accent-cyan)',
                   borderRadius: '12px',
                   color: '#fff',
                   fontWeight: '700',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   cursor: loadingMore ? 'not-allowed' : 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '10px',
+                  gap: '8px',
                   transition: 'all 0.2s',
                   boxShadow: '0 4px 20px rgba(0, 210, 255, 0.25)'
-                }}
-                onMouseEnter={e => {
-                  if (!loadingMore) e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={e => {
-                  if (!loadingMore) e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
                 {loadingMore ? (
                   <>
-                    <Loader2 size={18} className="spin" />
-                    Lade weitere Modelle...
+                    <Loader2 size={16} className="spin" />
+                    {t('loadingMore')}
                   </>
                 ) : (
                   <>
-                    <Download size={18} />
-                    Weitere Modelle laden (+80 weitere Vorlagen)
+                    <Download size={16} />
+                    {t('loadMore')}
                   </>
                 )}
               </button>
