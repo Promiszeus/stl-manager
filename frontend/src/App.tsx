@@ -621,7 +621,6 @@ function App() {
 
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [canInstallPWA, setCanInstallPWA] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
@@ -633,11 +632,9 @@ function App() {
     const installHandler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setCanInstallPWA(true);
     };
 
     const appInstalledHandler = () => {
-      setCanInstallPWA(false);
       setDeferredPrompt(null);
       setIsStandalone(true);
     };
@@ -656,7 +653,6 @@ function App() {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
-        setCanInstallPWA(false);
         setDeferredPrompt(null);
       }
     } else {
@@ -1303,16 +1299,7 @@ function App() {
         )}
 
         {/* Footer / Settings */}
-        <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {canInstallPWA && !isStandalone && (
-            <button 
-              className="button-secondary" 
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '10px', fontSize: '12px', background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(58, 123, 213, 0.1))', border: '1px solid rgba(0, 210, 255, 0.4)', color: 'var(--accent-cyan)', fontWeight: '700' }} 
-              onClick={handleInstallPWA}
-            >
-               <Download size={15} /> {t('installApp')}
-            </button>
-          )}
+        <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
           <button 
             className="button-secondary" 
             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '11px', borderRadius: '10px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)' }} 
