@@ -243,6 +243,102 @@ body {
   opacity: 1;
 }
 
+@media (max-width: 860px) {
+  .list-item-checkbox {
+    opacity: 1;
+  }
+}
+
+.list-item {
+  padding: 8px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.list-item.is-selected {
+  border-color: var(--accent-blue);
+}
+
+.list-item-main-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.list-item-thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 6px;
+  object-fit: cover;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.list-item-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.list-item-name {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-item-folder {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-item-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.list-item-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.list-item-size {
+  color: var(--text-muted);
+  font-size: 12px;
+  width: 65px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.list-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 .card-image-container {
   height: 220px;
   background-color: #1a1d2f;
@@ -892,6 +988,34 @@ body {
   .online-models-grid {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 14px;
+  }
+
+  .list-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .list-item-main-row {
+    width: 100%;
+  }
+
+  .list-item-meta-row {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 8px;
+    gap: 6px;
+  }
+
+  .list-item-size {
+    display: none;
+  }
+
+  .list-item-actions {
+    margin-left: auto;
+    gap: 6px;
   }
 
   /* MakerWorld-Style Floating Bottom Navigation */

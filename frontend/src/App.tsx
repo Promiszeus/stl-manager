@@ -111,14 +111,15 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
 
   if (viewMode === 'list') {
     return (
-      <div onContextMenu={e => onContextMenu(e, model)} className={`list-item ${isSelected ? 'is-selected' : ''}`} style={{ padding: '8px 12px', background: 'var(--bg-card)', border: isSelected ? '1px solid var(--accent-blue)' : '1px solid var(--border-color)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-         <div className="list-item-checkbox">
-           <input type="checkbox" checked={isSelected} onChange={() => handleToggleSelect(model.id)} style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--accent-blue)' }} />
-         </div>
-         <img src={currentThumb} alt={model.name} style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer' }} onClick={() => handlePreview(model)} />
-         <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            <div style={{ fontWeight: '500' }} title={model.name}>{model.name}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <div onContextMenu={e => onContextMenu(e, model)} className={`list-item ${isSelected ? 'is-selected' : ''}`}>
+        <div className="list-item-main-row">
+          <div className="list-item-checkbox">
+            <input type="checkbox" checked={isSelected} onChange={() => handleToggleSelect(model.id)} style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--accent-blue)' }} />
+          </div>
+          <img src={currentThumb} alt={model.name} className="list-item-thumb" onClick={() => handlePreview(model)} />
+          <div className="list-item-info">
+            <div className="list-item-name" title={model.name}>{model.name}</div>
+            <div className="list-item-folder">
               <Folder size={11} color="#8e2de2" style={{ flexShrink: 0, marginRight: '4px' }} />
               {model.rel_path ? (
                 model.rel_path.split(/[\/\\]/).map((part: string, idx: number, arr: string[]) => (
@@ -135,97 +136,107 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 ))
               ) : '3d'}
             </div>
-         </div>
-         <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
-           {tags.map(t => {
-             const c = tagColor(t, tagColors);
-             return (
-               <span key={t} onClick={() => removeTag(t)} title="Tag entfernen" style={{ background: c+'22', color: c, border: `1px solid ${c}55`, borderRadius: '10px', padding: '1px 8px', fontSize: '10px', cursor: 'pointer', fontWeight: '600' }}>
-                 {t} ×
-               </span>
-             );
-           })}
-         </div>
-         <span className="badge" style={{ cursor: 'pointer', background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.2)' : undefined, color: model.status === 'Printed' ? '#2ecc71' : undefined }} onClick={() => handleToggleStatus(model.id, model.status)}>
-            {model.status === 'Printed' ? t('printedStatus') : t('notPrintedStatus')}
-         </span>
-         <div style={{ color: 'var(--text-muted)', fontSize: '12px', width: '80px' }}>{model.size_kb} KB</div>
-         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: 'relative', width: '100%', flex: 1 }}>
+          </div>
+        </div>
+
+        <div className="list-item-meta-row">
+          {tags.length > 0 && (
+            <div className="list-item-tags">
+              {tags.map(t => {
+                const c = tagColor(t, tagColors);
+                return (
+                  <span key={t} onClick={() => removeTag(t)} title="Tag entfernen" style={{ background: c+'22', color: c, border: `1px solid ${c}55`, borderRadius: '10px', padding: '1px 8px', fontSize: '10px', cursor: 'pointer', fontWeight: '600' }}>
+                    {t} ×
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
+          <span className="badge" style={{ cursor: 'pointer', background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.2)' : undefined, color: model.status === 'Printed' ? '#2ecc71' : undefined, flexShrink: 0 }} onClick={() => handleToggleStatus(model.id, model.status)}>
+             {model.status === 'Printed' ? t('printedStatus') : t('notPrintedStatus')}
+          </span>
+
+          <div className="list-item-size">{model.size_kb} KB</div>
+
+          <div className="list-item-actions">
+            <button
+              className="icon-button"
+              onClick={() => handleToggleStatus(model.id, model.status)}
+              title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
+              style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
+            >
+              <CheckCircle size={16} />
+            </button>
+            {model.source_url && (
+              <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
+            )}
+            <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
+            <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
+
+            <button
+              className="icon-button"
+              onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }}
+              title={t('findSimilar')}
+              style={{
+                color: '#fbbf24',
+                background: 'rgba(245, 158, 11, 0.15)',
+                border: '1px solid rgba(245, 158, 11, 0.45)',
+                borderRadius: '8px',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                flexShrink: 0
+              }}
+            >
+              <Sparkles size={16} color="#fbbf24" />
+            </button>
+
+            <div
+              style={{ position: 'relative', display: 'flex', flexShrink: 0 }}
+              onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
+              onMouseLeave={() => setShowSlicerMenu(false)}
+            >
               <button
                 className="icon-button"
-                onClick={() => handleToggleStatus(model.id, model.status)}
-                title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
-                style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
+                onClick={onSendClick}
+                title="Send to Slicer"
+                style={{
+                  color: 'var(--accent-blue)',
+                  background: 'rgba(58, 123, 213, 0.18)',
+                  border: '1px solid rgba(58, 123, 213, 0.45)',
+                  borderRadius: '8px',
+                  width: '34px',
+                  height: '34px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0
+                }}
               >
-                <CheckCircle size={16} />
+                <Printer size={21} strokeWidth={2.4} />
               </button>
-              {model.source_url && (
-                <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
-              )}
-              <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
-              <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
-                <button
-                  className="icon-button"
-                  onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }}
-                  title={t('findSimilar')}
-                  style={{
-                    color: '#fbbf24',
-                    background: 'rgba(245, 158, 11, 0.15)',
-                    border: '1px solid rgba(245, 158, 11, 0.45)',
-                    borderRadius: '8px',
-                    width: '32px',
-                    height: '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <Sparkles size={16} color="#fbbf24" />
-                </button>
-
-                <div
-                  style={{ position: 'relative', display: 'flex' }}
-                  onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
-                  onMouseLeave={() => setShowSlicerMenu(false)}
-                >
-                  <button
-                    className="icon-button"
-                    onClick={onSendClick}
-                    title="Send to Slicer"
-                    style={{
-                      color: 'var(--accent-blue)',
-                      background: 'rgba(58, 123, 213, 0.18)',
-                      border: '1px solid rgba(58, 123, 213, 0.45)',
-                      borderRadius: '8px',
-                      width: '34px',
-                      height: '34px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Printer size={21} strokeWidth={2.4} />
-                  </button>
-                  {showSlicerMenu && (
-                    <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
-                      <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content', boxShadow: '0 6px 16px rgba(0,0,0,0.6)' }}>
-                        {slicers.map((s: any) => (
-                          <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
-                               onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
-                               onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
-                               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                            {s.name}
-                          </div>
-                        ))}
+              {showSlicerMenu && (
+                <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
+                  <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content', boxShadow: '0 6px 16px rgba(0,0,0,0.6)' }}>
+                    {slicers.map((s: any) => (
+                      <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
+                           onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
+                           onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
+                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        {s.name}
                       </div>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
-              </div>
-         </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
