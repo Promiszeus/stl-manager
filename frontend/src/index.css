@@ -546,8 +546,9 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  width: 620px;
+  width: 640px;
   max-width: 94vw;
+  height: 520px;
   max-height: 85vh;
   padding: 0;
   display: flex;
