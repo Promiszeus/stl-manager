@@ -1035,56 +1035,18 @@ function App() {
       <div className="app-container">
         {/* Mobile Header Bar (<= 860px) */}
         <div className="mobile-header">
-          <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} title="Menü öffnen">
-            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '28px', height: '28px', background: 'linear-gradient(135deg, #00d2ff, #8e2de2)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Database size={16} color="white" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} title="Menü öffnen">
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '28px', height: '28px', background: 'linear-gradient(135deg, #00d2ff, #8e2de2)', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0, 210, 255, 0.3)' }}>
+                <Database size={15} color="white" />
+              </div>
+              <span style={{ fontWeight: '800', fontSize: '16px', color: '#fff', letterSpacing: '0.5px' }}>STL Manager</span>
+              <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(0, 210, 255, 0.15)', color: 'var(--accent-cyan)', border: '1px solid rgba(0, 210, 255, 0.3)', padding: '1px 5px', borderRadius: '5px' }}>v1.3.0</span>
             </div>
-            <span style={{ fontWeight: '800', fontSize: '16px', color: '#fff', letterSpacing: '0.5px' }}>STL Manager</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <button
-              onClick={toggleLanguage}
-              style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                borderRadius: '8px',
-                color: '#fff',
-                padding: '5px 8px',
-                fontSize: '11px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-              title="Sprache wechseln / Switch Language"
-            >
-              {lang === 'de' ? '🇩🇪 DE' : '🇬🇧 EN'}
-            </button>
-
-            <button 
-              onClick={() => setMobileMenuOpen(true)}
-              style={{
-                background: 'rgba(0, 210, 255, 0.15)',
-                border: '1px solid rgba(0, 210, 255, 0.3)',
-                borderRadius: '8px',
-                padding: '6px 10px',
-                color: 'var(--accent-cyan)',
-                fontSize: '12px',
-                fontWeight: '700',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                cursor: 'pointer'
-              }}
-            >
-              <Search size={14} /> {t('searchButton')}
-            </button>
           </div>
         </div>
 
