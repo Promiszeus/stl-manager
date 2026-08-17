@@ -4,6 +4,7 @@ import threading
 import urllib.request
 from pathlib import Path
 import numpy as np
+from PIL import Image
 try:
     import onnxruntime as ort
 except ImportError:
