@@ -165,6 +165,26 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
               <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
               <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+                <button
+                  className="icon-button"
+                  onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }}
+                  title={t('findSimilar')}
+                  style={{
+                    color: '#fbbf24',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    border: '1px solid rgba(245, 158, 11, 0.45)',
+                    borderRadius: '8px',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Sparkles size={16} color="#fbbf24" />
+                </button>
+
                 <div
                   style={{ position: 'relative', display: 'flex' }}
                   onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
@@ -204,26 +224,6 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                     </div>
                   )}
                 </div>
-
-                <button
-                  className="icon-button"
-                  onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }}
-                  title={t('findSimilar')}
-                  style={{
-                    color: '#fbbf24',
-                    background: 'rgba(245, 158, 11, 0.15)',
-                    border: '1px solid rgba(245, 158, 11, 0.45)',
-                    borderRadius: '8px',
-                    width: '32px',
-                    height: '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <Sparkles size={16} color="#fbbf24" />
-                </button>
               </div>
          </div>
       </div>
@@ -394,6 +394,26 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
           <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
           <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+            <button
+              className="icon-button"
+              onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }}
+              title={t('findSimilar')}
+              style={{
+                color: '#fbbf24',
+                background: 'rgba(245, 158, 11, 0.15)',
+                border: '1px solid rgba(245, 158, 11, 0.45)',
+                borderRadius: '8px',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              <Sparkles size={16} color="#fbbf24" />
+            </button>
+
             <div
               style={{ position: 'relative', display: 'flex' }}
               onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
@@ -433,26 +453,6 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 </div>
               )}
             </div>
-
-            <button
-              className="icon-button"
-              onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }}
-              title={t('findSimilar')}
-              style={{
-                color: '#fbbf24',
-                background: 'rgba(245, 158, 11, 0.15)',
-                border: '1px solid rgba(245, 158, 11, 0.45)',
-                borderRadius: '8px',
-                width: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer'
-              }}
-            >
-              <Sparkles size={16} color="#fbbf24" />
-            </button>
           </div>
         </div>
       </div>
