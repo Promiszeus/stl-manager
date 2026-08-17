@@ -68,6 +68,35 @@ def api_online_search(q: str = "", platforms: str = "", page: int = 1, sort: str
     plat_list = [p.strip().lower() for p in platforms.split(",") if p.strip()] if platforms else None
     return search_online_models(q.strip(), platforms=plat_list, page=page, sort=sort, mode=mode)
 
+@app.get("/api/models/{model_id}/similar")
+def get_similar_models_endpoint(model_id: str, limit: int = 16, min_score: float = 0.35):
+    from similarity import get_similar_models
+    models = load_models()
+    if model_id not in models:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    matches = get_similar_models(model_id, limit=limit, min_similarity=min_score)
+    result = []
+    for m in matches:
+        mid = m["id"]
+        if mid in models:
+            item = dict(models[mid])
+            item["similarity_score"] = m["score"]
+            item["similarity_percentage"] = m["percentage"]
+            result.append(item)
+    return result
+
+@app.get("/api/ai/status")
+def api_ai_status():
+    from similarity import get_ai_status
+    return get_ai_status()
+
+@app.post("/api/ai/reindex")
+def api_ai_reindex():
+    from similarity import index_all_models_background
+    index_all_models_background()
+    return {"status": "started"}
+
 @app.get("/api/settings")
 def get_settings():
     return load_settings()

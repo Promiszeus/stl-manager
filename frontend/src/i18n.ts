@@ -118,7 +118,18 @@ export const translations = {
     deleteModel: 'Modell löschen',
     free: 'Kostenlos',
     notPrintedStatus: 'Nicht gedruckt',
-    printedStatus: 'Gedruckt'
+    printedStatus: 'Gedruckt',
+
+    // AI Visual Similarity
+    findSimilar: 'Ähnliche Modelle finden (KI)',
+    similarModels: 'Optisch ähnliche Modelle (KI)',
+    similarModelsSubtitle: 'Modelle mit hoher visueller und geometrischer Form-Übereinstimmung',
+    similarity: 'Ähnlichkeit',
+    referenceModel: 'Referenzmodell',
+    noSimilarFound: 'Keine optisch ähnlichen Modelle in der Bibliothek gefunden.',
+    noSimilarHint: 'Sobald du weitere Modelle hinzufügst, erkennt die KI Form- und Remix-Ähnlichkeiten automatisch.',
+    aiEngine: 'Meta DINOv2 Vision KI (100% Lokal & Offline)',
+    match: 'Match'
   },
   en: {
     // Navigation
@@ -235,7 +246,18 @@ export const translations = {
     deleteModel: 'Delete Model',
     free: 'Free',
     notPrintedStatus: 'Not Printed',
-    printedStatus: 'Printed'
+    printedStatus: 'Printed',
+
+    // AI Visual Similarity
+    findSimilar: 'Find Similar Models (AI)',
+    similarModels: 'Visually Similar Models (AI)',
+    similarModelsSubtitle: 'Models with high visual and geometric shape similarity',
+    similarity: 'Similarity',
+    referenceModel: 'Reference Model',
+    noSimilarFound: 'No visually similar models found in your library.',
+    noSimilarHint: 'As you add more 3D models, the AI will automatically group shapes and remix variants.',
+    aiEngine: 'Meta DINOv2 Vision AI (100% Local & Offline)',
+    match: 'Match'
   }
 };
 

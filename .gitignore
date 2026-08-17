@@ -4,3 +4,6 @@ __pycache__/
 node_modules/
 backend/.cache/
 test/
+python_embeded/
+logs/
+.venv/

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Folder, FolderOpen, Database, HardDrive, Printer, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, ArrowUpDown, Globe, Pencil, Menu, Languages } from 'lucide-react';
+import { Search, Folder, FolderOpen, Database, HardDrive, Printer, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, ArrowUpDown, Globe, Pencil, Menu, Languages, Sparkles } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import { OnlineSearchProvider, OnlineSearchSidebar, OnlineSearchContent } from './OnlineSearch';
 import { SearchModal } from './SearchModal';
+import { SimilarModelsModal } from './SimilarModelsModal';
 import { useI18n } from './i18n';
 import './index.css';
 
@@ -70,7 +71,7 @@ const TagColorPicker = ({ tag, initialColor, onSave, size = 14 }: { tag: string,
   );
 };
 
-const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColors, handleToggleSelect, handleSlice, handleDeleteModel, handleToggleStatus, handlePreview, handleUpdateTags, handleOpenFolder, onContextMenu, handleSetSearchTerm }: { model: Model, slicers: any[], viewMode: string, isSelected: boolean, allTags?: string[], tagColors?: Record<string, string>, handleToggleSelect: (id: string) => void, handleSlice: (id: string, path: string) => void, handleDeleteModel: (id: string, name: string) => void, handleToggleStatus: (id: string, current: string) => void, handlePreview: (m: Model) => void, handleUpdateTags: (id: string, tags: string[]) => void, handleOpenFolder: (id: string) => void, onContextMenu: (e: React.MouseEvent, m: Model) => void, handleSetSearchTerm: (term: string) => void }) => {
+const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColors, handleToggleSelect, handleSlice, handleDeleteModel, handleToggleStatus, handlePreview, handleUpdateTags, handleOpenFolder, onContextMenu, handleSetSearchTerm, handleFindSimilar }: { model: Model, slicers: any[], viewMode: string, isSelected: boolean, allTags?: string[], tagColors?: Record<string, string>, handleToggleSelect: (id: string) => void, handleSlice: (id: string, path: string) => void, handleDeleteModel: (id: string, name: string) => void, handleToggleStatus: (id: string, current: string) => void, handlePreview: (m: Model) => void, handleUpdateTags: (id: string, tags: string[]) => void, handleOpenFolder: (id: string) => void, onContextMenu: (e: React.MouseEvent, m: Model) => void, handleSetSearchTerm: (term: string) => void, handleFindSimilar: (m: Model) => void }) => {
   const { t } = useI18n();
   const [imgIdx, setImgIdx] = useState(0);
   const thumbs = model.thumbnails && model.thumbnails.length > 0 ? model.thumbnails : (model.thumbnail ? [model.thumbnail] : []);
@@ -161,6 +162,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
               {model.source_url && (
                 <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
               )}
+              <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }} title={t('findSimilar')} style={{ color: 'var(--accent-cyan)' }}><Sparkles size={16} /></button>
               <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
               <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
               <div style={{ position: 'relative', display: 'flex', marginLeft: 'auto' }}
@@ -350,6 +352,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
           {model.source_url && (
             <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
           )}
+          <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }} title={t('findSimilar')} style={{ color: 'var(--accent-cyan)' }}><Sparkles size={16} /></button>
           <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
           <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
           <div style={{ position: 'relative', display: 'flex', marginLeft: 'auto' }}
@@ -390,6 +393,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
   const [previewModel, setPreviewModel] = useState<Model | null>(null);
+  const [similarModalSource, setSimilarModalSource] = useState<Model | null>(null);
   const [showDuplicates, setShowDuplicates] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, model: Model } | null>(null);
   const [duplicates, setDuplicates] = useState<Model[][]>([]);
@@ -1091,7 +1095,7 @@ function App() {
 
         <div className={`${viewMode === 'grid' ? "models-grid" : "models-list"} ${selectedIds.length > 0 ? "has-selection" : ""}`}>
           {sortedModels.map(model => (
-            <ModelCard key={model.id} model={model} slicers={settings.slicers} viewMode={viewMode} isSelected={selectedIds.includes(model.id)} allTags={allTags} tagColors={settings.tag_colors} handleToggleSelect={handleToggleSelect} handleSlice={handleSlice} handleDeleteModel={handleDeleteModel} handleToggleStatus={handleToggleStatus} handlePreview={setPreviewModel} handleUpdateTags={handleUpdateTags} handleOpenFolder={handleOpenFolder} handleSetSearchTerm={setSearchTerm} onContextMenu={(e, m) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, model: m }); }} />
+            <ModelCard key={model.id} model={model} slicers={settings.slicers} viewMode={viewMode} isSelected={selectedIds.includes(model.id)} allTags={allTags} tagColors={settings.tag_colors} handleToggleSelect={handleToggleSelect} handleSlice={handleSlice} handleDeleteModel={handleDeleteModel} handleToggleStatus={handleToggleStatus} handlePreview={setPreviewModel} handleUpdateTags={handleUpdateTags} handleOpenFolder={handleOpenFolder} handleSetSearchTerm={setSearchTerm} handleFindSimilar={setSimilarModalSource} onContextMenu={(e, m) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, model: m }); }} />
           ))}
           {sortedModels.length === 0 && (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
@@ -1241,13 +1245,48 @@ function App() {
                     </button>
                   </div>
                 </div>
-                <button className="icon-button" onClick={() => setPreviewModel(null)}><X size={20} /></button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+                  <button
+                    onClick={() => {
+                      setSimilarModalSource(previewModel);
+                      setPreviewModel(null);
+                    }}
+                    title={t('findSimilar')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '6px 14px',
+                      borderRadius: '10px',
+                      background: 'rgba(0, 210, 255, 0.15)',
+                      border: '1px solid rgba(0, 210, 255, 0.4)',
+                      color: 'var(--accent-cyan)',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Sparkles size={15} /> {t('findSimilar')}
+                  </button>
+                  <button className="icon-button" onClick={() => setPreviewModel(null)}><X size={20} /></button>
+                </div>
              </div>
              <div style={{ flex: 1, position: 'relative', width: '100%', height: '100%', minHeight: 0 }}>
                 <ThreeViewer url={`${API_BASE}/api/download/${previewModel.id}`} filename={previewModel.name} />
              </div>
           </div>
         </div>
+      )}
+
+      {similarModalSource && (
+        <SimilarModelsModal
+          sourceModel={similarModalSource as any}
+          onClose={() => setSimilarModalSource(null)}
+          onSelectModelFor3D={(m) => setPreviewModel(m)}
+          onSliceModel={(m, path) => handleSlice(m.id, path || (settings.slicers?.[0]?.path || ''))}
+          onOpenFolder={() => handleOpenFolder(similarModalSource.id)}
+          slicers={settings.slicers || []}
+        />
       )}
 
       {showDuplicates && (
@@ -1304,9 +1343,17 @@ function App() {
       {contextMenu && (
         <>
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }} onClick={() => setContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }} />
-          <div style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, background: '#1a1d2f', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', zIndex: 10000, boxShadow: '0 4px 12px rgba(0,0,0,0.5)', minWidth: '150px' }}>
+          <div style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, background: '#1a1d2f', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', zIndex: 10000, boxShadow: '0 4px 12px rgba(0,0,0,0.5)', minWidth: '170px' }}>
             <div 
-               style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '4px', color: 'white' }}
+               style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '4px', color: 'var(--accent-cyan)' }}
+               onMouseEnter={e => e.currentTarget.style.background = 'rgba(0, 210, 255, 0.15)'}
+               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+               onClick={() => { setSimilarModalSource(contextMenu.model); setContextMenu(null); }}
+            >
+               <Sparkles size={14} /> {t('findSimilar')}
+            </div>
+            <div 
+               style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '4px', color: 'white', marginTop: '2px' }}
                onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                onClick={() => { handleOpenFolder(contextMenu.model.id); setContextMenu(null); }}
@@ -1314,7 +1361,7 @@ function App() {
                <FolderOpen size={14} /> Dateipfad öffnen
             </div>
             <div 
-               style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '4px', color: '#ff4d4d', marginTop: '4px' }}
+               style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '4px', color: '#ff4d4d', marginTop: '2px' }}
                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 77, 77, 0.2)'}
                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                onClick={() => { handleDeleteModel(contextMenu.model.id, contextMenu.model.name); setContextMenu(null); }}

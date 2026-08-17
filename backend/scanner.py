@@ -266,6 +266,14 @@ class STLHandler(FileSystemEventHandler):
         existing.sort(key=lambda p: int(p.stem.split('_')[-1]) if '_' in p.stem else 0)
         thumbnails_list = [f"/cache/{p.name}" for p in existing]
         
+        # Trigger AI vision embedding in background
+        if existing:
+            try:
+                from similarity import update_model_embedding
+                threading.Thread(target=update_model_embedding, args=(file_id, existing[0]), daemon=True).start()
+            except Exception:
+                pass
+
         # Always save to DB - even without a thumbnail the model should appear
         existing_entry = models.get(file_id, {})
         new_source_url = get_source_url(filepath) or existing_entry.get("source_url")
@@ -375,6 +383,13 @@ def scan_all_directories():
                 if filepath.is_file() and (p.endswith('.stl') or p.endswith('.3mf')):
                     print(f"  Found: {filepath.name}")
                     handler.process_file(str(filepath))
+
+    # 3. Trigger AI vision indexing for any unindexed models
+    try:
+        from similarity import index_all_models_background
+        index_all_models_background()
+    except Exception as e:
+        print(f"Failed to start AI indexing: {e}")
 
 observer = None
 
