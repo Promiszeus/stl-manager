@@ -13,5 +13,20 @@
   ],
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.makerworld.com/*",
+        "*://*.bambulab.com/*",
+        "*://*.printables.com/*",
+        "*://*.cults3d.com/*",
+        "*://*.thingiverse.com/*",
+        "*://*.crealitycloud.com/*",
+        "*://*.makeronline.com/*"
+      ],
+      "js": ["autofill.js"],
+      "run_at": "document_idle"
+    }
+  ]
 }

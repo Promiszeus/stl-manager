@@ -139,6 +139,23 @@ def api_save_account(platform: str, payload: PlatformAccountPayload):
         print(f"Error saving account for {platform}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/accounts/{platform}/autofill")
+def api_autofill_account(platform: str):
+    try:
+        from credentials import get_platform_credential
+        cred = get_platform_credential(platform)
+        if not cred:
+            return {"found": False}
+        return {
+            "found": True,
+            "username": cred.get("username", ""),
+            "password": cred.get("password", ""),
+            "token": cred.get("token", "")
+        }
+    except Exception as e:
+        print(f"Error reading credentials for autofill ({platform}): {e}")
+        return {"found": False, "error": str(e)}
+
 @app.delete("/api/accounts/{platform}")
 def api_delete_account(platform: str):
     try:
