@@ -153,26 +153,84 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
             </div>
           )}
 
-          <span className="badge" style={{ cursor: 'pointer', background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.2)' : undefined, color: model.status === 'Printed' ? '#2ecc71' : undefined, flexShrink: 0 }} onClick={() => handleToggleStatus(model.id, model.status)}>
-             {model.status === 'Printed' ? t('printedStatus') : t('notPrintedStatus')}
-          </span>
-
           <div className="list-item-size">{model.size_kb} KB</div>
 
-          <div className="list-item-actions">
+          <div className="list-item-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, marginLeft: 'auto' }}>
             <button
               className="icon-button"
               onClick={() => handleToggleStatus(model.id, model.status)}
-              title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
-              style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
+              title={model.status === 'Printed' ? 'Gedruckt (Klicken zum Ändern)' : 'Als gedruckt markieren'}
+              style={{
+                color: model.status === 'Printed' ? '#2ecc71' : 'var(--text-muted)',
+                background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                border: model.status === 'Printed' ? '1px solid rgba(46, 204, 113, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '6px',
+                width: '30px',
+                height: '30px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
             >
-              <CheckCircle size={16} />
+              <CheckCircle size={17} strokeWidth={model.status === 'Printed' ? 2.5 : 2} />
             </button>
             {model.source_url && (
-              <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
+              <button
+                className="icon-button"
+                onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }}
+                title={`Quelle öffnen:\n${model.source_url}`}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '6px',
+                  width: '30px',
+                  height: '30px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <Globe size={16} />
+              </button>
             )}
-            <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
-            <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
+            <button
+              className="icon-button"
+              onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }}
+              title="Speicherort im Explorer öffnen"
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '6px',
+                width: '30px',
+                height: '30px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              <FolderOpen size={16} />
+            </button>
+            <button
+              className="icon-button"
+              onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }}
+              title="Remove Model from disk"
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '6px',
+                width: '30px',
+                height: '30px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              <Trash2 size={14} />
+            </button>
 
             <button
               className="icon-button"
@@ -244,7 +302,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
   return (
     <div onContextMenu={e => onContextMenu(e, model)} className={`model-card ${isSelected ? 'is-selected' : ''}`} style={{ border: isSelected ? '2px solid var(--accent-blue)' : undefined }}>
       <div className="card-image-container">
-        {/* Top-Left: Checkbox & Status Badge (Clean row, no overlap) */}
+        {/* Top-Left: Checkbox */}
         <div className="card-top-left">
           <div className="select-checkbox-container" onClick={e => e.stopPropagation()}>
             <input 
@@ -254,18 +312,6 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
               style={{ cursor: 'pointer', width: '14px', height: '14px', accentColor: 'var(--accent-blue)', margin: 0 }} 
             />
           </div>
-          <span 
-             className="badge" 
-             style={{ 
-               cursor: 'pointer', 
-               background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.25)' : 'rgba(15, 18, 30, 0.85)', 
-               color: model.status === 'Printed' ? '#2ecc71' : '#fff' 
-             }}
-             onClick={() => handleToggleStatus(model.id, model.status)}
-             title="Status umschalten"
-          >
-            {model.status === 'Printed' ? t('printedStatus') : t('notPrintedStatus')}
-          </span>
         </div>
 
         {/* Top-Right: File Extension Badge & Image Count */}
@@ -395,16 +441,78 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
             <button
               className="icon-button"
               onClick={() => handleToggleStatus(model.id, model.status)}
-              title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
-              style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
+              title={model.status === 'Printed' ? 'Gedruckt (Klicken zum Ändern)' : 'Als gedruckt markieren'}
+              style={{
+                color: model.status === 'Printed' ? '#2ecc71' : 'var(--text-muted)',
+                background: model.status === 'Printed' ? 'rgba(46, 204, 113, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                border: model.status === 'Printed' ? '1px solid rgba(46, 204, 113, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '6px',
+                width: '30px',
+                height: '30px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
             >
-              <CheckCircle size={16} />
+              <CheckCircle size={17} strokeWidth={model.status === 'Printed' ? 2.5 : 2} />
             </button>
             {model.source_url && (
-              <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
+              <button
+                className="icon-button"
+                onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }}
+                title={`Quelle öffnen:\n${model.source_url}`}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '6px',
+                  width: '30px',
+                  height: '30px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <Globe size={16} />
+              </button>
             )}
-            <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
-            <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
+            <button
+              className="icon-button"
+              onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }}
+              title="Speicherort im Explorer öffnen"
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '6px',
+                width: '30px',
+                height: '30px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              <FolderOpen size={16} />
+            </button>
+            <button
+              className="icon-button"
+              onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }}
+              title="Remove Model from disk"
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '6px',
+                width: '30px',
+                height: '30px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              <Trash2 size={14} />
+            </button>
           </div>
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
             <button
