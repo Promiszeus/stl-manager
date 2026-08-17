@@ -7,3 +7,5 @@ test/
 python_embeded/
 logs/
 .venv/
+.agents/
+

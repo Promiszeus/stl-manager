@@ -4,8 +4,10 @@ import threading
 import urllib.request
 from pathlib import Path
 import numpy as np
-from PIL import Image
-import onnxruntime as ort
+try:
+    import onnxruntime as ort
+except ImportError:
+    ort = None
 
 from database import load_models
 
@@ -55,13 +57,27 @@ load_embeddings_from_disk()
 
 def ensure_model_session():
     """Thread-safe lazy initialization of the ONNX Vision AI session."""
-    global _session
+    global _session, ort
     if _session is not None:
         return _session
 
     with _session_lock:
         if _session is not None:
             return _session
+
+        if ort is None:
+            try:
+                import subprocess
+                print("[AI Vision] onnxruntime not found. Attempting automatic installation...")
+                subprocess.run([sys.executable, "-m", "pip", "install", "onnxruntime"], capture_output=True, timeout=60)
+                import onnxruntime as _ort
+                ort = _ort
+            except Exception as e:
+                print(f"[AI Vision] onnxruntime is not available: {e}")
+                return None
+
+        if ort is None:
+            return None
 
         if not MODEL_PATH.exists() or MODEL_PATH.stat().st_size < 10000000:
             print(f"[AI Vision] Downloading lightweight DINOv2 model ({MODEL_URL})...")

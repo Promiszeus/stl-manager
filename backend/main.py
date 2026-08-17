@@ -70,32 +70,46 @@ def api_online_search(q: str = "", platforms: str = "", page: int = 1, sort: str
 
 @app.get("/api/models/{model_id}/similar")
 def get_similar_models_endpoint(model_id: str, limit: int = 16, min_score: float = 0.35):
-    from similarity import get_similar_models
-    models = load_models()
-    if model_id not in models:
-        raise HTTPException(status_code=404, detail="Model not found")
+    try:
+        from similarity import get_similar_models
+        models = load_models()
+        if model_id not in models:
+            raise HTTPException(status_code=404, detail="Model not found")
 
-    matches = get_similar_models(model_id, limit=limit, min_similarity=min_score)
-    result = []
-    for m in matches:
-        mid = m["id"]
-        if mid in models:
-            item = dict(models[mid])
-            item["similarity_score"] = m["score"]
-            item["similarity_percentage"] = m["percentage"]
-            result.append(item)
-    return result
+        matches = get_similar_models(model_id, limit=limit, min_similarity=min_score)
+        result = []
+        for m in matches:
+            mid = m["id"]
+            if mid in models:
+                item = dict(models[mid])
+                item["similarity_score"] = m["score"]
+                item["similarity_percentage"] = m["percentage"]
+                result.append(item)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in similar models endpoint: {e}")
+        return []
 
 @app.get("/api/ai/status")
 def api_ai_status():
-    from similarity import get_ai_status
-    return get_ai_status()
+    try:
+        from similarity import get_ai_status
+        return get_ai_status()
+    except Exception as e:
+        print(f"Error in ai status endpoint: {e}")
+        return {"ready": False, "error": str(e)}
 
 @app.post("/api/ai/reindex")
 def api_ai_reindex():
-    from similarity import index_all_models_background
-    index_all_models_background()
-    return {"status": "started"}
+    try:
+        from similarity import index_all_models_background
+        index_all_models_background()
+        return {"status": "started"}
+    except Exception as e:
+        print(f"Error starting ai reindexing: {e}")
+        return {"status": "error", "error": str(e)}
 
 @app.get("/api/settings")
 def get_settings():
