@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Globe, Folder, TrendingUp, Rocket, Sparkles, History, ArrowRight, Tag } from 'lucide-react';
 import { useI18n } from './i18n';
+import { useOnlineSearch } from './OnlineSearch';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -37,6 +38,20 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const [localInput, setLocalInput] = useState(searchTerm);
 
+  let onlineSearchContext: any = null;
+  try {
+    onlineSearchContext = useOnlineSearch();
+  } catch (e) {}
+
+  const triggerOnline = (query: string) => {
+    if (onTriggerOnlineSearch) {
+      onTriggerOnlineSearch(query);
+    } else if (onlineSearchContext && onlineSearchContext.handleSearch) {
+      onlineSearchContext.setSearchTerm(query);
+      onlineSearchContext.handleSearch(query);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       setLocalInput(searchTerm);
@@ -61,19 +76,23 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearchChange(localInput);
-    if (activeNav === 'online' && onTriggerOnlineSearch && localInput.trim()) {
-      onTriggerOnlineSearch(localInput.trim());
+    const query = localInput.trim();
+    if (!query) return;
+    if (activeNav === 'online') {
+      triggerOnline(query);
+    } else {
+      onSearchChange(query);
     }
     onClose();
   };
 
   const handleSelectTerm = (term: string) => {
     setLocalInput(term);
-    onSearchChange(term);
     if (onSelectHistory) onSelectHistory(term);
-    if (activeNav === 'online' && onTriggerOnlineSearch) {
-      onTriggerOnlineSearch(term);
+    if (activeNav === 'online') {
+      triggerOnline(term);
+    } else {
+      onSearchChange(term);
     }
     onClose();
   };
@@ -81,10 +100,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const handleTrendClick = (query: string) => {
     setActiveNav('online');
     setLocalInput(query);
-    onSearchChange(query);
-    if (onTriggerOnlineSearch) {
-      onTriggerOnlineSearch(query);
-    }
+    triggerOnline(query);
     onClose();
   };
 
@@ -174,8 +190,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         </div>
 
         {/* Search Input Bar */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', gap: '12px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-          <Search size={22} color="var(--accent-cyan)" style={{ flexShrink: 0 }} />
+        <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <Search size={20} color="var(--accent-cyan)" style={{ flexShrink: 0 }} />
           <input
             ref={inputRef}
             type="text"
@@ -184,10 +200,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             placeholder={activeNav === 'online' ? t('searchPlaceholder') : t('searchLocalPlaceholder')}
             style={{
               flex: 1,
+              minWidth: 0,
               background: 'transparent',
               border: 'none',
               color: '#fff',
-              fontSize: '16px',
+              fontSize: '15px',
               fontWeight: '600',
               outline: 'none',
               padding: '4px 0'
@@ -197,36 +214,38 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             <button
               type="button"
               onClick={() => { setLocalInput(''); onSearchChange(''); inputRef.current?.focus(); }}
-              style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}
+              style={{ flexShrink: 0, background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}
             >
-              <X size={14} />
+              <X size={12} />
             </button>
           )}
           <button
             type="submit"
             style={{
+              flexShrink: 0,
               background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
               border: 'none',
               borderRadius: '10px',
-              padding: '8px 16px',
+              padding: '8px 12px',
               color: '#fff',
               fontWeight: '700',
-              fontSize: '13px',
+              fontSize: '12px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '4px',
+              whiteSpace: 'nowrap'
             }}
           >
-            {t('searchButton')} <ArrowRight size={14} />
+            {t('searchButton')} <ArrowRight size={13} />
           </button>
           <button
             type="button"
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
-            title="Schließen (ESC)"
+            style={{ flexShrink: 0, background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '8px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', cursor: 'pointer' }}
+            title="Schließen"
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </form>
 
@@ -387,9 +406,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             </div>
           )}
 
-          {/* Keyboard Hint */}
+          {/* Hint */}
           <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '10px' }}>
-            Drücke <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 5px', borderRadius: '4px', color: '#fff' }}>ESC</kbd> zum Schließen oder <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 5px', borderRadius: '4px', color: '#fff' }}>Enter</kbd> zum Suchen
+            Tippe einen Begriff ein oder wähle eine Kategorie für Sofort-Ergebnisse
           </div>
         </div>
       </div>

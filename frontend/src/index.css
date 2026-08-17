@@ -1152,9 +1152,94 @@ body {
     width: 95vw !important;
     max-width: 95vw !important;
     max-height: 92vh !important;
-    padding: 16px !important;
+    padding: 0 !important;
     border-radius: 14px !important;
   }
+
+  .desktop-explore-section {
+    display: none !important;
+  }
+
+  .mobile-explore-section {
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  /* Similar Models Modal Responsive on Mobile */
+  .similar-modal-body {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+  }
+
+  .similar-modal-left {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 12px 14px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+  }
+
+  .similar-reference-img {
+    width: 60px !important;
+    height: 60px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .similar-reference-actions {
+    flex-direction: row !important;
+    width: 100% !important;
+    margin-top: 6px !important;
+  }
+
+  .similar-reference-actions button {
+    flex: 1 !important;
+  }
+}
+
+.mobile-explore-section {
+  display: none;
+}
+
+.mobile-explore-chips {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding: 4px 2px 8px 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-explore-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.explore-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.explore-chip.active {
+  background: linear-gradient(135deg, rgba(0, 210, 255, 0.25), rgba(58, 123, 213, 0.25));
+  border-color: var(--accent-cyan);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 210, 255, 0.3);
 }
 
 /* Small Smartphone Screens (<= 520px) */

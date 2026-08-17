@@ -112,38 +112,40 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
       >
         {/* Modal Header */}
         <div
+          className="similar-modal-header"
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '18px 24px',
+            padding: '14px 18px',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            background: 'rgba(0, 0, 0, 0.25)'
+            background: 'rgba(0, 0, 0, 0.25)',
+            gap: '10px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
             <div
               style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '12px',
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
                 background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 14px rgba(0, 210, 255, 0.4)'
+                boxShadow: '0 4px 14px rgba(0, 210, 255, 0.4)',
+                flexShrink: 0
               }}
             >
-              <Sparkles size={20} color="#fff" />
+              <Sparkles size={18} color="#fff" />
             </div>
-            <div>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ minWidth: 0 }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {t('similarModels')}
               </h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('similarModelsSubtitle')}</span>
-                <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '6px', background: 'rgba(0, 210, 255, 0.12)', border: '1px solid rgba(0, 210, 255, 0.25)', color: 'var(--accent-cyan)' }}>
-                  {t('aiEngine')}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '10px', fontWeight: '700', padding: '1px 6px', borderRadius: '4px', background: 'rgba(0, 210, 255, 0.12)', border: '1px solid rgba(0, 210, 255, 0.25)', color: 'var(--accent-cyan)' }}>
+                  Meta DINOv2 AI
                 </span>
               </div>
             </div>
@@ -156,32 +158,33 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
               background: 'rgba(255, 255, 255, 0.08)',
               border: 'none',
               borderRadius: '50%',
-              width: '34px',
-              height: '34px',
+              width: '32px',
+              height: '32px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#fff',
               cursor: 'pointer',
-              transition: 'background 0.2s'
+              flexShrink: 0
             }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
+        <div className="similar-modal-body" style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
           {/* Left Column: Reference Model */}
           <div
+            className="similar-modal-left"
             style={{
-              width: '320px',
+              width: '280px',
               borderRight: '1px solid rgba(255, 255, 255, 0.08)',
-              padding: '20px',
+              padding: '16px',
               background: 'rgba(0, 0, 0, 0.15)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '14px',
+              gap: '12px',
               overflowY: 'auto'
             }}
           >
@@ -190,8 +193,9 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
             </div>
 
             <div
+              className="similar-reference-img"
               style={{
-                borderRadius: '14px',
+                borderRadius: '12px',
                 overflow: 'hidden',
                 background: '#090d16',
                 border: '1px solid rgba(0, 210, 255, 0.3)',
@@ -207,22 +211,22 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
                 />
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
-                  <Box size={40} />
+                  <Box size={32} />
                 </div>
               )}
             </div>
 
-            <div>
-              <h3 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: '800', color: '#fff', wordBreak: 'break-word' }}>
+            <div style={{ minWidth: 0 }}>
+              <h3 style={{ margin: '0 0 2px 0', fontSize: '14px', fontWeight: '800', color: '#fff', wordBreak: 'break-word' }}>
                 {sourceModel.name}
               </h3>
-              <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)', wordBreak: 'break-all' }}>
+              <p style={{ margin: 0, fontSize: '10px', color: 'var(--text-muted)', wordBreak: 'break-all' }}>
                 {sourceModel.filename}
               </p>
             </div>
 
             {/* Quick Actions for Reference */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'auto' }}>
+            <div className="similar-reference-actions" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: 'auto' }}>
               <button
                 type="button"
                 onClick={() => {
@@ -233,18 +237,18 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
-                  padding: '9px 14px',
-                  borderRadius: '10px',
+                  gap: '6px',
+                  padding: '7px 12px',
+                  borderRadius: '8px',
                   background: 'rgba(255, 255, 255, 0.06)',
                   border: '1px solid rgba(255, 255, 255, 0.15)',
                   color: '#fff',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   fontWeight: '700',
                   cursor: 'pointer'
                 }}
               >
-                <Eye size={15} color="var(--accent-cyan)" /> {t('open3DPreview')}
+                <Eye size={13} color="var(--accent-cyan)" /> {t('open3DPreview')}
               </button>
 
               <button
@@ -254,18 +258,18 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
-                  padding: '9px 14px',
-                  borderRadius: '10px',
+                  gap: '6px',
+                  padding: '7px 12px',
+                  borderRadius: '8px',
                   background: 'rgba(255, 255, 255, 0.04)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                   color: '#fff',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   fontWeight: '600',
                   cursor: 'pointer'
                 }}
               >
-                <FolderOpen size={15} color="var(--accent-cyan)" /> {t('openFolder')}
+                <FolderOpen size={13} color="var(--accent-cyan)" /> {t('openFolder')}
               </button>
 
               {slicers.length > 0 && (
