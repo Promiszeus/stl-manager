@@ -1101,7 +1101,10 @@ function App() {
                 <Database size={26} color="white" />
               </div>
               <div>
-                <div style={{ fontWeight: '800', fontSize: '18px', letterSpacing: '1px', color: '#fff' }}>STL Manager</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ fontWeight: '800', fontSize: '17px', letterSpacing: '1px', color: '#fff' }}>STL Manager</div>
+                  <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(0, 210, 255, 0.15)', color: 'var(--accent-cyan)', border: '1px solid rgba(0, 210, 255, 0.3)', padding: '1px 5px', borderRadius: '6px' }}>v1.3.0</span>
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                   <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{models.length} {t('modelsTotal')}</span>
                   <button

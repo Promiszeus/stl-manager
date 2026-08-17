@@ -120,6 +120,17 @@ class PlatformAccountPayload(BaseModel):
     password: Optional[str] = ""
     token: Optional[str] = ""
 
+@app.get("/api/version")
+def api_get_version():
+    version_file = Path(__file__).resolve().parent.parent / "version.json"
+    if version_file.exists():
+        try:
+            with open(version_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"version": "1.3.0", "name": "STL-Manager"}
+
 @app.get("/api/accounts")
 def api_get_accounts():
     try:

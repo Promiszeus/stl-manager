@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "STL-Manager Tracker",
-  "version": "1.2",
-  "description": "Erfasst die exakte Modell-URL beim Download (MakerWorld, Printables, Cults3D, Thingiverse etc.) und verknüpft sie mit dem STL-Manager.",
+  "version": "1.3.0",
+  "description": "Erfasst die exakte Modell-URL beim Download (MakerWorld, Printables, Cults3D, Thingiverse etc.) und füllt gespeicherte Zugangsdaten automatisch aus.",
   "permissions": [
     "downloads",
     "tabs"
@@ -26,7 +26,8 @@
         "*://*.makeronline.com/*"
       ],
       "js": ["autofill.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ],
   "browser_specific_settings": {

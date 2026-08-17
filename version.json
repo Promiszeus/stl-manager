@@ -1,0 +1,13 @@
+{
+  "version": "1.3.0",
+  "name": "STL-Manager",
+  "release_date": "2026-08-17",
+  "features": [
+    "🤖 KI-Ähnlichkeitssuche mit Meta DINOv2 (100% lokal & offline)",
+    "🔒 Sichere Windows DPAPI Plattform-Zugangsdaten (verschlüsselt)",
+    "⚡ 1-Klick Auto-Fill für MakerWorld, Printables, Thingiverse, Cults 3D",
+    "🦊 Firefox & Chrome Browser-Erweiterungen (v1.3.0)",
+    "📱 Progressive Web App (PWA) für Desktop & Smartphone",
+    "📐 Feste, responsive Fenstergröße im Einstellungsmenü"
+  ]
+}

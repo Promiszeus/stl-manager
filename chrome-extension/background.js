@@ -141,3 +141,32 @@ chrome.downloads.onChanged.addListener((delta) => {
     });
   }
 });
+
+// Auto-Fill Credential Bridge (Bypasses page CSP and Mixed Content)
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request && request.action === 'get_autofill') {
+    const platform = request.platform;
+    const endpoints = [
+      `http://localhost:8000/api/accounts/${platform}/autofill`,
+      `http://127.0.0.1:8000/api/accounts/${platform}/autofill`
+    ];
+
+    const tryFetch = async () => {
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.found) {
+              return data;
+            }
+          }
+        } catch (e) {}
+      }
+      return { found: false };
+    };
+
+    tryFetch().then(data => sendResponse(data)).catch(err => sendResponse({ found: false, error: err.toString() }));
+    return true; // Keep message channel open for async response
+  }
+});
