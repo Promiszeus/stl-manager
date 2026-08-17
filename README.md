@@ -9,6 +9,7 @@
 ### 📁 Local Library & Management
 * 📂 **Automated Directory Monitoring:** Live-monitors local and network folders, automatically registering new STL and 3MF files into your library.
 * 👁️ **Built-in 3D Viewer & High-Res Thumbnails:** Automatically generates multi-angle 3D renders and includes an interactive 3D model inspector right in your browser.
+* 🤖 **AI-Powered Visual Similarity Search (Meta DINOv2):** 100% local, offline AI engine that analyzes 3D renders to instantly find visually and geometrically similar models, remixes, and shape variants.
 * 🕒 **Windows File Modification Date Sorting:** Sort your models by actual filesystem modification timestamps (`mtime`), date added, file size, or alphabetically.
 * 🏷️ **Tag System with Color Customizer:** Categorize models with custom tags and custom colors, with instant 1-click filters for tags or untagged files.
 * 🔍 **Smart Duplicate Finder:** Identifies true binary content duplicates using MD5 content hashing to save valuable disk storage.
@@ -19,21 +20,14 @@
 ### 🌐 Multi-Platform Online Model Hub (MakerWorld Aesthetic)
 * 🔍 **Simultaneous Multi-Platform Search:** Search **MakerWorld**, **Printables**, **Cults 3D**, **Thingiverse**, **MakerOnline**, and **Creality Cloud** simultaneously with live result counters and infinite pagination (*"Load More Models"*).
 * 🏆 **3D Design Contests Hub:** Explore official 3D design competitions and challenges across MakerWorld, Printables, Cults 3D, and Creality with 1-click contest model searches and direct portal links.
-* 🗂️ **Explore Categories & Topics:** Dedicated category cards to explore popular 3D printing themes:
-  - 🧸 **Toys & Fidgets** (*Figuren, Spielzeug & Fidgets*)
-  - 👗 **Fashion & Jewelry** (*Ringe, Schmuck & Wearables*)
-  - 🎨 **Art & Design** (*Skulpturen, Deko & Miniaturen*)
-  - 🔧 **Tools & Gadgets** (*Funktionale Hilfen & Mechanik*)
-  - 🏠 **Home & Storage** (*Gridfinity, Halter & Organizer*)
-  - 🎮 **Gaming & Pop Culture** (*Controller, Cosplay & Zubehör*)
-  - 🌿 **Planters & Vases** (*Blumentöpfe, Vasen & Deko*)
-  - 🚗 **RC, Cars & Models** (*Drohnen, Autos & RC-Modelle*)
+* 🗂️ **Explore Categories & Topics:** Dedicated category cards to explore popular 3D printing themes (*Toys, Art, Tools, Storage, Gaming, Planters, RC etc.*).
 * 📈 **Trend Discovery:** 1-Click access to *Daily Trends (24h Top)*, *Monthly Trends*, and *Newest* releases.
+* 🔒 **Secure Platform Account Storage (Windows DPAPI):** Store logins and session tokens for MakerWorld, Printables, Cults 3D, Thingiverse, and Creality Cloud encrypted directly with your Windows user credentials – zero plaintext passwords.
 * 🌍 **Bilingual Support (DE / EN):** Seamlessly toggle between German (`🇩🇪 Deutsch`) and English (`🇬🇧 English`) with persistent language storage.
-* 📱 **Full Responsive Design:** Tailored for Desktop workstations, Tablets, and Smartphones with a floating glassmorphic bottom dock and elevated center search action.
+* 📱 **Full Responsive Design:** Tailored for Desktop workstations, Tablets, and Smartphones with a floating glassmorphic bottom dock and touch-friendly layouts.
 
 ### 🧩 Integrations & Portability
-* 🧩 **Chrome Extension:** Automatically captures and links the original model overview page whenever you download from 3D printing websites.
+* 🧩 **Browser Extensions (Chrome & Firefox):** Automatically captures and links the original model overview page whenever you download from 3D printing websites.
 * ⚙️ **Configurable Port (`port.txt`):** Easily customize the server port to whatever you prefer.
 * 🔄 **1-Click Auto-Updater (`update.bat`):** Automatically stops the running server, pulls updates from GitHub, updates dependencies, and restarts the server.
 
@@ -113,5 +107,6 @@ The browser extension ensures that downloading a model from MakerWorld, Printabl
 
 ## 🛠️ Tech Stack
 
-* **Backend:** Python (FastAPI, Uvicorn, Trimesh, PyVista, Pillow)
+* **Backend:** Python (FastAPI, Uvicorn, ONNX Runtime, Meta DINOv2 AI, Trimesh, PyVista, Pillow, Windows DPAPI)
 * **Frontend:** React 19, TypeScript, Vite, Lucide Icons, Three.js
+* **Extensions:** Chromium Manifest V3 & Mozilla Firefox WebExtension
