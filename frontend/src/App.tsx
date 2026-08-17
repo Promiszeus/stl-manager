@@ -617,6 +617,7 @@ function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [accountMsg, setAccountMsg] = useState('');
   const [accountLoading, setAccountLoading] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'folders' | 'tags' | 'accounts' | 'maintenance'>('folders');
 
   useEffect(() => {
     fetchModels();
@@ -1371,81 +1372,125 @@ function App() {
         <div className="modal-overlay" onClick={() => setShowSettings(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
              <div className="modal-header">
-                {t('settings')}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Settings size={18} color="var(--accent-cyan)" />
+                  {t('settings')}
+                </div>
                 <button className="icon-button" onClick={() => setShowSettings(false)}><X size={20} /></button>
              </div>
 
-             <div className="form-group">
-                <label className="form-label">{t('slicers')}:</label>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                  <input 
-                    type="text" 
-                    className="input-field" 
-                    value={slicerNameInput}
-                    onChange={e => setSlicerNameInput(e.target.value)}
-                    placeholder="Name (z.B. PrusaSlicer / Bambu Studio)"
-                    style={{ flex: 1, minWidth: '120px' }}
-                  />
-                  <div style={{ flex: 2, display: 'flex', gap: '4px', minWidth: '200px' }}>
-                    <input 
-                      type="text" 
-                      className="input-field" 
-                      value={slicerPathInput}
-                      onChange={e => setSlicerPathInput(e.target.value)}
-                      placeholder="Pfad (z.B. C:\...)"
-                      style={{ flex: 1 }}
-                    />
-                    <button className="slice-btn" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', whiteSpace: 'nowrap' }} onClick={handleBrowseSlicer} title="Datei auf Festplatte auswählen">
-                      📁 Auswählen
-                    </button>
-                  </div>
-                  <button className="slice-btn" onClick={handleAddSlicer}>Add</button>
-                </div>
-                <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
-                  {settings.slicers?.map((s: any, i: number) => (
-                    <div className="list-item" key={i}>
-                      <span style={{ flex: 1, fontWeight: 'bold' }}>{s.name}</span>
-                      <span style={{ flex: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '11px', color: 'var(--text-muted)' }}>{s.path}</span>
-                      <button className="icon-button" onClick={() => handleRemoveSlicer(s.name)}><Trash2 size={14} color="#ff4d4d" /></button>
-                    </div>
-                  ))}
-                  {(!settings.slicers || settings.slicers.length === 0) && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No slicers configured.</div>}
-                </div>
+             {/* Tab Navigation */}
+             <div className="modal-tabs">
+               <button 
+                 type="button" 
+                 className={`modal-tab-btn ${settingsTab === 'folders' ? 'active' : ''}`}
+                 onClick={() => setSettingsTab('folders')}
+               >
+                 <Folder size={14} /> {t('settingsTabsFolders')}
+               </button>
+               <button 
+                 type="button" 
+                 className={`modal-tab-btn ${settingsTab === 'tags' ? 'active' : ''}`}
+                 onClick={() => setSettingsTab('tags')}
+               >
+                 <Tag size={14} /> {t('settingsTabsTags')}
+               </button>
+               <button 
+                 type="button" 
+                 className={`modal-tab-btn ${settingsTab === 'accounts' ? 'active' : ''}`}
+                 onClick={() => setSettingsTab('accounts')}
+               >
+                 <ShieldCheck size={14} /> {t('settingsTabsAccounts')}
+               </button>
+               <button 
+                 type="button" 
+                 className={`modal-tab-btn ${settingsTab === 'maintenance' ? 'active' : ''}`}
+                 onClick={() => setSettingsTab('maintenance')}
+               >
+                 <HardDrive size={14} /> {t('settingsTabsMaintenance')}
+               </button>
              </div>
 
-             <div className="form-group">
-                 <label className="form-label">{t('monitoredFolders')}:</label>
-                 <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                   <input 
-                     type="text" 
-                     className="input-field" 
-                     placeholder="z.B. D:\STLs" 
-                     value={directoryInput}
-                     onChange={e => setDirectoryInput(e.target.value)}
-                     style={{ flex: 1 }}
-                   />
-                   <button className="slice-btn" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', whiteSpace: 'nowrap' }} onClick={handleBrowseDirectory} title="Ordner auf Festplatte auswählen">
-                     📁 {t('addFolder')}
-                   </button>
-                   <button className="slice-btn" onClick={handleAddDirectory}>Add Folder</button>
-                 </div>
-                 <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
-                   {settings.directories.map((d: string, i: number) => (
-                     <div className="list-item" key={i}>
-                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d}</span>
-                       <button className="icon-button" onClick={() => handleRemoveDirectory(d)}><Trash2 size={14} color="#ff4d4d" /></button>
+             <div className="modal-body">
+               {/* TAB 1: Folders & Slicers */}
+               {settingsTab === 'folders' && (
+                 <>
+                   <div className="form-group">
+                     <label className="form-label">{t('monitoredFolders')}:</label>
+                     <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                       <input 
+                         type="text" 
+                         className="input-field" 
+                         placeholder="z.B. D:\STLs" 
+                         value={directoryInput}
+                         onChange={e => setDirectoryInput(e.target.value)}
+                         style={{ flex: 1, minWidth: '160px' }}
+                       />
+                       <button className="slice-btn" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', whiteSpace: 'nowrap' }} onClick={handleBrowseDirectory} title="Ordner auf Festplatte auswählen">
+                         📁 {t('addFolder')}
+                       </button>
+                       <button className="slice-btn" onClick={handleAddDirectory}>Add Folder</button>
                      </div>
-                   ))}
-                   {settings.directories.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No directories monitored.</div>}
-                 </div>
-                 {/* Manage Tags Section */}
-                 <div className="form-group" style={{ marginTop: '16px' }}>
-                    <label className="form-label">Manage Tags:</label>
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                     <div style={{ maxHeight: '140px', overflowY: 'auto' }}>
+                       {settings.directories.map((d: string, i: number) => (
+                         <div className="list-item" key={i}>
+                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '12px' }}>{d}</span>
+                           <button className="icon-button" onClick={() => handleRemoveDirectory(d)}><Trash2 size={14} color="#ff4d4d" /></button>
+                         </div>
+                       ))}
+                       {settings.directories.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No directories monitored.</div>}
+                     </div>
+                   </div>
+
+                   <div className="form-group" style={{ marginTop: '8px' }}>
+                     <label className="form-label">{t('slicers')}:</label>
+                     <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                       <input 
+                         type="text" 
+                         className="input-field" 
+                         value={slicerNameInput}
+                         onChange={e => setSlicerNameInput(e.target.value)}
+                         placeholder="Name (z.B. PrusaSlicer / Bambu Studio)"
+                         style={{ flex: 1, minWidth: '120px' }}
+                       />
+                       <div style={{ flex: 2, display: 'flex', gap: '4px', minWidth: '180px' }}>
+                         <input 
+                           type="text" 
+                           className="input-field" 
+                           value={slicerPathInput}
+                           onChange={e => setSlicerPathInput(e.target.value)}
+                           placeholder="Pfad (z.B. C:\...)"
+                           style={{ flex: 1 }}
+                         />
+                         <button className="slice-btn" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', whiteSpace: 'nowrap' }} onClick={handleBrowseSlicer} title="Datei auf Festplatte auswählen">
+                           📁 Auswählen
+                         </button>
+                       </div>
+                       <button className="slice-btn" onClick={handleAddSlicer}>Add</button>
+                     </div>
+                     <div style={{ maxHeight: '140px', overflowY: 'auto' }}>
+                       {settings.slicers?.map((s: any, i: number) => (
+                         <div className="list-item" key={i}>
+                           <span style={{ flex: 1, fontWeight: 'bold', fontSize: '12px' }}>{s.name}</span>
+                           <span style={{ flex: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '11px', color: 'var(--text-muted)' }}>{s.path}</span>
+                           <button className="icon-button" onClick={() => handleRemoveSlicer(s.name)}><Trash2 size={14} color="#ff4d4d" /></button>
+                         </div>
+                       ))}
+                       {(!settings.slicers || settings.slicers.length === 0) && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No slicers configured.</div>}
+                     </div>
+                   </div>
+                 </>
+               )}
+
+               {/* TAB 2: Tags & Colors */}
+               {settingsTab === 'tags' && (
+                 <div className="form-group">
+                    <label className="form-label">{t('manageTags')}:</label>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                       <input 
                         type="text" 
                         className="input-field" 
-                        placeholder="Neuer Tag Name..." 
+                        placeholder={t('newTagName')} 
                         value={newTagInput}
                         onChange={e => setNewTagInput(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') handleAddSettingsTag(); }}
@@ -1453,7 +1498,7 @@ function App() {
                       />
                       <button className="slice-btn" onClick={handleAddSettingsTag}>Add Tag</button>
                     </div>
-                    <div style={{ maxHeight: '120px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ maxHeight: '280px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {allTags.map(t => {
                         const c = tagColor(t, settings?.tag_colors);
                         return (
@@ -1467,164 +1512,173 @@ function App() {
                       {allTags.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No tags available.</div>}
                     </div>
                  </div>
-              </div>
+               )}
 
-              {/* 🌐 Platform Accounts & Logins Section (Encrypted with DPAPI) */}
-              <div className="form-group" style={{ marginTop: '24px', background: 'linear-gradient(135deg, rgba(142, 45, 226, 0.08), rgba(0, 210, 255, 0.06))', border: '1px solid rgba(142, 45, 226, 0.3)', borderRadius: '12px', padding: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '14px', color: '#fff' }}>
-                    <ShieldCheck size={18} color="var(--accent-cyan)" />
-                    {t('platformAccounts')}
-                  </div>
-                  <span style={{ fontSize: '10px', color: '#2ecc71', background: 'rgba(46, 204, 113, 0.15)', border: '1px solid rgba(46, 204, 113, 0.3)', padding: '2px 8px', borderRadius: '10px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Lock size={10} /> {t('savedSecurely')}
-                  </span>
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: '1.4' }}>
-                  {t('platformAccountsSubtitle')}
-                </div>
+               {/* TAB 3: Platform Accounts (DPAPI Encrypted) */}
+               {settingsTab === 'accounts' && (
+                 <div>
+                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '800', fontSize: '13px', color: '#fff' }}>
+                       <ShieldCheck size={16} color="var(--accent-cyan)" />
+                       {t('platformAccounts')}
+                     </div>
+                     <span style={{ fontSize: '10px', color: '#2ecc71', background: 'rgba(46, 204, 113, 0.15)', border: '1px solid rgba(46, 204, 113, 0.3)', padding: '2px 8px', borderRadius: '10px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                       <Lock size={10} /> {t('savedSecurely')}
+                     </span>
+                   </div>
+                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: '1.4' }}>
+                     {t('platformAccountsSubtitle')}
+                   </div>
 
-                {/* Platform Selector Badges */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
-                  {accounts.map(acc => {
-                    const isSelected = selectedAccountPlatform === acc.id;
-                    return (
-                      <button
-                        key={acc.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAccountPlatform(acc.id);
-                          setAccountUsername(acc.username || '');
-                          setAccountPassword('');
-                          setAccountToken('');
-                          setAccountMsg('');
-                        }}
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          border: isSelected ? `2px solid ${acc.color}` : '1px solid rgba(255,255,255,0.08)',
-                          background: isSelected ? `${acc.color}25` : 'rgba(255,255,255,0.03)',
-                          color: isSelected ? '#fff' : 'var(--text-muted)',
-                          fontSize: '12px',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: acc.is_configured ? '#2ecc71' : 'rgba(255,255,255,0.2)' }} />
-                        {acc.name}
-                        {acc.is_configured && (
-                          <span style={{ fontSize: '9px', background: 'rgba(46, 204, 113, 0.2)', color: '#2ecc71', padding: '1px 5px', borderRadius: '4px' }}>
-                            ✓
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                   {/* Platform Selector Badges */}
+                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                     {accounts.map(acc => {
+                       const isSelected = selectedAccountPlatform === acc.id;
+                       return (
+                         <button
+                           key={acc.id}
+                           type="button"
+                           onClick={() => {
+                             setSelectedAccountPlatform(acc.id);
+                             setAccountUsername(acc.username || '');
+                             setAccountPassword('');
+                             setAccountToken('');
+                             setAccountMsg('');
+                           }}
+                           style={{
+                             padding: '5px 10px',
+                             borderRadius: '8px',
+                             border: isSelected ? `2px solid ${acc.color}` : '1px solid rgba(255,255,255,0.08)',
+                             background: isSelected ? `${acc.color}25` : 'rgba(255,255,255,0.03)',
+                             color: isSelected ? '#fff' : 'var(--text-muted)',
+                             fontSize: '11px',
+                             fontWeight: '700',
+                             cursor: 'pointer',
+                             display: 'flex',
+                             alignItems: 'center',
+                             gap: '5px',
+                             transition: 'all 0.2s'
+                           }}
+                         >
+                           <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: acc.is_configured ? '#2ecc71' : 'rgba(255,255,255,0.2)' }} />
+                           {acc.name}
+                           {acc.is_configured && (
+                             <span style={{ fontSize: '9px', background: 'rgba(46, 204, 113, 0.2)', color: '#2ecc71', padding: '1px 4px', borderRadius: '4px' }}>
+                               ✓
+                             </span>
+                           )}
+                         </button>
+                       );
+                     })}
+                   </div>
 
-                {/* Input Form for Selected Platform */}
-                <div style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1, minWidth: '180px' }}>
-                      <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
-                        {t('usernameOrEmail')}
-                      </label>
-                      <input
-                        type="text"
-                        className="input-field"
-                        placeholder="z.B. user@mail.de oder Username"
-                        value={accountUsername}
-                        onChange={e => setAccountUsername(e.target.value)}
-                        style={{ width: '100%' }}
-                      />
-                    </div>
+                   {/* Input Form for Selected Platform */}
+                   <div style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                       <div style={{ flex: 1, minWidth: '160px' }}>
+                         <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
+                           {t('usernameOrEmail')}
+                         </label>
+                         <input
+                           type="text"
+                           className="input-field"
+                           placeholder="z.B. user@mail.de oder Username"
+                           value={accountUsername}
+                           onChange={e => setAccountUsername(e.target.value)}
+                           style={{ width: '100%' }}
+                         />
+                       </div>
 
-                    <div style={{ flex: 1, minWidth: '180px', position: 'relative' }}>
-                      <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
-                        {t('password')}
-                      </label>
-                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          className="input-field"
-                          placeholder="••••••••••••"
-                          value={accountPassword}
-                          onChange={e => setAccountPassword(e.target.value)}
-                          style={{ width: '100%', paddingRight: '34px' }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                          title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
-                        >
-                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                       <div style={{ flex: 1, minWidth: '160px', position: 'relative' }}>
+                         <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
+                           {t('password')}
+                         </label>
+                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                           <input
+                             type={showPassword ? 'text' : 'password'}
+                             className="input-field"
+                             placeholder="••••••••••••"
+                             value={accountPassword}
+                             onChange={e => setAccountPassword(e.target.value)}
+                             style={{ width: '100%', paddingRight: '34px' }}
+                           />
+                           <button
+                             type="button"
+                             onClick={() => setShowPassword(!showPassword)}
+                             style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                             title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                           >
+                             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                           </button>
+                         </div>
+                       </div>
+                     </div>
 
-                  {/* Optional Token Field */}
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', flexWrap: 'wrap', gap: '4px' }}>
-                      <label style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>
-                        {t('tokenOrCookie')}
-                      </label>
-                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                        {t('tokenOrCookieHint')}
-                      </span>
-                    </div>
-                    <input
-                      type="password"
-                      className="input-field"
-                      placeholder="Optionaler Token / Cookie (z.B. für 2FA oder OAuth)"
-                      value={accountToken}
-                      onChange={e => setAccountToken(e.target.value)}
-                      style={{ width: '100%', fontSize: '11px' }}
-                    />
-                  </div>
+                     {/* Optional Token Field */}
+                     <div>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', flexWrap: 'wrap', gap: '4px' }}>
+                         <label style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>
+                           {t('tokenOrCookie')}
+                         </label>
+                         <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                           {t('tokenOrCookieHint')}
+                         </span>
+                       </div>
+                       <input
+                         type="password"
+                         className="input-field"
+                         placeholder="Optionaler Token / Cookie (z.B. für 2FA oder OAuth)"
+                         value={accountToken}
+                         onChange={e => setAccountToken(e.target.value)}
+                         style={{ width: '100%', fontSize: '11px' }}
+                       />
+                     </div>
 
-                  {/* Action Buttons */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px', flexWrap: 'wrap', gap: '8px' }}>
-                    <div style={{ fontSize: '11px', color: '#2ecc71', fontWeight: '700' }}>
-                      {accountMsg}
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
-                      {accounts.find(a => a.id === selectedAccountPlatform)?.is_configured && (
-                        <button
-                          type="button"
-                          className="danger-btn"
-                          style={{ padding: '6px 12px', fontSize: '12px' }}
-                          onClick={() => handleDeleteAccount(selectedAccountPlatform)}
-                        >
-                          <Trash2 size={13} /> {t('removeAccount')}
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className="slice-btn"
-                        style={{ background: 'linear-gradient(135deg, #00d2ff, #3a7bd5)', color: '#fff', border: 'none', padding: '6px 16px', fontSize: '12px', fontWeight: '700' }}
-                        onClick={handleSaveAccount}
-                        disabled={accountLoading || !accountUsername}
-                      >
-                        {accountLoading ? 'Speichern...' : `🔒 ${t('saveCredentials')}`}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                     {/* Action Buttons */}
+                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px', flexWrap: 'wrap', gap: '8px' }}>
+                       <div style={{ fontSize: '11px', color: '#2ecc71', fontWeight: '700' }}>
+                         {accountMsg}
+                       </div>
+                       <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+                         {accounts.find(a => a.id === selectedAccountPlatform)?.is_configured && (
+                           <button
+                             type="button"
+                             className="danger-btn"
+                             style={{ padding: '6px 12px', fontSize: '12px' }}
+                             onClick={() => handleDeleteAccount(selectedAccountPlatform)}
+                           >
+                             <Trash2 size={13} /> {t('removeAccount')}
+                           </button>
+                         )}
+                         <button
+                           type="button"
+                           className="slice-btn"
+                           style={{ background: 'linear-gradient(135deg, #00d2ff, #3a7bd5)', color: '#fff', border: 'none', padding: '6px 16px', fontSize: '12px', fontWeight: '700' }}
+                           onClick={handleSaveAccount}
+                           disabled={accountLoading || !accountUsername}
+                         >
+                           {accountLoading ? 'Speichern...' : `🔒 ${t('saveCredentials')}`}
+                         </button>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               )}
 
-             <div style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
-                <button className="danger-btn" onClick={handleClearDatabase}>
-                   Clear Database & Rescan
-                </button>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'center' }}>
-                  This will delete all generated thumbnails and clear the file registry.
-                </div>
+               {/* TAB 4: Maintenance & Cache */}
+               {settingsTab === 'maintenance' && (
+                 <div>
+                   <div style={{ background: 'rgba(255, 50, 50, 0.05)', border: '1px solid rgba(255, 50, 50, 0.2)', borderRadius: '12px', padding: '16px' }}>
+                     <h4 style={{ margin: '0 0 8px 0', color: '#ff4d4d', fontSize: '14px' }}>Clear Database & Rescan</h4>
+                     <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                       {t('clearDatabaseDesc')}
+                     </p>
+                     <button className="danger-btn" onClick={handleClearDatabase}>
+                        Clear Database & Rescan
+                     </button>
+                   </div>
+                 </div>
+               )}
              </div>
            </div>
         </div>

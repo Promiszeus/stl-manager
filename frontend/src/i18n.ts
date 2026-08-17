@@ -145,7 +145,16 @@ export const translations = {
     accountSavedSuccess: 'Zugangsdaten erfolgreich verschlüsselt gespeichert!',
     accountDeletedSuccess: 'Zugangsdaten wurden sicher entfernt.',
     notConfigured: 'Nicht verknüpft',
-    configured: 'Verknüpft'
+    configured: 'Verknüpft',
+
+    // Settings Modal Tabs
+    settingsTabsFolders: 'Ordner & Slicer',
+    settingsTabsTags: 'Tags & Farben',
+    settingsTabsAccounts: 'Plattform-Accounts',
+    settingsTabsMaintenance: 'Wartung & Cache',
+    manageTags: 'Tags verwalten',
+    newTagName: 'Neuer Tag Name...',
+    clearDatabaseDesc: 'Löscht alle generierten 3D-Vorschaubilder und liest alle Verzeichnisse komplett neu ein.'
   },
   en: {
     // Navigation
@@ -289,7 +298,16 @@ export const translations = {
     accountSavedSuccess: 'Credentials encrypted and saved successfully!',
     accountDeletedSuccess: 'Credentials removed securely.',
     notConfigured: 'Not connected',
-    configured: 'Connected'
+    configured: 'Connected',
+
+    // Settings Modal Tabs
+    settingsTabsFolders: 'Folders & Slicers',
+    settingsTabsTags: 'Tags & Colors',
+    settingsTabsAccounts: 'Platform Accounts',
+    settingsTabsMaintenance: 'Maintenance & Cache',
+    manageTags: 'Manage Tags',
+    newTagName: 'New Tag Name...',
+    clearDatabaseDesc: 'Deletes all generated 3D thumbnails and triggers a full fresh rescan of all folders.'
   }
 };
 
