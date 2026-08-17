@@ -162,29 +162,68 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
               {model.source_url && (
                 <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
               )}
-              <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }} title={t('findSimilar')} style={{ color: 'var(--accent-cyan)' }}><Sparkles size={16} /></button>
               <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
               <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
-              <div style={{ position: 'relative', display: 'flex', marginLeft: 'auto' }}
-                onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
-                onMouseLeave={() => setShowSlicerMenu(false)}>
-              <button className="icon-button" onClick={onSendClick} title="Send to Slicer" style={{ color: 'var(--accent-blue)' }}>
-                 <Printer size={18} strokeWidth={2.5} />
-              </button>
-              {showSlicerMenu && (
-                 <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
-                 <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content' }}>
-                    {slicers.map((s: any) => (
-                       <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
-                            onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          {s.name}
-                       </div>
-                    ))}
-                 </div>
-                 </div>
-              )}
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+                <div
+                  style={{ position: 'relative', display: 'flex' }}
+                  onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
+                  onMouseLeave={() => setShowSlicerMenu(false)}
+                >
+                  <button
+                    className="icon-button"
+                    onClick={onSendClick}
+                    title="Send to Slicer"
+                    style={{
+                      color: 'var(--accent-blue)',
+                      background: 'rgba(58, 123, 213, 0.18)',
+                      border: '1px solid rgba(58, 123, 213, 0.45)',
+                      borderRadius: '8px',
+                      width: '34px',
+                      height: '34px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Printer size={21} strokeWidth={2.4} />
+                  </button>
+                  {showSlicerMenu && (
+                    <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
+                      <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content', boxShadow: '0 6px 16px rgba(0,0,0,0.6)' }}>
+                        {slicers.map((s: any) => (
+                          <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
+                               onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
+                               onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
+                               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            {s.name}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  className="icon-button"
+                  onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }}
+                  title={t('findSimilar')}
+                  style={{
+                    color: '#fbbf24',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    border: '1px solid rgba(245, 158, 11, 0.45)',
+                    borderRadius: '8px',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Sparkles size={16} color="#fbbf24" />
+                </button>
               </div>
          </div>
       </div>
@@ -352,29 +391,68 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
           {model.source_url && (
             <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
           )}
-          <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }} title={t('findSimilar')} style={{ color: 'var(--accent-cyan)' }}><Sparkles size={16} /></button>
           <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
           <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
-          <div style={{ position: 'relative', display: 'flex', marginLeft: 'auto' }}
-            onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
-            onMouseLeave={() => setShowSlicerMenu(false)}>
-          <button className="icon-button" onClick={onSendClick} title="Send to Slicer" style={{ color: 'var(--accent-blue)' }}>
-             <Printer size={18} strokeWidth={2.5} />
-          </button>
-          {showSlicerMenu && (
-             <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
-             <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content' }}>
-                {slicers.map((s: any) => (
-                   <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
-                        onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                      {s.name}
-                   </div>
-                ))}
-             </div>
-             </div>
-          )}
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+            <div
+              style={{ position: 'relative', display: 'flex' }}
+              onMouseEnter={() => { if (slicers && slicers.length > 0) setShowSlicerMenu(true); }}
+              onMouseLeave={() => setShowSlicerMenu(false)}
+            >
+              <button
+                className="icon-button"
+                onClick={onSendClick}
+                title="Send to Slicer"
+                style={{
+                  color: 'var(--accent-blue)',
+                  background: 'rgba(58, 123, 213, 0.18)',
+                  border: '1px solid rgba(58, 123, 213, 0.45)',
+                  borderRadius: '8px',
+                  width: '34px',
+                  height: '34px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <Printer size={21} strokeWidth={2.4} />
+              </button>
+              {showSlicerMenu && (
+                <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
+                  <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content', boxShadow: '0 6px 16px rgba(0,0,0,0.6)' }}>
+                    {slicers.map((s: any) => (
+                      <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
+                           onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
+                           onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
+                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        {s.name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button
+              className="icon-button"
+              onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }}
+              title={t('findSimilar')}
+              style={{
+                color: '#fbbf24',
+                background: 'rgba(245, 158, 11, 0.15)',
+                border: '1px solid rgba(245, 158, 11, 0.45)',
+                borderRadius: '8px',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer'
+              }}
+            >
+              <Sparkles size={16} color="#fbbf24" />
+            </button>
           </div>
         </div>
       </div>
@@ -1258,9 +1336,9 @@ function App() {
                       gap: '6px',
                       padding: '6px 14px',
                       borderRadius: '10px',
-                      background: 'rgba(0, 210, 255, 0.15)',
-                      border: '1px solid rgba(0, 210, 255, 0.4)',
-                      color: 'var(--accent-cyan)',
+                      background: 'rgba(245, 158, 11, 0.15)',
+                      border: '1px solid rgba(245, 158, 11, 0.45)',
+                      color: '#fbbf24',
                       fontSize: '12px',
                       fontWeight: '700',
                       cursor: 'pointer'
