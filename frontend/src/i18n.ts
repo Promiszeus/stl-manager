@@ -129,7 +129,23 @@ export const translations = {
     noSimilarFound: 'Keine optisch ähnlichen Modelle in der Bibliothek gefunden.',
     noSimilarHint: 'Sobald du weitere Modelle hinzufügst, erkennt die KI Form- und Remix-Ähnlichkeiten automatisch.',
     aiEngine: 'Meta DINOv2 Vision KI (100% Lokal & Offline)',
-    match: 'Match'
+    match: 'Match',
+
+    // Platform Accounts & Logins
+    platformAccounts: 'Plattform-Accounts & Zugangsdaten',
+    platformAccountsSubtitle: 'Hinterlege deine Logins für 1-Klick Downloads & Interaktionen (100% lokal mit Windows DPAPI verschlüsselt).',
+    platformSelect: 'Plattform auswählen',
+    usernameOrEmail: 'E-Mail oder Benutzername',
+    password: 'Passwort',
+    tokenOrCookie: 'Session-Cookie / API-Token (Optional)',
+    tokenOrCookieHint: 'Hilfreich bei 2-Faktor-Authentifizierung (2FA) oder Google/Apple-Logins',
+    saveCredentials: 'Zugangsdaten sicher speichern',
+    savedSecurely: '🔒 Sicher verschlüsselt',
+    removeAccount: 'Zugangsdaten löschen',
+    accountSavedSuccess: 'Zugangsdaten erfolgreich verschlüsselt gespeichert!',
+    accountDeletedSuccess: 'Zugangsdaten wurden sicher entfernt.',
+    notConfigured: 'Nicht verknüpft',
+    configured: 'Verknüpft'
   },
   en: {
     // Navigation
@@ -257,7 +273,23 @@ export const translations = {
     noSimilarFound: 'No visually similar models found in your library.',
     noSimilarHint: 'As you add more 3D models, the AI will automatically group shapes and remix variants.',
     aiEngine: 'Meta DINOv2 Vision AI (100% Local & Offline)',
-    match: 'Match'
+    match: 'Match',
+
+    // Platform Accounts & Logins
+    platformAccounts: 'Platform Accounts & Credentials',
+    platformAccountsSubtitle: 'Store your logins for 1-click downloads & platform features (100% locally encrypted with Windows DPAPI).',
+    platformSelect: 'Select Platform',
+    usernameOrEmail: 'Email or Username',
+    password: 'Password',
+    tokenOrCookie: 'Session Cookie / API Token (Optional)',
+    tokenOrCookieHint: 'Helpful for 2-Factor Authentication (2FA) or Google/Apple logins',
+    saveCredentials: 'Save Credentials Securely',
+    savedSecurely: '🔒 Securely Encrypted',
+    removeAccount: 'Delete Credentials',
+    accountSavedSuccess: 'Credentials encrypted and saved successfully!',
+    accountDeletedSuccess: 'Credentials removed securely.',
+    notConfigured: 'Not connected',
+    configured: 'Connected'
   }
 };
 

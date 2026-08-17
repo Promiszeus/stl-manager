@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from typing import Optional, List, Dict, Any
 import subprocess
 from pathlib import Path
 from database import load_settings, save_settings, load_models, save_models
@@ -114,6 +114,40 @@ def api_ai_reindex():
 @app.get("/api/settings")
 def get_settings():
     return load_settings()
+
+class PlatformAccountPayload(BaseModel):
+    username: str
+    password: Optional[str] = ""
+    token: Optional[str] = ""
+
+@app.get("/api/accounts")
+def api_get_accounts():
+    try:
+        from credentials import get_all_accounts_status
+        return get_all_accounts_status()
+    except Exception as e:
+        print(f"Error fetching accounts: {e}")
+        return []
+
+@app.post("/api/accounts/{platform}")
+def api_save_account(platform: str, payload: PlatformAccountPayload):
+    try:
+        from credentials import save_platform_credential
+        success = save_platform_credential(platform, payload.username, payload.password or "", payload.token or "")
+        return {"status": "saved", "success": success}
+    except Exception as e:
+        print(f"Error saving account for {platform}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/accounts/{platform}")
+def api_delete_account(platform: str):
+    try:
+        from credentials import delete_platform_credential
+        success = delete_platform_credential(platform)
+        return {"status": "deleted", "success": success}
+    except Exception as e:
+        print(f"Error deleting account for {platform}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/fs/list")
 def list_fs(path: str = "", filter_ext: str = ""):

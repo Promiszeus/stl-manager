@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Folder, FolderOpen, Database, HardDrive, Printer, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, ArrowUpDown, Globe, Pencil, Menu, Languages, Sparkles } from 'lucide-react';
+import { Search, Folder, FolderOpen, Database, HardDrive, Printer, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, ArrowUpDown, Globe, Pencil, Menu, Languages, Sparkles, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import { OnlineSearchProvider, OnlineSearchSidebar, OnlineSearchContent } from './OnlineSearch';
@@ -608,13 +608,76 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
+  // Platform Accounts State
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [selectedAccountPlatform, setSelectedAccountPlatform] = useState('makerworld');
+  const [accountUsername, setAccountUsername] = useState('');
+  const [accountPassword, setAccountPassword] = useState('');
+  const [accountToken, setAccountToken] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [accountMsg, setAccountMsg] = useState('');
+  const [accountLoading, setAccountLoading] = useState(false);
+
   useEffect(() => {
     fetchModels();
     fetchSettings();
     fetchTags();
+    fetchAccounts();
     const interval = setInterval(fetchModels, 2500);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchAccounts = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/accounts`);
+      const data = await res.json();
+      setAccounts(data);
+    } catch (e) {
+      console.error("Error fetching accounts", e);
+    }
+  };
+
+  const handleSaveAccount = async () => {
+    if (!accountUsername) return;
+    setAccountLoading(true);
+    setAccountMsg('');
+    try {
+      const res = await fetch(`${API_BASE}/api/accounts/${selectedAccountPlatform}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: accountUsername,
+          password: accountPassword,
+          token: accountToken
+        })
+      });
+      if (res.ok) {
+        setAccountPassword('');
+        setAccountToken('');
+        setAccountMsg(t('accountSavedSuccess'));
+        fetchAccounts();
+        setTimeout(() => setAccountMsg(''), 4000);
+      }
+    } catch (e) {
+      console.error("Error saving account", e);
+    } finally {
+      setAccountLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async (pid: string) => {
+    try {
+      await fetch(`${API_BASE}/api/accounts/${pid}`, { method: 'DELETE' });
+      fetchAccounts();
+      setAccountUsername('');
+      setAccountPassword('');
+      setAccountToken('');
+      setAccountMsg(t('accountDeletedSuccess'));
+      setTimeout(() => setAccountMsg(''), 4000);
+    } catch (e) {
+      console.error("Error deleting account", e);
+    }
+  };
 
   useEffect(() => {
     const handleGlobalKeys = (e: KeyboardEvent) => {
@@ -1404,6 +1467,155 @@ function App() {
                       {allTags.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No tags available.</div>}
                     </div>
                  </div>
+              </div>
+
+              {/* 🌐 Platform Accounts & Logins Section (Encrypted with DPAPI) */}
+              <div className="form-group" style={{ marginTop: '24px', background: 'linear-gradient(135deg, rgba(142, 45, 226, 0.08), rgba(0, 210, 255, 0.06))', border: '1px solid rgba(142, 45, 226, 0.3)', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '14px', color: '#fff' }}>
+                    <ShieldCheck size={18} color="var(--accent-cyan)" />
+                    {t('platformAccounts')}
+                  </div>
+                  <span style={{ fontSize: '10px', color: '#2ecc71', background: 'rgba(46, 204, 113, 0.15)', border: '1px solid rgba(46, 204, 113, 0.3)', padding: '2px 8px', borderRadius: '10px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Lock size={10} /> {t('savedSecurely')}
+                  </span>
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: '1.4' }}>
+                  {t('platformAccountsSubtitle')}
+                </div>
+
+                {/* Platform Selector Badges */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+                  {accounts.map(acc => {
+                    const isSelected = selectedAccountPlatform === acc.id;
+                    return (
+                      <button
+                        key={acc.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedAccountPlatform(acc.id);
+                          setAccountUsername(acc.username || '');
+                          setAccountPassword('');
+                          setAccountToken('');
+                          setAccountMsg('');
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          border: isSelected ? `2px solid ${acc.color}` : '1px solid rgba(255,255,255,0.08)',
+                          background: isSelected ? `${acc.color}25` : 'rgba(255,255,255,0.03)',
+                          color: isSelected ? '#fff' : 'var(--text-muted)',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: acc.is_configured ? '#2ecc71' : 'rgba(255,255,255,0.2)' }} />
+                        {acc.name}
+                        {acc.is_configured && (
+                          <span style={{ fontSize: '9px', background: 'rgba(46, 204, 113, 0.2)', color: '#2ecc71', padding: '1px 5px', borderRadius: '4px' }}>
+                            ✓
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Input Form for Selected Platform */}
+                <div style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: '180px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
+                        {t('usernameOrEmail')}
+                      </label>
+                      <input
+                        type="text"
+                        className="input-field"
+                        placeholder="z.B. user@mail.de oder Username"
+                        value={accountUsername}
+                        onChange={e => setAccountUsername(e.target.value)}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+
+                    <div style={{ flex: 1, minWidth: '180px', position: 'relative' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
+                        {t('password')}
+                      </label>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          className="input-field"
+                          placeholder="••••••••••••"
+                          value={accountPassword}
+                          onChange={e => setAccountPassword(e.target.value)}
+                          style={{ width: '100%', paddingRight: '34px' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                          title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Optional Token Field */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', flexWrap: 'wrap', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>
+                        {t('tokenOrCookie')}
+                      </label>
+                      <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                        {t('tokenOrCookieHint')}
+                      </span>
+                    </div>
+                    <input
+                      type="password"
+                      className="input-field"
+                      placeholder="Optionaler Token / Cookie (z.B. für 2FA oder OAuth)"
+                      value={accountToken}
+                      onChange={e => setAccountToken(e.target.value)}
+                      style={{ width: '100%', fontSize: '11px' }}
+                    />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ fontSize: '11px', color: '#2ecc71', fontWeight: '700' }}>
+                      {accountMsg}
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+                      {accounts.find(a => a.id === selectedAccountPlatform)?.is_configured && (
+                        <button
+                          type="button"
+                          className="danger-btn"
+                          style={{ padding: '6px 12px', fontSize: '12px' }}
+                          onClick={() => handleDeleteAccount(selectedAccountPlatform)}
+                        >
+                          <Trash2 size={13} /> {t('removeAccount')}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="slice-btn"
+                        style={{ background: 'linear-gradient(135deg, #00d2ff, #3a7bd5)', color: '#fff', border: 'none', padding: '6px 16px', fontSize: '12px', fontWeight: '700' }}
+                        onClick={handleSaveAccount}
+                        disabled={accountLoading || !accountUsername}
+                      >
+                        {accountLoading ? 'Speichern...' : `🔒 ${t('saveCredentials')}`}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
              <div style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
