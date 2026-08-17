@@ -390,20 +390,22 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
         </div>
 
         {/* Actions Toolbar */}
-        <div className="card-actions" style={{ position: 'relative', marginTop: '10px' }}>
-          <button
-            className="icon-button"
-            onClick={() => handleToggleStatus(model.id, model.status)}
-            title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
-            style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
-          >
-            <CheckCircle size={16} />
-          </button>
-          {model.source_url && (
-            <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
-          )}
-          <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
-          <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
+        <div className="card-actions" style={{ position: 'relative', marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              className="icon-button"
+              onClick={() => handleToggleStatus(model.id, model.status)}
+              title={model.status === 'Printed' ? 'Mark as Not Printed' : 'Mark as Printed'}
+              style={{ color: model.status === 'Printed' ? '#2ecc71' : undefined }}
+            >
+              <CheckCircle size={16} />
+            </button>
+            {model.source_url && (
+              <button className="icon-button" onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }} title={`Quelle öffnen:\n${model.source_url}`}><Globe size={16} /></button>
+            )}
+            <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleOpenFolder(model.id); }} title="Speicherort im Explorer öffnen"><FolderOpen size={16} /></button>
+            <button className="icon-button" onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.id, model.name); }} title="Remove Model from disk"><Trash2 size={14} /></button>
+          </div>
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
             <button
               className="icon-button"

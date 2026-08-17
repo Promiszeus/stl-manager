@@ -492,18 +492,25 @@ body {
 }
 
 .icon-button {
-  background: transparent;
-  border: none;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
   color: var(--text-muted);
   cursor: pointer;
-  transition: color 0.2s;
-  display: flex;
+  transition: all 0.2s ease;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .icon-button:hover {
   color: var(--accent-cyan);
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(0, 210, 255, 0.3);
 }
 
 .slice-btn {
