@@ -91,16 +91,23 @@ To update your STL-Manager to the latest version:
 
 ---
 
-## 🧩 Chrome Extension (STL-Manager Tracker)
+## 🧩 Browser Extensions (Chrome & Firefox Tracker)
 
-The browser extension ensures that downloading a model from MakerWorld, Printables, Thingiverse, etc. automatically associates the original presentation webpage URL with the file:
+The browser extension ensures that downloading a model from MakerWorld, Printables, Thingiverse, Cults3D, etc. automatically associates the original presentation webpage URL with the file in your STL-Manager library.
 
-1. Open Google Chrome (or Edge / Brave).
+### 🌐 Google Chrome / Edge / Brave
+1. Open your Chromium-based browser.
 2. Navigate to `chrome://extensions` in the address bar.
 3. Enable **Developer mode** (toggle in the top-right corner).
 4. Click **Load unpacked** (top-left).
 5. Select the `chrome-extension` folder inside your STL-Manager directory.
-6. Done! Future downloads will have their web source link automatically attached.
+
+### 🦊 Mozilla Firefox
+1. Open Mozilla Firefox.
+2. Navigate to `about:debugging#/runtime/this-firefox` in the address bar.
+3. Click on **Load Temporary Add-on...** (Temporäres Add-on laden...).
+4. Select the `manifest.json` file inside the `firefox-extension/` directory.
+5. Done! Future downloads in Firefox will have their model source link automatically attached.
 
 ---
 

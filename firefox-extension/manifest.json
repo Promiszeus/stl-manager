@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "STL-Manager Tracker",
+  "version": "1.2",
+  "description": "Erfasst die exakte Modell-URL beim Download (MakerWorld, Printables, Cults3D, Thingiverse etc.) und verknüpft sie mit dem STL-Manager.",
+  "permissions": [
+    "downloads",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://localhost:*/*",
+    "http://127.0.0.1:*/*"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "stl-manager-tracker@local",
+      "strict_min_version": "109.0"
+    }
+  }
+}
