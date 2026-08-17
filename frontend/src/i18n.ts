@@ -151,10 +151,12 @@ export const translations = {
     settingsTabsFolders: 'Ordner & Slicer',
     settingsTabsTags: 'Tags & Farben',
     settingsTabsAccounts: 'Plattform-Accounts',
-    settingsTabsMaintenance: 'Wartung & Cache',
+    settingsTabsMaintenance: 'Wartung & App',
     manageTags: 'Tags verwalten',
     newTagName: 'Neuer Tag Name...',
-    clearDatabaseDesc: 'Löscht alle generierten 3D-Vorschaubilder und liest alle Verzeichnisse komplett neu ein.'
+    clearDatabaseDesc: 'Löscht alle generierten 3D-Vorschaubilder und liest alle Verzeichnisse komplett neu ein.',
+    installApp: 'Als WebApp installieren',
+    installAppDesc: 'Installiere STL-Manager als native Desktop- oder Smartphone-App für schnellen 1-Klick-Zugriff ohne Browserleiste.'
   },
   en: {
     // Navigation
@@ -304,10 +306,12 @@ export const translations = {
     settingsTabsFolders: 'Folders & Slicers',
     settingsTabsTags: 'Tags & Colors',
     settingsTabsAccounts: 'Platform Accounts',
-    settingsTabsMaintenance: 'Maintenance & Cache',
+    settingsTabsMaintenance: 'Maintenance & App',
     manageTags: 'Manage Tags',
     newTagName: 'New Tag Name...',
-    clearDatabaseDesc: 'Deletes all generated 3D thumbnails and triggers a full fresh rescan of all folders.'
+    clearDatabaseDesc: 'Deletes all generated 3D thumbnails and triggers a full fresh rescan of all folders.',
+    installApp: 'Install as WebApp',
+    installAppDesc: 'Install STL-Manager as a standalone desktop or mobile application for instant access without a browser bar.'
   }
 };
 

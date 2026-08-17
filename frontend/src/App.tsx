@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Folder, FolderOpen, Database, HardDrive, Printer, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, ArrowUpDown, Globe, Pencil, Menu, Languages, Sparkles, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Search, Folder, FolderOpen, Database, HardDrive, Printer, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, ArrowUpDown, Globe, Pencil, Menu, Languages, Sparkles, Lock, ShieldCheck, Eye, EyeOff, Smartphone, Download } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import { OnlineSearchProvider, OnlineSearchSidebar, OnlineSearchContent } from './OnlineSearch';
@@ -618,6 +618,51 @@ function App() {
   const [accountMsg, setAccountMsg] = useState('');
   const [accountLoading, setAccountLoading] = useState(false);
   const [settingsTab, setSettingsTab] = useState<'folders' | 'tags' | 'accounts' | 'maintenance'>('folders');
+
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [canInstallPWA, setCanInstallPWA] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    // Check if running as standalone PWA
+    if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
+      setIsStandalone(true);
+    }
+
+    const installHandler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstallPWA(true);
+    };
+
+    const appInstalledHandler = () => {
+      setCanInstallPWA(false);
+      setDeferredPrompt(null);
+      setIsStandalone(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', installHandler);
+    window.addEventListener('appinstalled', appInstalledHandler);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', installHandler);
+      window.removeEventListener('appinstalled', appInstalledHandler);
+    };
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setCanInstallPWA(false);
+        setDeferredPrompt(null);
+      }
+    } else {
+      alert('Tipp: Um die WebApp zu installieren, klicke im Browser (Chrome/Edge/Firefox) in der Adressleiste auf das App-Installieren-Symbol (⊕) oder im Browser-Menü auf "App installieren" bzw. "Zum Startbildschirm hinzufügen".');
+    }
+  };
 
   useEffect(() => {
     fetchModels();
@@ -1255,7 +1300,16 @@ function App() {
         )}
 
         {/* Footer / Settings */}
-        <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
+        <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {canInstallPWA && !isStandalone && (
+            <button 
+              className="button-secondary" 
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '10px', fontSize: '12px', background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(58, 123, 213, 0.1))', border: '1px solid rgba(0, 210, 255, 0.4)', color: 'var(--accent-cyan)', fontWeight: '700' }} 
+              onClick={handleInstallPWA}
+            >
+               <Download size={15} /> {t('installApp')}
+            </button>
+          )}
           <button 
             className="button-secondary" 
             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '11px', borderRadius: '10px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)' }} 
@@ -1665,12 +1719,39 @@ function App() {
                  </div>
                )}
 
-               {/* TAB 4: Maintenance & Cache */}
+               {/* TAB 4: Maintenance & App */}
                {settingsTab === 'maintenance' && (
-                 <div>
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                   {/* PWA WebApp Box */}
+                   <div style={{ background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.08), rgba(58, 123, 213, 0.05))', border: '1px solid rgba(0, 210, 255, 0.3)', borderRadius: '12px', padding: '16px' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#fff' }}>
+                         <Smartphone size={16} color="var(--accent-cyan)" />
+                         {t('installApp')}
+                       </div>
+                       {isStandalone && (
+                         <span style={{ fontSize: '10px', color: '#2ecc71', background: 'rgba(46, 204, 113, 0.15)', border: '1px solid rgba(46, 204, 113, 0.3)', padding: '2px 8px', borderRadius: '10px', fontWeight: '700' }}>
+                           ✓ Installiert
+                         </span>
+                       )}
+                     </div>
+                     <p style={{ margin: '0 0 12px 0', fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                       {t('installAppDesc')}
+                     </p>
+                     <button
+                       type="button"
+                       className="slice-btn"
+                       style={{ background: 'linear-gradient(135deg, #00d2ff, #3a7bd5)', color: '#fff', border: 'none', padding: '8px 16px', fontSize: '12px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}
+                       onClick={handleInstallPWA}
+                     >
+                       <Download size={14} /> {isStandalone ? 'App ist bereits installiert' : t('installApp')}
+                     </button>
+                   </div>
+
+                   {/* Rescan & Clear DB Box */}
                    <div style={{ background: 'rgba(255, 50, 50, 0.05)', border: '1px solid rgba(255, 50, 50, 0.2)', borderRadius: '12px', padding: '16px' }}>
-                     <h4 style={{ margin: '0 0 8px 0', color: '#ff4d4d', fontSize: '14px' }}>Clear Database & Rescan</h4>
-                     <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                     <h4 style={{ margin: '0 0 8px 0', color: '#ff4d4d', fontSize: '13px' }}>Clear Database & Rescan</h4>
+                     <p style={{ margin: '0 0 12px 0', fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
                        {t('clearDatabaseDesc')}
                      </p>
                      <button className="danger-btn" onClick={handleClearDatabase}>
