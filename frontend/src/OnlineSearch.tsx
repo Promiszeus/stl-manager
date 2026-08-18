@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2, TrendingUp, Rocket, History, ChevronRight, Trophy, Gamepad2, Palette, Wrench, Home, Car, Smile, Layers } from 'lucide-react';
+import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2, TrendingUp, Rocket, History, ChevronRight, Trophy, Gamepad2, Palette, Wrench, Home, Car, Smile, Layers, Star, Trash2 } from 'lucide-react';
 import { useI18n } from './i18n';
 
 export interface OnlineModel {
@@ -14,6 +14,7 @@ export interface OnlineModel {
   downloads: number;
   is_free: boolean;
   price?: string | null;
+  saved_at?: number;
 }
 
 export const PLATFORMS = [
@@ -194,6 +195,10 @@ interface OnlineSearchContextType {
   selectAllPlatforms: () => void;
   results: OnlineModel[];
   displayedResults: OnlineModel[];
+  favoriteModels: OnlineModel[];
+  isFavorite: (modelId: string) => boolean;
+  toggleFavorite: (model: OnlineModel) => void;
+  clearFavorites: () => void;
   loading: boolean;
   loadingMore: boolean;
   page: number;
@@ -235,6 +240,43 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [sortBy, setSortBy] = useState<'popular' | 'likes' | 'name'>('popular');
   const [freeOnly, setFreeOnly] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>('daily');
+
+  // Favorites Persistence
+  const [favoriteModels, setFavoriteModels] = useState<OnlineModel[]>(() => {
+    try {
+      const stored = localStorage.getItem('stl_favorite_online_models');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const saveFavorites = (favs: OnlineModel[]) => {
+    setFavoriteModels(favs);
+    try {
+      localStorage.setItem('stl_favorite_online_models', JSON.stringify(favs));
+    } catch (e) {
+      console.error('Failed to save favorites:', e);
+    }
+  };
+
+  const isFavorite = (modelId: string) => {
+    return favoriteModels.some(f => f.id === modelId);
+  };
+
+  const toggleFavorite = (model: OnlineModel) => {
+    if (isFavorite(model.id)) {
+      const updated = favoriteModels.filter(f => f.id !== model.id);
+      saveFavorites(updated);
+    } else {
+      const updated = [{ ...model, saved_at: Date.now() }, ...favoriteModels];
+      saveFavorites(updated);
+    }
+  };
+
+  const clearFavorites = () => {
+    saveFavorites([]);
+  };
 
   // Search History Persistence
   const [searchHistory, setSearchHistory] = useState<string[]>(() => {
@@ -345,7 +387,9 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   const handleCategoryClick = (cat: string) => {
     setActiveCategory(cat);
-    if (cat === 'daily') {
+    if (cat === 'favorites') {
+      return;
+    } else if (cat === 'daily') {
       setSearchTerm('');
       handleSearch('', 'daily', 'popular');
     } else if (cat === 'monthly') {
@@ -394,14 +438,21 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
     return found || { color: 'var(--accent-cyan)', bg: 'rgba(0, 210, 255, 0.15)' };
   };
 
-  // Filter & Sorting logic
-  let displayedResults = results.filter(m => {
+  // Filter & Sorting logic (with Favorites View support)
+  const sourceList = activeCategory === 'favorites' ? favoriteModels : results;
+
+  let displayedResults = sourceList.filter(m => {
     if (freeOnly && !m.is_free) return false;
+    if (activePlatforms.length > 0 && !activePlatforms.includes(m.platform)) return false;
+    if (activeCategory === 'favorites' && searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      return m.title.toLowerCase().includes(q) || (m.author && m.author.toLowerCase().includes(q)) || (m.platform_name && m.platform_name.toLowerCase().includes(q));
+    }
     return true;
   });
 
   if (sortBy === 'likes') {
-    displayedResults = [...displayedResults].sort((a, b) => b.likes - a.likes);
+    displayedResults = [...displayedResults].sort((a, b) => (b.likes || 0) - (a.likes || 0));
   } else if (sortBy === 'name') {
     displayedResults = [...displayedResults].sort((a, b) => a.title.localeCompare(b.title));
   }
@@ -417,6 +468,10 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
         selectAllPlatforms,
         results,
         displayedResults,
+        favoriteModels,
+        isFavorite,
+        toggleFavorite,
+        clearFavorites,
         loading,
         loadingMore,
         page,
@@ -473,6 +528,9 @@ export const OnlineSearchSidebar: React.FC = () => {
     searchHistory,
     clearHistory,
     removeFromHistory,
+    favoriteModels,
+    activeCategory,
+    handleCategoryClick,
     handleSearch
   } = useOnlineSearch();
 
@@ -484,7 +542,41 @@ export const OnlineSearchSidebar: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Favoriten Shortcut Button */}
+      <button
+        type="button"
+        onClick={() => handleCategoryClick('favorites')}
+        style={{
+          width: '100%',
+          padding: '11px 14px',
+          borderRadius: '12px',
+          background: activeCategory === 'favorites' ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3))' : 'rgba(245, 158, 11, 0.08)',
+          border: activeCategory === 'favorites' ? '1px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.25)',
+          color: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+          boxShadow: activeCategory === 'favorites' ? '0 4px 14px rgba(245, 158, 11, 0.3)' : 'none'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Star size={16} color="#f59e0b" fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} />
+          <span style={{ fontSize: '13px', fontWeight: '700' }}>{t('myFavorites')}</span>
+        </div>
+        <span style={{
+          fontSize: '11px',
+          fontWeight: '800',
+          background: activeCategory === 'favorites' ? '#f59e0b' : 'rgba(245, 158, 11, 0.2)',
+          color: activeCategory === 'favorites' ? '#000' : '#fbbf24',
+          padding: '2px 8px',
+          borderRadius: '10px'
+        }}>
+          {favoriteModels.length}
+        </span>
+      </button>
       {/* 1. Prominently Highlighted Search Hub */}
       <div style={{
         background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(58, 123, 213, 0.15))',
@@ -710,10 +802,13 @@ export const OnlineSearchContent: React.FC = () => {
   const {
     currentQuery,
     displayedResults,
+    favoriteModels,
+    isFavorite,
+    toggleFavorite,
+    clearFavorites,
     loading,
     loadingMore,
     hasMore,
-    hasSearched,
     error,
     copiedId,
     searchHistory,
@@ -729,6 +824,7 @@ export const OnlineSearchContent: React.FC = () => {
   const [showContestsModal, setShowContestsModal] = useState(false);
 
   const getHeadingTitle = () => {
+    if (activeCategory === 'favorites') return `${t('myFavorites')}`;
     if (activeCategory === 'daily') return `${t('dailyTrends')} (24h Top)`;
     if (activeCategory === 'monthly') return `${t('monthlyTrends')} (Monats-Hits)`;
     if (activeCategory === 'newest') return `${t('newest')} (Frisch online)`;
@@ -768,6 +864,15 @@ export const OnlineSearchContent: React.FC = () => {
 
         {/* Horizontal Swipeable Chip Bar for Categories & Trends */}
         <div className="mobile-explore-chips">
+          <button
+            type="button"
+            className={`explore-chip ${activeCategory === 'favorites' ? 'active' : ''}`}
+            onClick={() => handleCategoryClick('favorites')}
+            style={activeCategory === 'favorites' ? { background: 'linear-gradient(135deg, #f59e0b, #d97706)', borderColor: '#fbbf24', color: '#fff' } : {}}
+          >
+            <Star size={13} fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} color="#f59e0b" />
+            <span>{t('favorites')} ({favoriteModels.length})</span>
+          </button>
           <button
             type="button"
             className={`explore-chip ${activeCategory === 'daily' ? 'active' : ''}`}
@@ -1144,7 +1249,33 @@ export const OnlineSearchContent: React.FC = () => {
             </div>
           </button>
 
-          {/* Card 4: History / Search History */}
+          {/* Card 4: Favorites */}
+          <button
+            onClick={() => handleCategoryClick('favorites')}
+            style={{
+              padding: '14px 12px',
+              borderRadius: '14px',
+              background: activeCategory === 'favorites' ? 'linear-gradient(135deg, #422a10 0%, #2b1a08 100%)' : 'linear-gradient(135deg, #2a1c0d 0%, #1a1106 100%)',
+              border: activeCategory === 'favorites' ? '1px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.25)',
+              boxShadow: activeCategory === 'favorites' ? '0 4px 16px rgba(245, 158, 11, 0.3)' : 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s'
+            }}
+          >
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Star size={18} color="#f59e0b" fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{t('favorites')}</div>
+              <div style={{ fontSize: '10px', color: '#fbbf24', marginTop: '2px' }}>{favoriteModels.length} gespeichert</div>
+            </div>
+          </button>
+
+          {/* Card 5: History / Search History */}
           <button
             onClick={() => {
               handleCategoryClick('history');
@@ -1234,13 +1365,39 @@ export const OnlineSearchContent: React.FC = () => {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <h1 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Globe size={20} color="var(--accent-cyan)" />
+            {activeCategory === 'favorites' ? <Star size={20} color="#f59e0b" fill="#f59e0b" /> : <Globe size={20} color="var(--accent-cyan)" />}
             {getHeadingTitle()}
           </h1>
+          {activeCategory === 'favorites' && favoriteModels.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm('Möchtest du wirklich alle Favoriten aus der Liste entfernen?')) {
+                  clearFavorites();
+                }
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '3px 8px',
+                borderRadius: '6px',
+                background: 'rgba(255, 77, 77, 0.1)',
+                border: '1px solid rgba(255, 77, 77, 0.3)',
+                color: '#ff6b6b',
+                fontSize: '11px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+              title={t('clearAllFavorites')}
+            >
+              <Trash2 size={12} /> {t('clearAllFavorites')}
+            </button>
+          )}
         </div>
 
         {displayedResults.length > 0 && (
-          <span style={{ fontSize: '11px', fontWeight: '700', background: 'rgba(0, 210, 255, 0.15)', color: 'var(--accent-cyan)', border: '1px solid rgba(0, 210, 255, 0.3)', padding: '4px 10px', borderRadius: '10px' }}>
+          <span style={{ fontSize: '11px', fontWeight: '700', background: activeCategory === 'favorites' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(0, 210, 255, 0.15)', color: activeCategory === 'favorites' ? '#fbbf24' : 'var(--accent-cyan)', border: activeCategory === 'favorites' ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(0, 210, 255, 0.3)', padding: '4px 10px', borderRadius: '10px' }}>
             {displayedResults.length} {t('modelsLoaded')}
           </span>
         )}
@@ -1263,12 +1420,48 @@ export const OnlineSearchContent: React.FC = () => {
         </div>
       )}
 
-      {/* No Results State */}
-      {!loading && hasSearched && displayedResults.length === 0 && !error && (
+      {/* No Results / Empty Favorites State */}
+      {!loading && displayedResults.length === 0 && !error && (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-          <Search size={36} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
-          <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>{t('noModelsFound')}</div>
-          <div style={{ fontSize: '13px', marginTop: '6px' }}>{t('noModelsFoundSubtitle')}</div>
+          {activeCategory === 'favorites' ? (
+            <div>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <Star size={32} color="#f59e0b" fill="none" />
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>
+                {t('noFavoritesTitle')}
+              </div>
+              <div style={{ fontSize: '13px', maxWidth: '420px', margin: '0 auto 20px', lineHeight: '1.5', color: 'var(--text-muted)' }}>
+                {t('noFavoritesSubtitle')}
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCategoryClick('daily')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
+                  border: 'none',
+                  color: '#fff',
+                  fontWeight: '700',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(0, 210, 255, 0.3)'
+                }}
+              >
+                <TrendingUp size={15} /> {t('dailyTrends')} durchsuchen
+              </button>
+            </div>
+          ) : (
+            <div>
+              <Search size={36} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
+              <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>{t('noModelsFound')}</div>
+              <div style={{ fontSize: '13px', marginTop: '6px' }}>{t('noModelsFoundSubtitle')}</div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1278,28 +1471,29 @@ export const OnlineSearchContent: React.FC = () => {
           <div className="online-models-grid">
             {displayedResults.map(model => {
               const platStyle = getPlatformStyle(model.platform);
+              const isFav = isFavorite(model.id);
               return (
                 <div
                   key={model.id}
                   style={{
                     background: 'var(--bg-card)',
-                    border: '1px solid rgba(255, 255, 255, 0.07)',
+                    border: isFav ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid rgba(255, 255, 255, 0.07)',
                     borderRadius: '16px',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                     transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
+                    boxShadow: isFav ? '0 4px 18px rgba(245, 158, 11, 0.15)' : '0 4px 16px rgba(0,0,0,0.2)'
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.transform = 'translateY(-3px)';
-                    e.currentTarget.style.boxShadow = '0 10px 24px rgba(0,0,0,0.35)';
-                    e.currentTarget.style.borderColor = 'rgba(0, 210, 255, 0.35)';
+                    e.currentTarget.style.boxShadow = isFav ? '0 10px 24px rgba(245, 158, 11, 0.25)' : '0 10px 24px rgba(0,0,0,0.35)';
+                    e.currentTarget.style.borderColor = isFav ? '#f59e0b' : 'rgba(0, 210, 255, 0.35)';
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.transform = 'none';
-                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.07)';
+                    e.currentTarget.style.boxShadow = isFav ? '0 4px 18px rgba(245, 158, 11, 0.15)' : '0 4px 16px rgba(0,0,0,0.2)';
+                    e.currentTarget.style.borderColor = isFav ? 'rgba(245, 158, 11, 0.4)' : 'rgba(255, 255, 255, 0.07)';
                   }}
                 >
                   {/* Image Container with Badges */}
@@ -1343,14 +1537,14 @@ export const OnlineSearchContent: React.FC = () => {
                       {model.platform_name}
                     </div>
 
-                    {/* Top-Right: Likes & Bookmark Stat */}
+                    {/* Top-Right: Likes & Interactive Favorite Toggle */}
                     <div style={{
                       position: 'absolute',
                       top: '8px',
                       right: '8px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '5px'
                     }}>
                       <div style={{
                         background: 'rgba(18, 21, 36, 0.85)',
@@ -1369,6 +1563,31 @@ export const OnlineSearchContent: React.FC = () => {
                         <Heart size={11} fill="#ff6b81" />
                         <span>{model.likes || 12}</span>
                       </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(model);
+                        }}
+                        title={isFav ? t('removeFromFavorites') : t('addToFavorites')}
+                        style={{
+                          background: isFav ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'rgba(18, 21, 36, 0.85)',
+                          backdropFilter: 'blur(6px)',
+                          border: isFav ? '1px solid #fbbf24' : '1px solid rgba(255, 255, 255, 0.15)',
+                          padding: '4px 6px',
+                          borderRadius: '7px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#fff',
+                          boxShadow: isFav ? '0 2px 10px rgba(245, 158, 11, 0.5)' : '0 2px 6px rgba(0,0,0,0.4)',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <Star size={13} fill={isFav ? '#fff' : 'none'} color={isFav ? '#fff' : 'rgba(255,255,255,0.85)'} />
+                      </button>
                     </div>
 
                     {/* Bottom-Left: Creator Avatar & Name Overlay */}
