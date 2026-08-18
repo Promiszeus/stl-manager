@@ -168,6 +168,7 @@ export const translations = {
     bentoFeatured: '3D-Design Wettbewerb & Spotlight',
     bentoTrends: 'Trends & Hits',
     bentoCategories: 'Themenwelten & Kategorien',
+    trendsAndDiscover: 'Trends & Entdecken',
 
     // Settings Modal Tabs
     settingsTabsFolders: 'Ordner & Slicer',
@@ -345,6 +346,7 @@ export const translations = {
     bentoFeatured: '3D Design Contest & Spotlight',
     bentoTrends: 'Trends & Hits',
     bentoCategories: 'Categories & Topics',
+    trendsAndDiscover: 'Trends & Discovery',
 
     // Settings Modal Tabs
     settingsTabsFolders: 'Folders & Slicers',

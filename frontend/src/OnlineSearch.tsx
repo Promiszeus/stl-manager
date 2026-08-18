@@ -79,6 +79,33 @@ export const CONTEST_PORTALS = [
   }
 ];
 
+export const TREND_EXPLORE_PILLS = [
+  {
+    id: 'daily',
+    titleKey: 'dailyTrends',
+    icon: TrendingUp,
+    color: '#f59e0b',
+    activeGradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    shadow: 'rgba(245, 158, 11, 0.4)'
+  },
+  {
+    id: 'monthly',
+    titleKey: 'monthlyTrends',
+    icon: Rocket,
+    color: '#ec4899',
+    activeGradient: 'linear-gradient(135deg, #ec4899, #be185d)',
+    shadow: 'rgba(236, 72, 153, 0.4)'
+  },
+  {
+    id: 'newest',
+    titleKey: 'newest',
+    icon: Sparkles,
+    color: '#10b981',
+    activeGradient: 'linear-gradient(135deg, #10b981, #059669)',
+    shadow: 'rgba(16, 185, 129, 0.4)'
+  }
+];
+
 export const CATEGORY_EXPLORE_CARDS = [
   {
     id: 'toys',
@@ -570,88 +597,40 @@ export const OnlineSearchSidebar: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* 1. Mode Switcher / Favorites Shortcut */}
-      {isFavActive ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-          <button
-            type="button"
-            onClick={() => handleCategoryClick('daily')}
-            style={{
-              padding: '10px 12px',
-              borderRadius: '12px',
-              background: 'rgba(0, 210, 255, 0.15)',
-              border: '1px solid rgba(0, 210, 255, 0.4)',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: '700',
-              transition: 'all 0.2s'
-            }}
-          >
-            <Globe size={14} color="var(--accent-cyan)" />
-            <span>{t('onlineModels')}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCategoryClick('favorites')}
-            style={{
-              padding: '10px 12px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(217, 119, 6, 0.35))',
-              border: '1px solid #f59e0b',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: '700',
-              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)'
-            }}
-          >
-            <Star size={14} color="#f59e0b" fill="#f59e0b" />
-            <span>{t('myFavorites')} ({favoriteModels.length})</span>
-          </button>
+      {/* 1. Favorites Shortcut Button */}
+      <button
+        type="button"
+        onClick={() => handleCategoryClick(isFavActive ? 'daily' : 'favorites')}
+        style={{
+          width: '100%',
+          padding: '11px 14px',
+          borderRadius: '12px',
+          background: isFavActive ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3))' : 'rgba(245, 158, 11, 0.08)',
+          border: isFavActive ? '1px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.25)',
+          color: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+          boxShadow: isFavActive ? '0 4px 14px rgba(245, 158, 11, 0.3)' : 'none'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Star size={16} color="#f59e0b" fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} />
+          <span style={{ fontSize: '13px', fontWeight: '700' }}>{t('myFavorites')}</span>
         </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => handleCategoryClick('favorites')}
-          style={{
-            width: '100%',
-            padding: '11px 14px',
-            borderRadius: '12px',
-            background: 'rgba(245, 158, 11, 0.08)',
-            border: '1px solid rgba(245, 158, 11, 0.25)',
-            color: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Star size={16} color="#f59e0b" fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} />
-            <span style={{ fontSize: '13px', fontWeight: '700' }}>{t('myFavorites')}</span>
-          </div>
-          <span style={{
-            fontSize: '11px',
-            fontWeight: '800',
-            background: 'rgba(245, 158, 11, 0.2)',
-            color: '#fbbf24',
-            padding: '2px 8px',
-            borderRadius: '10px'
-          }}>
-            {favoriteModels.length}
-          </span>
-        </button>
-      )}
+        <span style={{
+          fontSize: '11px',
+          fontWeight: '800',
+          background: isFavActive ? '#f59e0b' : 'rgba(245, 158, 11, 0.2)',
+          color: isFavActive ? '#000' : '#fbbf24',
+          padding: '2px 8px',
+          borderRadius: '10px'
+        }}>
+          {favoriteModels.length}
+        </span>
+      </button>
 
       {/* 2. Prominently Highlighted Search Hub */}
       <div style={{
@@ -727,8 +706,15 @@ export const OnlineSearchSidebar: React.FC = () => {
         </form>
       </div>
 
-      {/* 3. Platforms Accordion (Aufklapp-Menü) */}
-      <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: '14px', overflow: 'hidden', transition: 'all 0.2s' }}>
+      {/* 3. Platforms Accordion (Aufklapp-Menü mit weißer Umrandung) */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.03)',
+        border: '1px solid rgba(255, 255, 255, 0.32)',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+        borderRadius: '14px',
+        overflow: 'hidden',
+        transition: 'all 0.2s ease'
+      }}>
         <button
           type="button"
           onClick={() => setIsPlatformsOpen(!isPlatformsOpen)}
@@ -764,7 +750,7 @@ export const OnlineSearchSidebar: React.FC = () => {
         </button>
 
         {isPlatformsOpen && (
-          <div style={{ padding: '0 12px 12px 12px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.04)', paddingTop: '10px' }}>
+          <div style={{ padding: '0 12px 12px 12px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 type="button"
@@ -816,8 +802,15 @@ export const OnlineSearchSidebar: React.FC = () => {
         )}
       </div>
 
-      {/* 4. Options & Sorting Accordion (Aufklapp-Menü) */}
-      <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: '14px', overflow: 'hidden', transition: 'all 0.2s' }}>
+      {/* 4. Options & Sorting Accordion (Aufklapp-Menü mit weißer Umrandung) */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.03)',
+        border: '1px solid rgba(255, 255, 255, 0.32)',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+        borderRadius: '14px',
+        overflow: 'hidden',
+        transition: 'all 0.2s ease'
+      }}>
         <button
           type="button"
           onClick={() => setIsSortOpen(!isSortOpen)}
@@ -853,7 +846,7 @@ export const OnlineSearchSidebar: React.FC = () => {
         </button>
 
         {isSortOpen && (
-          <div style={{ padding: '0 12px 12px 12px', display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.04)', paddingTop: '10px' }}>
+          <div style={{ padding: '0 12px 12px 12px', display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '10px' }}>
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
@@ -887,9 +880,16 @@ export const OnlineSearchSidebar: React.FC = () => {
         )}
       </div>
 
-      {/* 5. Search History Accordion (Aufklapp-Menü) */}
+      {/* 5. Search History Accordion (Aufklapp-Menü mit weißer Umrandung) */}
       {searchHistory.length > 0 && (
-        <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: '14px', overflow: 'hidden', transition: 'all 0.2s' }}>
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.32)',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+          borderRadius: '14px',
+          overflow: 'hidden',
+          transition: 'all 0.2s ease'
+        }}>
           <button
             type="button"
             onClick={() => setIsHistoryOpen(!isHistoryOpen)}
@@ -925,7 +925,7 @@ export const OnlineSearchSidebar: React.FC = () => {
           </button>
 
           {isHistoryOpen && (
-            <div style={{ padding: '0 12px 12px 12px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.04)', paddingTop: '10px' }}>
+            <div style={{ padding: '0 12px 12px 12px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button
                   type="button"
@@ -1098,13 +1098,13 @@ export const OnlineSearchContent: React.FC = () => {
       </div>
 
       <div className="desktop-explore-section">
-        {/* Bento Grid Dashboard (Apple/Linear Style Asymmetrical Grid) */}
-        <div className="bento-dashboard-grid">
-          {/* Bento Card 1: Featured 3D Design Contest & Spotlight (Col Span 2) */}
+        {/* Bento Grid Dashboard (Apple/Linear Style Full-Width Grid) */}
+        <div className="bento-dashboard-grid" style={{ gridTemplateColumns: '1fr', gap: '16px' }}>
+          {/* Bento Card 1: Featured 3D Design Contest & Spotlight (Full Width) */}
           <div
             onClick={() => setShowContestsModal(true)}
             className="bento-card bento-card-hero"
-            style={{ cursor: 'pointer' }}
+            style={{ gridColumn: 'span 1', cursor: 'pointer' }}
           >
             <div style={{ position: 'absolute', top: 0, right: 0, width: '280px', height: '100%', background: 'radial-gradient(circle at top right, rgba(0, 210, 255, 0.2), transparent 70%)', pointerEvents: 'none' }} />
 
@@ -1195,76 +1195,48 @@ export const OnlineSearchContent: React.FC = () => {
             </div>
           </div>
 
-          {/* Bento Card 2: Favoriten Kachel (Col Span 1) */}
-          <div
-            className={`bento-card bento-card-fav ${activeCategory === 'favorites' ? 'active' : ''}`}
-            onClick={() => handleCategoryClick('favorites')}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.2)', border: '1px solid rgba(245, 158, 11, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Star size={20} color="#f59e0b" fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} />
+          {/* Bento Card 2: Trends, Themenwelten & Kategorien (Unified Consistent Pill Design) */}
+          <div className="bento-card bento-card-categories" style={{ gridColumn: 'span 1' }}>
+            {/* Section A: Trends & Entdecken */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <TrendingUp size={14} color="#f59e0b" />
+                <span>{t('trendsAndDiscover')}</span>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: '800', background: '#f59e0b', color: '#000', padding: '2px 8px', borderRadius: '10px' }}>
-                {favoriteModels.length}
-              </span>
             </div>
-            <div style={{ marginTop: '14px' }}>
-              <div style={{ fontSize: '15px', fontWeight: '800', color: '#fff' }}>{t('myFavorites')}</div>
-              <div style={{ fontSize: '11px', color: '#fbbf24', marginTop: '2px' }}>{t('favoritesDesc')}</div>
-            </div>
-          </div>
 
-          {/* Bento Card 3: 24h Daily Trends */}
-          <div
-            className={`bento-card bento-card-stat ${activeCategory === 'daily' ? 'active' : ''}`}
-            onClick={() => handleCategoryClick('daily')}
-            style={{ background: activeCategory === 'daily' ? 'linear-gradient(135deg, rgba(66, 38, 22, 0.9), rgba(43, 23, 12, 0.9))' : 'rgba(20, 27, 45, 0.7)' }}
-          >
-            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <TrendingUp size={18} color="#f59e0b" />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+              {TREND_EXPLORE_PILLS.map(tPill => {
+                const Icon = tPill.icon;
+                const isActive = activeCategory === tPill.id;
+                return (
+                  <button
+                    key={tPill.id}
+                    type="button"
+                    onClick={() => handleCategoryClick(tPill.id)}
+                    className="bento-category-pill"
+                    style={{
+                      background: isActive ? tPill.activeGradient : 'rgba(255, 255, 255, 0.04)',
+                      border: isActive ? `1px solid ${tPill.color}` : '1px solid rgba(255, 255, 255, 0.1)',
+                      color: isActive ? '#fff' : 'var(--text-main)',
+                      boxShadow: isActive ? `0 2px 10px ${tPill.shadow}` : 'none'
+                    }}
+                  >
+                    <Icon size={14} color={isActive ? '#fff' : tPill.color} />
+                    <span>{t(tPill.titleKey as any)}</span>
+                  </button>
+                );
+              })}
             </div>
-            <div>
-              <div style={{ fontSize: '13.5px', fontWeight: '800', color: '#fff' }}>{t('dailyTrends')}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>24h Top Vorlagen</div>
-            </div>
-          </div>
 
-          {/* Bento Card 4: Monthly Bestsellers */}
-          <div
-            className={`bento-card bento-card-stat ${activeCategory === 'monthly' ? 'active' : ''}`}
-            onClick={() => handleCategoryClick('monthly')}
-            style={{ background: activeCategory === 'monthly' ? 'linear-gradient(135deg, rgba(68, 22, 52, 0.9), rgba(43, 11, 32, 0.9))' : 'rgba(20, 27, 45, 0.7)' }}
-          >
-            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(236, 72, 153, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Rocket size={18} color="#ec4899" />
-            </div>
-            <div>
-              <div style={{ fontSize: '13.5px', fontWeight: '800', color: '#fff' }}>{t('monthlyTrends')}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>Monats-Hits</div>
-            </div>
-          </div>
+            {/* Subtle Divider */}
+            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.06)', margin: '14px 0' }} />
 
-          {/* Bento Card 5: Frisch Online (Newest) */}
-          <div
-            className={`bento-card bento-card-stat ${activeCategory === 'newest' ? 'active' : ''}`}
-            onClick={() => handleCategoryClick('newest')}
-            style={{ background: activeCategory === 'newest' ? 'linear-gradient(135deg, rgba(18, 61, 48, 0.9), rgba(10, 37, 29, 0.9))' : 'rgba(20, 27, 45, 0.7)' }}
-          >
-            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Sparkles size={18} color="#10b981" />
-            </div>
-            <div>
-              <div style={{ fontSize: '13.5px', fontWeight: '800', color: '#fff' }}>{t('newest')}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>Frisch online</div>
-            </div>
-          </div>
-
-          {/* Bento Card 6: Themenwelten & Kategorien (Full Width 3-Col Span) */}
-          <div className="bento-card bento-card-categories">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {/* Section B: Themenwelten & Kategorien */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Sparkles size={14} color="var(--accent-cyan)" />
-                {t('bentoCategories')}
+                <span>{t('bentoCategories')}</span>
               </div>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t('categoriesDesc')}</span>
             </div>
