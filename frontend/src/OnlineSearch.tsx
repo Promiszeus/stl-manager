@@ -72,7 +72,7 @@ export const CONTEST_PORTALS = [
     color: '#a855f7',
     bg: 'rgba(168, 85, 247, 0.15)',
     border: 'rgba(168, 85, 247, 0.35)',
-    url: 'https://cults3d.com/en/design-contests',
+    url: 'https://cults3d.com/en/contests',
     query: 'Cults 3D Contest',
     desc: 'Kreative Design-Wettbewerbe mit Geldpreisen, Auszeichnungen und weltweiten Markenpartnern.',
     badge: 'Geldpreise & Awards'
@@ -96,7 +96,7 @@ export const CONTEST_PORTALS = [
     color: '#06b6d4',
     bg: 'rgba(6, 182, 212, 0.15)',
     border: 'rgba(6, 182, 212, 0.35)',
-    url: 'https://www.makeronline.com/contest.html',
+    url: 'https://www.makeronline.com/en/challengeList',
     query: 'MakerOnline Contest',
     desc: 'Offizielle Anycubic & MakerOnline Contests mit 3D-Druckern, Cash-Preisen und Filament.',
     badge: 'Anycubic & MakerOnline'
