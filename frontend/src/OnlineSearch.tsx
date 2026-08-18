@@ -38,7 +38,7 @@ export const CONTEST_PORTALS = [
     border: 'rgba(0, 174, 66, 0.35)',
     url: 'https://makerworld.com/en/contests',
     query: 'MakerWorld Contest',
-    desc: 'Offizielle Bambu Lab & MakerWorld Wettbewerbe mit Prämienpunkten, Filament & Druckern.',
+    desc: 'Offizielle Bambu Lab & MakerWorld Wettbewerbe mit Prämienpunkten, Filament & 3D-Druckern.',
     badge: 'Bambu Lab Official'
   },
   {
@@ -54,8 +54,20 @@ export const CONTEST_PORTALS = [
     badge: 'Prusa Community'
   },
   {
+    id: 'thingiverse',
+    name: 'Thingiverse Design Challenges',
+    platform: 'Thingiverse',
+    color: '#248bfb',
+    bg: 'rgba(36, 139, 251, 0.15)',
+    border: 'rgba(36, 139, 251, 0.35)',
+    url: 'https://www.thingiverse.com/challenges',
+    query: 'Thingiverse Challenge',
+    desc: 'Thematische Design-Challenges und Community-Wettbewerbe der weltgrößten 3D-Druck Community.',
+    badge: 'Thingiverse Official'
+  },
+  {
     id: 'cults3d',
-    name: 'Cults 3D Design Challenges',
+    name: 'Cults 3D Design Competitions',
     platform: 'Cults 3D',
     color: '#a855f7',
     bg: 'rgba(168, 85, 247, 0.15)',
@@ -76,24 +88,36 @@ export const CONTEST_PORTALS = [
     query: 'Creality Contest',
     desc: 'Offizielle Creality 3D-Druck Wettbewerbe mit Creality K1 Max, Zubehör & Filament.',
     badge: 'Creality Official'
+  },
+  {
+    id: 'makeronline',
+    name: 'MakerOnline Design Contests',
+    platform: 'MakerOnline',
+    color: '#06b6d4',
+    bg: 'rgba(6, 182, 212, 0.15)',
+    border: 'rgba(6, 182, 212, 0.35)',
+    url: 'https://www.makeronline.com/contest.html',
+    query: 'MakerOnline Contest',
+    desc: 'Offizielle Anycubic & MakerOnline Contests mit 3D-Druckern, Cash-Preisen und Filament.',
+    badge: 'Anycubic & MakerOnline'
   }
 ];
 
 export const TREND_EXPLORE_PILLS = [
-  { id: 'daily', titleKey: 'dailyTrends', icon: TrendingUp },
-  { id: 'monthly', titleKey: 'monthlyTrends', icon: Rocket },
-  { id: 'newest', titleKey: 'newest', icon: Sparkles }
+  { id: 'daily', titleKey: 'dailyTrends', icon: TrendingUp, color: '#f59e0b', shadow: 'rgba(245, 158, 11, 0.25)' },
+  { id: 'monthly', titleKey: 'monthlyTrends', icon: Rocket, color: '#f43f5e', shadow: 'rgba(244, 63, 94, 0.25)' },
+  { id: 'newest', titleKey: 'newest', icon: Sparkles, color: '#10b981', shadow: 'rgba(16, 185, 129, 0.25)' }
 ];
 
 export const CATEGORY_EXPLORE_CARDS = [
-  { id: 'toys', titleKey: 'catToys', descKey: 'catToysDesc', query: 'Toy Fidget Articulated Figure', icon: Smile },
-  { id: 'fashion', titleKey: 'catFashion', descKey: 'catFashionDesc', query: 'Fashion Jewelry Ring Bracelet Wearable', icon: Sparkles },
-  { id: 'art', titleKey: 'catArt', descKey: 'catArtDesc', query: 'Art Sculpture Design Decor Statue', icon: Palette },
-  { id: 'tools', titleKey: 'catTools', descKey: 'catToolsDesc', query: 'Functional Tool Mechanical Gadget Clamp', icon: Wrench },
-  { id: 'home', titleKey: 'catHome', descKey: 'catHomeDesc', query: 'Home Storage Organizer Gridfinity Mount Box', icon: Home },
-  { id: 'gaming', titleKey: 'catGaming', descKey: 'catGamingDesc', query: 'Gaming Controller Stand Cosplay Prop Figure', icon: Gamepad2 },
-  { id: 'plants', titleKey: 'catPlants', descKey: 'catPlantsDesc', query: 'Planter Flower Pot Vase Hydroponics Garden', icon: Layers },
-  { id: 'hobby', titleKey: 'catHobby', descKey: 'catHobbyDesc', query: 'RC Car Drone Plane Model Vehicle Hobby', icon: Car }
+  { id: 'toys', titleKey: 'catToys', descKey: 'catToysDesc', query: 'Toy Fidget Articulated Figure', icon: Smile, color: '#fb923c', shadow: 'rgba(251, 146, 60, 0.25)' },
+  { id: 'fashion', titleKey: 'catFashion', descKey: 'catFashionDesc', query: 'Fashion Jewelry Ring Bracelet Wearable', icon: Sparkles, color: '#ec4899', shadow: 'rgba(236, 72, 153, 0.25)' },
+  { id: 'art', titleKey: 'catArt', descKey: 'catArtDesc', query: 'Art Sculpture Design Decor Statue', icon: Palette, color: '#c084fc', shadow: 'rgba(192, 132, 252, 0.25)' },
+  { id: 'tools', titleKey: 'catTools', descKey: 'catToolsDesc', query: 'Functional Tool Mechanical Gadget Clamp', icon: Wrench, color: '#38bdf8', shadow: 'rgba(56, 189, 248, 0.25)' },
+  { id: 'home', titleKey: 'catHome', descKey: 'catHomeDesc', query: 'Home Storage Organizer Gridfinity Mount Box', icon: Home, color: '#2dd4bf', shadow: 'rgba(45, 212, 191, 0.25)' },
+  { id: 'gaming', titleKey: 'catGaming', descKey: 'catGamingDesc', query: 'Gaming Controller Stand Cosplay Prop Figure', icon: Gamepad2, color: '#a78bfa', shadow: 'rgba(167, 139, 250, 0.25)' },
+  { id: 'plants', titleKey: 'catPlants', descKey: 'catPlantsDesc', query: 'Planter Flower Pot Vase Hydroponics Garden', icon: Layers, color: '#4ade80', shadow: 'rgba(74, 222, 128, 0.25)' },
+  { id: 'hobby', titleKey: 'catHobby', descKey: 'catHobbyDesc', query: 'RC Car Drone Plane Model Vehicle Hobby', icon: Car, color: '#f87171', shadow: 'rgba(248, 113, 113, 0.25)' }
 ];
 
 interface OnlineSearchContextType {
@@ -942,7 +966,7 @@ export const OnlineSearchContent: React.FC = () => {
             className={`explore-chip ${activeCategory === 'daily' ? 'active' : ''}`}
             onClick={() => handleCategoryClick('daily')}
           >
-            <TrendingUp size={13} color={activeCategory === 'daily' ? '#090c14' : '#ffffff'} />
+            <TrendingUp size={13} color={activeCategory === 'daily' ? '#090c14' : '#f59e0b'} />
             <span>{t('dailyTrends')}</span>
           </button>
           <button
@@ -950,7 +974,7 @@ export const OnlineSearchContent: React.FC = () => {
             className={`explore-chip ${activeCategory === 'monthly' ? 'active' : ''}`}
             onClick={() => handleCategoryClick('monthly')}
           >
-            <Rocket size={13} color={activeCategory === 'monthly' ? '#090c14' : '#ffffff'} />
+            <Rocket size={13} color={activeCategory === 'monthly' ? '#090c14' : '#f43f5e'} />
             <span>{t('monthlyTrends')}</span>
           </button>
           <button
@@ -958,7 +982,7 @@ export const OnlineSearchContent: React.FC = () => {
             className={`explore-chip ${activeCategory === 'newest' ? 'active' : ''}`}
             onClick={() => handleCategoryClick('newest')}
           >
-            <Sparkles size={13} color={activeCategory === 'newest' ? '#090c14' : '#ffffff'} />
+            <Sparkles size={13} color={activeCategory === 'newest' ? '#090c14' : '#10b981'} />
             <span>{t('newest')}</span>
           </button>
           {CATEGORY_EXPLORE_CARDS.map(cat => {
@@ -971,7 +995,7 @@ export const OnlineSearchContent: React.FC = () => {
                 className={`explore-chip ${isCatActive ? 'active' : ''}`}
                 onClick={() => handleCategoryClick(cat.id)}
               >
-                <Icon size={13} color={isCatActive ? '#090c14' : '#ffffff'} />
+                <Icon size={13} color={isCatActive ? '#090c14' : cat.color} />
                 <span>{t(cat.titleKey as any)}</span>
               </button>
             );
@@ -982,36 +1006,43 @@ export const OnlineSearchContent: React.FC = () => {
       <div className="desktop-explore-section">
         {/* Bento Grid Dashboard (Apple/Linear Style Full-Width Grid) */}
         <div className="bento-dashboard-grid" style={{ gridTemplateColumns: '1fr', gap: '16px' }}>
-          {/* Bento Card 1: Featured 3D Design Contest & Spotlight (Full Width) */}
+          {/* Bento Card 1: Featured 3D Design Contest & Spotlight (Full Width with all 6 platforms) */}
           <div
             onClick={() => setShowContestsModal(true)}
             className="bento-card bento-card-hero"
             style={{ gridColumn: 'span 1', cursor: 'pointer' }}
           >
-            <div style={{ position: 'absolute', top: 0, right: 0, width: '280px', height: '100%', background: 'radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: 0, right: 0, width: '320px', height: '100%', background: 'radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), rgba(36, 139, 251, 0.05), transparent 70%)', pointerEvents: 'none' }} />
 
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', padding: '3px 10px', borderRadius: '10px', fontSize: '10.5px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ffffff' }} />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.35)', color: '#fbbf24', padding: '3px 10px', borderRadius: '10px', fontSize: '10.5px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#fbbf24', boxShadow: '0 0 6px #fbbf24' }} />
                   {t('bentoFeatured')}
                 </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ffffff', fontSize: '11.5px', fontWeight: '700' }}>
-                  <Trophy size={13} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#fbbf24', fontSize: '11.5px', fontWeight: '700' }}>
+                  <Trophy size={13} color="#f59e0b" />
                   <span>{t('allContests')}</span>
                   <ChevronRight size={13} />
                 </div>
               </div>
 
-              <h2 style={{ fontSize: '17px', fontWeight: '800', color: '#fff', margin: '0 0 4px 0', lineHeight: '1.3' }}>
+              <h2 style={{ fontSize: '17px', fontWeight: '800', color: '#fff', margin: '0 0 6px 0', lineHeight: '1.3' }}>
                 {t('contestTitle')}
               </h2>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
-                MakerWorld • Printables • Thingiverse • Cults 3D • MakerOnline • Creality
-              </p>
+
+              {/* All 6 Platforms Indicator with subtle platform colors */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', margin: '0 0 14px 0' }}>
+                {PLATFORMS.map(p => (
+                  <span key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#cbd5e1', fontWeight: '500' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: p.color, boxShadow: `0 0 6px ${p.color}88` }} />
+                    {p.name}
+                  </span>
+                ))}
+              </div>
             </div>
 
-            {/* Quick Action Pill Buttons on the Hero Card */}
+            {/* Quick Action Pill Buttons on the Hero Card: Modal + Search + Direct Portal Chips for all 6 platforms */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', zIndex: 10 }} onClick={e => e.stopPropagation()}>
               <button
                 type="button"
@@ -1023,7 +1054,7 @@ export const OnlineSearchContent: React.FC = () => {
                   background: '#ffffff',
                   border: '1px solid #ffffff',
                   borderRadius: '8px',
-                  padding: '6px 14px',
+                  padding: '7px 14px',
                   color: '#090c14',
                   fontSize: '11.5px',
                   fontWeight: '800',
@@ -1031,12 +1062,12 @@ export const OnlineSearchContent: React.FC = () => {
                   boxShadow: '0 2px 10px rgba(255, 255, 255, 0.2)'
                 }}
               >
-                <Trophy size={13} /> {t('allContests')}
+                <Trophy size={13} color="#f59e0b" /> {t('allContests')}
               </button>
 
               <button
                 type="button"
-                onClick={() => handleSearch('MakerWorld Contest')}
+                onClick={() => handleSearch('Contest Challenge')}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -1044,45 +1075,51 @@ export const OnlineSearchContent: React.FC = () => {
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.25)',
                   borderRadius: '8px',
-                  padding: '6px 12px',
+                  padding: '7px 12px',
                   color: '#fff',
                   fontSize: '11.5px',
                   fontWeight: '700',
                   cursor: 'pointer'
                 }}
               >
-                <Search size={13} /> {t('exploreContestModels')}
+                <Search size={13} color="#38bdf8" /> {t('exploreContestModels')}
               </button>
 
-              <button
-                type="button"
-                onClick={() => window.open('https://makerworld.com/en/contests', '_blank')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.25)',
-                  borderRadius: '8px',
-                  padding: '6px 12px',
-                  color: '#ffffff',
-                  fontSize: '11.5px',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-                title="MakerWorld Contest Portal öffnen"
-              >
-                <ExternalLink size={12} /> MakerWorld Portal
-              </button>
+              {CONTEST_PORTALS.map(portal => (
+                <button
+                  key={portal.id}
+                  type="button"
+                  onClick={() => window.open(portal.url, '_blank')}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: `1px solid ${portal.color}55`,
+                    borderRadius: '8px',
+                    padding: '7px 11px',
+                    color: '#f1f5f9',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s'
+                  }}
+                  title={`${portal.name} öffnen`}
+                >
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: portal.color, boxShadow: `0 0 5px ${portal.color}` }} />
+                  <span>{portal.platform}</span>
+                  <ExternalLink size={10} style={{ opacity: 0.6 }} />
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Bento Card 2: Trends, Themenwelten & Kategorien (Unified Consistent Pill Design) */}
+          {/* Bento Card 2: Trends, Themenwelten & Kategorien (Unified Consistent Pill Design with Subtle Light Color Accents) */}
           <div className="bento-card bento-card-categories" style={{ gridColumn: 'span 1' }}>
             {/* Section A: Trends & Entdecken */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
               <div style={{ fontSize: '12px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <TrendingUp size={14} color="#ffffff" />
+                <TrendingUp size={14} color="#f59e0b" />
                 <span>{t('trendsAndDiscover')}</span>
               </div>
             </div>
@@ -1100,11 +1137,11 @@ export const OnlineSearchContent: React.FC = () => {
                     style={{
                       background: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.04)',
                       border: isActive ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.12)',
-                      color: isActive ? '#090c14' : '#cbd5e1',
+                      color: isActive ? '#090c14' : '#e2e8f0',
                       boxShadow: isActive ? '0 2px 14px rgba(255, 255, 255, 0.25)' : 'none'
                     }}
                   >
-                    <Icon size={14} color={isActive ? '#090c14' : '#ffffff'} />
+                    <Icon size={14} color={isActive ? '#090c14' : tPill.color} />
                     <span>{t(tPill.titleKey as any)}</span>
                   </button>
                 );
@@ -1117,7 +1154,7 @@ export const OnlineSearchContent: React.FC = () => {
             {/* Section B: Themenwelten & Kategorien */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
               <div style={{ fontSize: '12px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Sparkles size={14} color="#ffffff" />
+                <Sparkles size={14} color="#38bdf8" />
                 <span>{t('bentoCategories')}</span>
               </div>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t('categoriesDesc')}</span>
@@ -1136,11 +1173,11 @@ export const OnlineSearchContent: React.FC = () => {
                     style={{
                       background: isCatActive ? '#ffffff' : 'rgba(255, 255, 255, 0.04)',
                       border: isCatActive ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.12)',
-                      color: isCatActive ? '#090c14' : '#cbd5e1',
+                      color: isCatActive ? '#090c14' : '#e2e8f0',
                       boxShadow: isCatActive ? '0 2px 14px rgba(255, 255, 255, 0.25)' : 'none'
                     }}
                   >
-                    <Icon size={14} color={isCatActive ? '#090c14' : '#ffffff'} />
+                    <Icon size={14} color={isCatActive ? '#090c14' : cat.color} />
                     <span>{t(cat.titleKey as any)}</span>
                   </button>
                 );
@@ -1174,9 +1211,9 @@ export const OnlineSearchContent: React.FC = () => {
                 width: '100%',
                 maxWidth: '680px',
                 maxHeight: '85vh',
-                background: 'linear-gradient(180deg, #182035 0%, #0f1322 100%)',
-                border: '1px solid rgba(0, 210, 255, 0.35)',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 210, 255, 0.2)',
+                background: '#0d111d',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 255, 255, 0.05)',
                 borderRadius: '20px',
                 overflow: 'hidden',
                 display: 'flex',
@@ -1186,8 +1223,8 @@ export const OnlineSearchContent: React.FC = () => {
               {/* Modal Header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(0, 0, 0, 0.2)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 10px rgba(245, 158, 11, 0.4)' }}>
-                    <Trophy size={18} color="#fff" />
+                  <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 10px rgba(245, 158, 11, 0.2)' }}>
+                    <Trophy size={18} color="#f59e0b" />
                   </div>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#fff' }}>{t('allContests')}</h3>
@@ -1252,15 +1289,16 @@ export const OnlineSearchContent: React.FC = () => {
                           gap: '6px',
                           padding: '8px 12px',
                           borderRadius: '10px',
-                          background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(58, 123, 213, 0.25))',
-                          border: '1px solid var(--accent-cyan)',
-                          color: '#fff',
+                          background: '#ffffff',
+                          border: '1px solid #ffffff',
+                          color: '#090c14',
                           fontSize: '12px',
-                          fontWeight: '700',
-                          cursor: 'pointer'
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 8px rgba(255, 255, 255, 0.15)'
                         }}
                       >
-                        <Search size={14} color="var(--accent-cyan)" />
+                        <Search size={14} color="#090c14" />
                         {t('exploreContestModels')}
                       </button>
 
@@ -1274,9 +1312,9 @@ export const OnlineSearchContent: React.FC = () => {
                           gap: '6px',
                           padding: '8px 14px',
                           borderRadius: '10px',
-                          background: portal.bg,
+                          background: 'rgba(255, 255, 255, 0.05)',
                           border: `1px solid ${portal.color}55`,
-                          color: portal.color,
+                          color: '#ffffff',
                           fontSize: '12px',
                           fontWeight: '700',
                           cursor: 'pointer'
