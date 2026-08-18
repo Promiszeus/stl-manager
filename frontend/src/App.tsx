@@ -1330,30 +1330,8 @@ function App() {
             )}
           </div>
 
-          {/* Right: Sort & View Mode & Search Trigger */}
+          {/* Right: Sort & View Mode */}
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <button
-              onClick={() => setIsSearchModalOpen(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'rgba(0, 210, 255, 0.12)',
-                border: '1px solid rgba(0, 210, 255, 0.3)',
-                borderRadius: '10px',
-                padding: '7px 12px',
-                color: 'var(--accent-cyan)',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                transition: 'all 0.15s'
-              }}
-              title="Suche öffnen (Strg + K)"
-            >
-              <Search size={14} /> {t('searchButton')}
-              <kbd style={{ fontSize: '10px', background: 'rgba(0, 210, 255, 0.2)', padding: '1px 5px', borderRadius: '4px', marginLeft: '2px', fontWeight: '800' }}>Ctrl+K</kbd>
-            </button>
-
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(13, 17, 30, 0.7)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '10px', padding: '2px 8px' }}>
               <ArrowUpDown size={13} color="var(--accent-cyan)" />
               <select 
