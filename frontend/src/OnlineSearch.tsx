@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
-import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2, TrendingUp, Rocket, History, ChevronRight, Trophy, Gamepad2, Palette, Wrench, Home, Car, Smile, Layers, Star, Trash2 } from 'lucide-react';
+import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2, TrendingUp, Rocket, History, ChevronRight, ChevronDown, ArrowUpDown, Trophy, Gamepad2, Palette, Wrench, Home, Car, Smile, Layers, Star, Trash2 } from 'lucide-react';
 import { useI18n } from './i18n';
 
 export interface OnlineModel {
@@ -426,6 +426,17 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   }, []);
 
+  // Listen for global reset (e.g. clicking Online Models nav button)
+  useEffect(() => {
+    const handleReset = () => {
+      setActiveCategory('daily');
+      setSearchTerm('');
+      handleSearch('', 'daily', 'popular');
+    };
+    window.addEventListener('stl_reset_online_search', handleReset);
+    return () => window.removeEventListener('stl_reset_online_search', handleReset);
+  }, []);
+
   const togglePlatform = (platId: string) => {
     setActivePlatforms(prev => 
       prev.includes(platId) ? prev.filter(p => p !== platId) : [...prev, platId]
@@ -543,6 +554,11 @@ export const OnlineSearchSidebar: React.FC = () => {
     handleSearch
   } = useOnlineSearch();
 
+  // Collapsible Dropdown States
+  const [isPlatformsOpen, setIsPlatformsOpen] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -550,43 +566,94 @@ export const OnlineSearchSidebar: React.FC = () => {
     }
   };
 
+  const isFavActive = activeCategory === 'favorites';
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Favoriten Shortcut Button */}
-      <button
-        type="button"
-        onClick={() => handleCategoryClick('favorites')}
-        style={{
-          width: '100%',
-          padding: '11px 14px',
-          borderRadius: '12px',
-          background: activeCategory === 'favorites' ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3))' : 'rgba(245, 158, 11, 0.08)',
-          border: activeCategory === 'favorites' ? '1px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.25)',
-          color: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-          boxShadow: activeCategory === 'favorites' ? '0 4px 14px rgba(245, 158, 11, 0.3)' : 'none'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Star size={16} color="#f59e0b" fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} />
-          <span style={{ fontSize: '13px', fontWeight: '700' }}>{t('myFavorites')}</span>
+      {/* 1. Mode Switcher / Favorites Shortcut */}
+      {isFavActive ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <button
+            type="button"
+            onClick={() => handleCategoryClick('daily')}
+            style={{
+              padding: '10px 12px',
+              borderRadius: '12px',
+              background: 'rgba(0, 210, 255, 0.15)',
+              border: '1px solid rgba(0, 210, 255, 0.4)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: '700',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Globe size={14} color="var(--accent-cyan)" />
+            <span>{t('onlineModels')}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleCategoryClick('favorites')}
+            style={{
+              padding: '10px 12px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(217, 119, 6, 0.35))',
+              border: '1px solid #f59e0b',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: '700',
+              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)'
+            }}
+          >
+            <Star size={14} color="#f59e0b" fill="#f59e0b" />
+            <span>{t('myFavorites')} ({favoriteModels.length})</span>
+          </button>
         </div>
-        <span style={{
-          fontSize: '11px',
-          fontWeight: '800',
-          background: activeCategory === 'favorites' ? '#f59e0b' : 'rgba(245, 158, 11, 0.2)',
-          color: activeCategory === 'favorites' ? '#000' : '#fbbf24',
-          padding: '2px 8px',
-          borderRadius: '10px'
-        }}>
-          {favoriteModels.length}
-        </span>
-      </button>
-      {/* 1. Prominently Highlighted Search Hub */}
+      ) : (
+        <button
+          type="button"
+          onClick={() => handleCategoryClick('favorites')}
+          style={{
+            width: '100%',
+            padding: '11px 14px',
+            borderRadius: '12px',
+            background: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.25)',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Star size={16} color="#f59e0b" fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} />
+            <span style={{ fontSize: '13px', fontWeight: '700' }}>{t('myFavorites')}</span>
+          </div>
+          <span style={{
+            fontSize: '11px',
+            fontWeight: '800',
+            background: 'rgba(245, 158, 11, 0.2)',
+            color: '#fbbf24',
+            padding: '2px 8px',
+            borderRadius: '10px'
+          }}>
+            {favoriteModels.length}
+          </span>
+        </button>
+      )}
+
+      {/* 2. Prominently Highlighted Search Hub */}
       <div style={{
         background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(58, 123, 213, 0.15))',
         border: '1px solid rgba(0, 210, 255, 0.35)',
@@ -660,143 +727,251 @@ export const OnlineSearchSidebar: React.FC = () => {
         </form>
       </div>
 
-      {/* 2. Platform Selection (2-Column Grid) */}
-      <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-          <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <Filter size={12} /> {t('platforms')}
-          </span>
-          <button
-            onClick={selectAllPlatforms}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: activePlatforms.length === 0 ? 'var(--accent-cyan)' : 'var(--text-muted)',
-              fontSize: '11px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              padding: 0
-            }}
-          >
-            {activePlatforms.length === 0 ? `✓ ${t('allActive')}` : t('selectAll')}
-          </button>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-          {PLATFORMS.map(p => {
-            const isSelected = activePlatforms.length === 0 || activePlatforms.includes(p.id);
-            return (
-              <button
-                key={p.id}
-                onClick={() => togglePlatform(p.id)}
-                style={{
-                  padding: '7px 8px',
-                  borderRadius: '8px',
-                  border: isSelected ? `1px solid ${p.color}66` : '1px solid rgba(255, 255, 255, 0.05)',
-                  background: isSelected ? p.bg : 'rgba(255, 255, 255, 0.02)',
-                  color: isSelected ? '#fff' : 'var(--text-muted)',
-                  fontSize: '11px',
-                  fontWeight: isSelected ? '700' : '500',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.15s',
-                  textAlign: 'left'
-                }}
-              >
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isSelected ? p.color : 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3. Filter & Sort Options */}
-      <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-          {t('sortBy')}
-        </div>
-
-        <select
-          value={sortBy}
-          onChange={e => setSortBy(e.target.value as any)}
+      {/* 3. Platforms Accordion (Aufklapp-Menü) */}
+      <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: '14px', overflow: 'hidden', transition: 'all 0.2s' }}>
+        <button
+          type="button"
+          onClick={() => setIsPlatformsOpen(!isPlatformsOpen)}
           style={{
             width: '100%',
-            padding: '8px 10px',
-            background: 'var(--bg-card)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '8px',
-            color: 'var(--text-main)',
-            fontSize: '12px',
-            outline: 'none',
-            cursor: 'pointer'
+            padding: '12px 14px',
+            background: 'transparent',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            color: '#fff'
           }}
         >
-          <option value="popular">{t('sortPopular')}</option>
-          <option value="likes">{t('sortLikes')}</option>
-          <option value="name">{t('sortName')}</option>
-        </select>
-
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-main)', cursor: 'pointer', userSelect: 'none' }}>
-          <input
-            type="checkbox"
-            checked={freeOnly}
-            onChange={e => setFreeOnly(e.target.checked)}
-            style={{ width: '15px', height: '15px', cursor: 'pointer', accentColor: 'var(--accent-cyan)' }}
-          />
-          {t('freeOnly')}
-        </label>
-      </div>
-
-      {/* 4. Search History (Verlauf) */}
-      {searchHistory.length > 0 && (
-        <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.6px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <History size={12} /> {t('history')}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Filter size={13} color="var(--accent-cyan)" />
+            <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+              {t('platforms')}
             </span>
-            <button
-              onClick={clearHistory}
-              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: 0 }}
-            >
-              {t('clearHistory')}
-            </button>
+            <span style={{ fontSize: '10px', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.12)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
+              {activePlatforms.length === 0 ? '6/6' : `${activePlatforms.length}/6`}
+            </span>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-            {searchHistory.slice(0, 8).map(term => (
-              <div
-                key={term}
+          <ChevronDown
+            size={15}
+            color="var(--text-muted)"
+            style={{
+              transform: isPlatformsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease'
+            }}
+          />
+        </button>
+
+        {isPlatformsOpen && (
+          <div style={{ padding: '0 12px 12px 12px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.04)', paddingTop: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={selectAllPlatforms}
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '6px',
-                  padding: '3px 7px',
+                  background: 'none',
+                  border: 'none',
+                  color: activePlatforms.length === 0 ? 'var(--accent-cyan)' : 'var(--text-muted)',
                   fontSize: '11px',
-                  color: 'var(--text-muted)'
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  padding: 0
                 }}
               >
-                <span
-                  onClick={() => {
-                    setSearchTerm(term);
-                    handleSearch(term);
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {term}
-                </span>
-                <X
-                  size={11}
-                  onClick={() => removeFromHistory(term)}
-                  style={{ cursor: 'pointer', opacity: 0.6 }}
-                />
-              </div>
-            ))}
+                {activePlatforms.length === 0 ? `✓ ${t('allActive')}` : t('selectAll')}
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+              {PLATFORMS.map(p => {
+                const isSelected = activePlatforms.length === 0 || activePlatforms.includes(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => togglePlatform(p.id)}
+                    style={{
+                      padding: '7px 8px',
+                      borderRadius: '8px',
+                      border: isSelected ? `1px solid ${p.color}66` : '1px solid rgba(255, 255, 255, 0.05)',
+                      background: isSelected ? p.bg : 'rgba(255, 255, 255, 0.02)',
+                      color: isSelected ? '#fff' : 'var(--text-muted)',
+                      fontSize: '11px',
+                      fontWeight: isSelected ? '700' : '500',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.15s',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isSelected ? p.color : 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+        )}
+      </div>
+
+      {/* 4. Options & Sorting Accordion (Aufklapp-Menü) */}
+      <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: '14px', overflow: 'hidden', transition: 'all 0.2s' }}>
+        <button
+          type="button"
+          onClick={() => setIsSortOpen(!isSortOpen)}
+          style={{
+            width: '100%',
+            padding: '12px 14px',
+            background: 'transparent',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            color: '#fff'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ArrowUpDown size={13} color="var(--accent-cyan)" />
+            <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+              {t('sortBy')}
+            </span>
+            <span style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(255, 255, 255, 0.06)', padding: '2px 6px', borderRadius: '6px', fontWeight: '600' }}>
+              {sortBy === 'popular' ? t('sortPopular') : sortBy === 'likes' ? t('sortLikes') : t('sortName')}
+            </span>
+          </div>
+          <ChevronDown
+            size={15}
+            color="var(--text-muted)"
+            style={{
+              transform: isSortOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease'
+            }}
+          />
+        </button>
+
+        {isSortOpen && (
+          <div style={{ padding: '0 12px 12px 12px', display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.04)', paddingTop: '10px' }}>
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as any)}
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                background: 'var(--bg-card)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '8px',
+                color: 'var(--text-main)',
+                fontSize: '12px',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="popular">{t('sortPopular')}</option>
+              <option value="likes">{t('sortLikes')}</option>
+              <option value="name">{t('sortName')}</option>
+            </select>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-main)', cursor: 'pointer', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={freeOnly}
+                onChange={e => setFreeOnly(e.target.checked)}
+                style={{ width: '15px', height: '15px', cursor: 'pointer', accentColor: 'var(--accent-cyan)' }}
+              />
+              {t('freeOnly')}
+            </label>
+          </div>
+        )}
+      </div>
+
+      {/* 5. Search History Accordion (Aufklapp-Menü) */}
+      {searchHistory.length > 0 && (
+        <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: '14px', overflow: 'hidden', transition: 'all 0.2s' }}>
+          <button
+            type="button"
+            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              background: 'transparent',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              color: '#fff'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <History size={13} color="var(--accent-cyan)" />
+              <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+                {t('history')}
+              </span>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(255, 255, 255, 0.06)', padding: '2px 6px', borderRadius: '6px', fontWeight: '600' }}>
+                {searchHistory.length}
+              </span>
+            </div>
+            <ChevronDown
+              size={15}
+              color="var(--text-muted)"
+              style={{
+                transform: isHistoryOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s ease'
+              }}
+            />
+          </button>
+
+          {isHistoryOpen && (
+            <div style={{ padding: '0 12px 12px 12px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.04)', paddingTop: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={clearHistory}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer', padding: 0 }}
+                >
+                  {t('clearHistory')}
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                {searchHistory.slice(0, 10).map(term => (
+                  <div
+                    key={term}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '6px',
+                      padding: '3px 7px',
+                      fontSize: '11px',
+                      color: 'var(--text-muted)'
+                    }}
+                  >
+                    <span
+                      onClick={() => {
+                        setSearchTerm(term);
+                        handleSearch(term);
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {term}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeFromHistory(term)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0, display: 'flex' }}
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

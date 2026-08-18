@@ -1123,7 +1123,11 @@ function App() {
             </button>
 
             <button 
-              onClick={() => { setActiveNav('online'); setMobileMenuOpen(false); }}
+              onClick={() => {
+                setActiveNav('online');
+                setMobileMenuOpen(false);
+                window.dispatchEvent(new CustomEvent('stl_reset_online_search'));
+              }}
               style={{
                 padding: '12px 16px',
                 borderRadius: '12px',
@@ -1968,7 +1972,11 @@ function App() {
 
         <button 
           className={`mobile-nav-item ${activeNav === 'online' ? 'active' : ''}`}
-          onClick={() => { setActiveNav('online'); setMobileMenuOpen(false); }}
+          onClick={() => {
+            setActiveNav('online');
+            setMobileMenuOpen(false);
+            window.dispatchEvent(new CustomEvent('stl_reset_online_search'));
+          }}
         >
           <Globe size={18} />
           <span>{t('onlineModels')}</span>
