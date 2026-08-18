@@ -237,9 +237,9 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
               onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }}
               title={t('findSimilar')}
               style={{
-                color: '#fbbf24',
-                background: 'rgba(245, 158, 11, 0.15)',
-                border: '1px solid rgba(245, 158, 11, 0.45)',
+                color: '#ffffff',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.22)',
                 borderRadius: '8px',
                 width: '32px',
                 height: '32px',
@@ -250,7 +250,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 flexShrink: 0
               }}
             >
-              <Sparkles size={16} color="#fbbf24" />
+              <Sparkles size={16} color="#ffffff" />
             </button>
 
             <div
@@ -263,9 +263,9 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 onClick={onSendClick}
                 title="Send to Slicer"
                 style={{
-                  color: 'var(--accent-blue)',
-                  background: 'rgba(58, 123, 213, 0.18)',
-                  border: '1px solid rgba(58, 123, 213, 0.45)',
+                  color: '#ffffff',
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.35)',
                   borderRadius: '8px',
                   width: '34px',
                   height: '34px',
@@ -282,9 +282,9 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
                   <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content', boxShadow: '0 6px 16px rgba(0,0,0,0.6)' }}>
                     {slicers.map((s: any) => (
-                      <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
+                      <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px', color: '#fff' }}
                            onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
-                           onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
+                           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                         {s.name}
                       </div>
@@ -348,7 +348,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
           boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
           zIndex: 10
         }}>
-          <Folder size={12} color="#8e2de2" />
+          <Folder size={12} color="#ffffff" />
           <span style={{ fontSize: '10px', fontWeight: '600', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {folderName}
           </span>
@@ -361,12 +361,12 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
       <div className="card-content">
         <div className="model-meta">
           <div className="meta-item" style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-            <Folder size={14} color="#8e2de2" style={{ flexShrink: 0, marginRight: '4px' }} />
+            <Folder size={14} color="#ffffff" style={{ flexShrink: 0, marginRight: '4px' }} />
             {model.rel_path ? (
               model.rel_path.split(/[\/\\]/).map((part: string, idx: number, arr: string[]) => (
                 <React.Fragment key={idx}>
                   <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} 
-                        onMouseEnter={e => e.currentTarget.style.color='var(--accent-blue)'}
+                        onMouseEnter={e => e.currentTarget.style.color='#ffffff'}
                         onMouseLeave={e => e.currentTarget.style.color='inherit'}
                         onClick={(e) => { e.stopPropagation(); handleSetSearchTerm(part); }}
                         title={`Nach '${part}' filtern`}>
@@ -520,9 +520,9 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
               onClick={(e) => { e.stopPropagation(); handleFindSimilar(model); }}
               title={t('findSimilar')}
               style={{
-                color: '#fbbf24',
-                background: 'rgba(245, 158, 11, 0.15)',
-                border: '1px solid rgba(245, 158, 11, 0.45)',
+                color: '#ffffff',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.22)',
                 borderRadius: '8px',
                 width: '32px',
                 height: '32px',
@@ -532,7 +532,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 cursor: 'pointer'
               }}
             >
-              <Sparkles size={16} color="#fbbf24" />
+              <Sparkles size={16} color="#ffffff" />
             </button>
 
             <div
@@ -545,9 +545,9 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 onClick={onSendClick}
                 title="Send to Slicer"
                 style={{
-                  color: 'var(--accent-blue)',
-                  background: 'rgba(58, 123, 213, 0.18)',
-                  border: '1px solid rgba(58, 123, 213, 0.45)',
+                  color: '#ffffff',
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.35)',
                   borderRadius: '8px',
                   width: '34px',
                   height: '34px',
@@ -563,9 +563,9 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 <div style={{ position: 'absolute', right: '0', top: '100%', paddingTop: '4px', zIndex: 100 }}>
                   <div style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', width: 'max-content', boxShadow: '0 6px 16px rgba(0,0,0,0.6)' }}>
                     {slicers.map((s: any) => (
-                      <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px' }}
+                      <div key={s.name} style={{ padding: '6px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '4px', color: '#fff' }}
                            onClick={() => { setShowSlicerMenu(false); handleSlice(model.id, s.path); }}
-                           onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-blue)'}
+                           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                         {s.name}
                       </div>
@@ -1055,24 +1055,24 @@ function App() {
           {/* Logo Section / Mobile Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #00d2ff, #8e2de2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0, 210, 255, 0.25)' }}>
-                <Database size={26} color="white" />
+              <div style={{ width: '44px', height: '44px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)' }}>
+                <Database size={24} color="#ffffff" />
               </div>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <div style={{ fontWeight: '800', fontSize: '17px', letterSpacing: '1px', color: '#fff' }}>STL Manager</div>
-                  <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(0, 210, 255, 0.15)', color: 'var(--accent-cyan)', border: '1px solid rgba(0, 210, 255, 0.3)', padding: '1px 5px', borderRadius: '6px' }}>v1.3.0</span>
+                  <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.25)', padding: '1px 5px', borderRadius: '6px' }}>v1.3.0</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                   <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{models.length} {t('modelsTotal')}</span>
                   <button
                     onClick={toggleLanguage}
                     style={{
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      background: 'rgba(255, 255, 255, 0.06)',
+                      border: '1px solid rgba(255, 255, 255, 0.18)',
                       borderRadius: '6px',
-                      color: 'var(--accent-cyan)',
-                      padding: '1px 5px',
+                      color: '#ffffff',
+                      padding: '1px 6px',
                       fontSize: '9px',
                       fontWeight: '800',
                       cursor: 'pointer'
@@ -1100,8 +1100,8 @@ function App() {
               style={{
                 padding: '12px 16px',
                 borderRadius: '12px',
-                border: activeNav === 'library' ? '1px solid var(--accent-blue)' : '1px solid rgba(255, 255, 255, 0.05)',
-                background: activeNav === 'library' ? 'rgba(58, 123, 213, 0.25)' : 'rgba(255, 255, 255, 0.03)',
+                border: activeNav === 'library' ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.08)',
+                background: activeNav === 'library' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.03)',
                 color: activeNav === 'library' ? '#fff' : 'var(--text-muted)',
                 fontWeight: '700',
                 fontSize: '14px',
@@ -1109,12 +1109,12 @@ function App() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 cursor: 'pointer',
-                boxShadow: activeNav === 'library' ? '0 4px 15px rgba(58, 123, 213, 0.25)' : 'none',
+                boxShadow: activeNav === 'library' ? '0 4px 15px rgba(0, 0, 0, 0.35)' : 'none',
                 transition: 'all 0.2s'
               }}
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Folder size={18} color={activeNav === 'library' ? 'var(--accent-cyan)' : 'var(--text-muted)'} /> 
+                <Folder size={18} color={activeNav === 'library' ? '#ffffff' : 'var(--text-muted)'} /> 
                 {t('library')}
               </span>
               <span style={{ fontSize: '11px', fontWeight: '700', background: 'rgba(255,255,255,0.08)', padding: '3px 8px', borderRadius: '12px', color: 'var(--text-main)' }}>
@@ -1131,8 +1131,8 @@ function App() {
               style={{
                 padding: '12px 16px',
                 borderRadius: '12px',
-                border: activeNav === 'online' ? '1px solid var(--accent-cyan)' : '1px solid rgba(255, 255, 255, 0.05)',
-                background: activeNav === 'online' ? 'rgba(0, 210, 255, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                border: activeNav === 'online' ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.08)',
+                background: activeNav === 'online' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.03)',
                 color: activeNav === 'online' ? '#fff' : 'var(--text-muted)',
                 fontWeight: '700',
                 fontSize: '14px',
@@ -1140,15 +1140,15 @@ function App() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 cursor: 'pointer',
-                boxShadow: activeNav === 'online' ? '0 4px 15px rgba(0, 210, 255, 0.25)' : 'none',
+                boxShadow: activeNav === 'online' ? '0 4px 15px rgba(0, 0, 0, 0.35)' : 'none',
                 transition: 'all 0.2s'
               }}
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Globe size={18} color={activeNav === 'online' ? 'var(--accent-cyan)' : 'var(--text-muted)'} /> 
+                <Globe size={18} color={activeNav === 'online' ? '#ffffff' : 'var(--text-muted)'} /> 
                 {t('onlineModels')}
               </span>
-              <span style={{ fontSize: '10px', fontWeight: '800', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', padding: '2px 7px', borderRadius: '10px', color: '#fff' }}>
+              <span style={{ fontSize: '10px', fontWeight: '800', background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)', padding: '2px 7px', borderRadius: '10px', color: '#fff' }}>
                 NEU
               </span>
             </button>
@@ -1159,24 +1159,24 @@ function App() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* 1. Prominently Highlighted Local Search Hub */}
             <div style={{
-              background: 'linear-gradient(135deg, rgba(58, 123, 213, 0.12), rgba(0, 210, 255, 0.08))',
-              border: '1px solid rgba(58, 123, 213, 0.35)',
-              boxShadow: '0 4px 20px rgba(58, 123, 213, 0.18)',
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.32)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
               borderRadius: '14px',
               padding: '12px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', color: 'var(--accent-cyan)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Search size={13} color="var(--accent-cyan)" /> {t('librarySearch')}
+                <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', color: '#ffffff', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Search size={13} color="#ffffff" /> {t('librarySearch')}
                 </span>
                 {searchTerm && (
-                  <span style={{ fontSize: '10px', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.15)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
+                  <span style={{ fontSize: '10px', color: '#ffffff', background: 'rgba(255, 255, 255, 0.15)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
                     {t('activeSearch')}
                   </span>
                 )}
               </div>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--accent-cyan)', pointerEvents: 'none' }} />
+                <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
                 <input 
                   type="text" 
                   className="input-field" 
@@ -1191,7 +1191,7 @@ function App() {
                     fontSize: '13px',
                     fontWeight: '500',
                     background: 'var(--bg-dark)',
-                    border: '1px solid rgba(58, 123, 213, 0.3)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
                     color: '#fff',
                     boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
                   }}
@@ -1354,12 +1354,12 @@ function App() {
               </select>
             </div>
 
-            <div style={{ display: 'flex', background: 'rgba(13, 17, 30, 0.7)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.04)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.12)' }}>
               <button
                 className="icon-button"
                 style={{
-                  background: viewMode === 'grid' ? 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))' : 'transparent',
-                  color: viewMode === 'grid' ? '#fff' : 'var(--text-muted)',
+                  background: viewMode === 'grid' ? '#ffffff' : 'transparent',
+                  color: viewMode === 'grid' ? '#090c14' : 'var(--text-muted)',
                   border: 'none',
                   borderRadius: '7px',
                   width: '30px',
@@ -1373,8 +1373,8 @@ function App() {
               <button
                 className="icon-button"
                 style={{
-                  background: viewMode === 'list' ? 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))' : 'transparent',
-                  color: viewMode === 'list' ? '#fff' : 'var(--text-muted)',
+                  background: viewMode === 'list' ? '#ffffff' : 'transparent',
+                  color: viewMode === 'list' ? '#090c14' : 'var(--text-muted)',
                   border: 'none',
                   borderRadius: '7px',
                   width: '30px',

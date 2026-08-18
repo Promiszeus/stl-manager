@@ -80,137 +80,20 @@ export const CONTEST_PORTALS = [
 ];
 
 export const TREND_EXPLORE_PILLS = [
-  {
-    id: 'daily',
-    titleKey: 'dailyTrends',
-    icon: TrendingUp,
-    color: '#f59e0b',
-    activeGradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
-    shadow: 'rgba(245, 158, 11, 0.4)'
-  },
-  {
-    id: 'monthly',
-    titleKey: 'monthlyTrends',
-    icon: Rocket,
-    color: '#ec4899',
-    activeGradient: 'linear-gradient(135deg, #ec4899, #be185d)',
-    shadow: 'rgba(236, 72, 153, 0.4)'
-  },
-  {
-    id: 'newest',
-    titleKey: 'newest',
-    icon: Sparkles,
-    color: '#10b981',
-    activeGradient: 'linear-gradient(135deg, #10b981, #059669)',
-    shadow: 'rgba(16, 185, 129, 0.4)'
-  }
+  { id: 'daily', titleKey: 'dailyTrends', icon: TrendingUp },
+  { id: 'monthly', titleKey: 'monthlyTrends', icon: Rocket },
+  { id: 'newest', titleKey: 'newest', icon: Sparkles }
 ];
 
 export const CATEGORY_EXPLORE_CARDS = [
-  {
-    id: 'toys',
-    titleKey: 'catToys',
-    descKey: 'catToysDesc',
-    query: 'Toy Fidget Articulated Figure',
-    icon: Smile,
-    color: '#f59e0b',
-    bg: 'rgba(245, 158, 11, 0.15)',
-    border: 'rgba(245, 158, 11, 0.3)',
-    activeGradient: 'linear-gradient(135deg, #422616 0%, #2b170c 100%)',
-    idleGradient: 'linear-gradient(135deg, #2a1a11 0%, #1e130c 100%)',
-    shadow: 'rgba(245, 158, 11, 0.35)'
-  },
-  {
-    id: 'fashion',
-    titleKey: 'catFashion',
-    descKey: 'catFashionDesc',
-    query: 'Fashion Jewelry Ring Bracelet Wearable',
-    icon: Sparkles,
-    color: '#ec4899',
-    bg: 'rgba(236, 72, 153, 0.15)',
-    border: 'rgba(236, 72, 153, 0.3)',
-    activeGradient: 'linear-gradient(135deg, #441634 0%, #2b0b20 100%)',
-    idleGradient: 'linear-gradient(135deg, #2b1022 0%, #1c0a16 100%)',
-    shadow: 'rgba(236, 72, 153, 0.35)'
-  },
-  {
-    id: 'art',
-    titleKey: 'catArt',
-    descKey: 'catArtDesc',
-    query: 'Art Sculpture Design Decor Statue',
-    icon: Palette,
-    color: '#a855f7',
-    bg: 'rgba(168, 85, 247, 0.15)',
-    border: 'rgba(168, 85, 247, 0.3)',
-    activeGradient: 'linear-gradient(135deg, #2e1548 0%, #1b0a2c 100%)',
-    idleGradient: 'linear-gradient(135deg, #1e0f30 0%, #140820 100%)',
-    shadow: 'rgba(168, 85, 247, 0.35)'
-  },
-  {
-    id: 'tools',
-    titleKey: 'catTools',
-    descKey: 'catToolsDesc',
-    query: 'Functional Tool Mechanical Gadget Clamp',
-    icon: Wrench,
-    color: '#06b6d4',
-    bg: 'rgba(6, 182, 212, 0.15)',
-    border: 'rgba(6, 182, 212, 0.3)',
-    activeGradient: 'linear-gradient(135deg, #0e3742 0%, #082129 100%)',
-    idleGradient: 'linear-gradient(135deg, #0a252d 0%, #06181d 100%)',
-    shadow: 'rgba(6, 182, 212, 0.35)'
-  },
-  {
-    id: 'home',
-    titleKey: 'catHome',
-    descKey: 'catHomeDesc',
-    query: 'Home Storage Organizer Gridfinity Mount Box',
-    icon: Home,
-    color: '#10b981',
-    bg: 'rgba(16, 185, 129, 0.15)',
-    border: 'rgba(16, 185, 129, 0.3)',
-    activeGradient: 'linear-gradient(135deg, #123d30 0%, #0a251d 100%)',
-    idleGradient: 'linear-gradient(135deg, #0e271f 0%, #081a14 100%)',
-    shadow: 'rgba(16, 185, 129, 0.35)'
-  },
-  {
-    id: 'gaming',
-    titleKey: 'catGaming',
-    descKey: 'catGamingDesc',
-    query: 'Gaming Controller Stand Cosplay Prop Figure',
-    icon: Gamepad2,
-    color: '#6366f1',
-    bg: 'rgba(99, 102, 241, 0.15)',
-    border: 'rgba(99, 102, 241, 0.3)',
-    activeGradient: 'linear-gradient(135deg, #1f2048 0%, #12132d 100%)',
-    idleGradient: 'linear-gradient(135deg, #151633 0%, #0e0e22 100%)',
-    shadow: 'rgba(99, 102, 241, 0.35)'
-  },
-  {
-    id: 'plants',
-    titleKey: 'catPlants',
-    descKey: 'catPlantsDesc',
-    query: 'Planter Flower Pot Vase Hydroponics Garden',
-    icon: Layers,
-    color: '#84cc16',
-    bg: 'rgba(132, 204, 22, 0.15)',
-    border: 'rgba(132, 204, 22, 0.3)',
-    activeGradient: 'linear-gradient(135deg, #2b3a10 0%, #1a2408 100%)',
-    idleGradient: 'linear-gradient(135deg, #1d280a 0%, #121a05 100%)',
-    shadow: 'rgba(132, 204, 22, 0.35)'
-  },
-  {
-    id: 'hobby',
-    titleKey: 'catHobby',
-    descKey: 'catHobbyDesc',
-    query: 'RC Car Drone Plane Model Vehicle Hobby',
-    icon: Car,
-    color: '#38bdf8',
-    bg: 'rgba(56, 189, 248, 0.15)',
-    border: 'rgba(56, 189, 248, 0.3)',
-    activeGradient: 'linear-gradient(135deg, #0e3048 0%, #081d2c 100%)',
-    idleGradient: 'linear-gradient(135deg, #0a2132 0%, #061520 100%)',
-    shadow: 'rgba(56, 189, 248, 0.35)'
-  }
+  { id: 'toys', titleKey: 'catToys', descKey: 'catToysDesc', query: 'Toy Fidget Articulated Figure', icon: Smile },
+  { id: 'fashion', titleKey: 'catFashion', descKey: 'catFashionDesc', query: 'Fashion Jewelry Ring Bracelet Wearable', icon: Sparkles },
+  { id: 'art', titleKey: 'catArt', descKey: 'catArtDesc', query: 'Art Sculpture Design Decor Statue', icon: Palette },
+  { id: 'tools', titleKey: 'catTools', descKey: 'catToolsDesc', query: 'Functional Tool Mechanical Gadget Clamp', icon: Wrench },
+  { id: 'home', titleKey: 'catHome', descKey: 'catHomeDesc', query: 'Home Storage Organizer Gridfinity Mount Box', icon: Home },
+  { id: 'gaming', titleKey: 'catGaming', descKey: 'catGamingDesc', query: 'Gaming Controller Stand Cosplay Prop Figure', icon: Gamepad2 },
+  { id: 'plants', titleKey: 'catPlants', descKey: 'catPlantsDesc', query: 'Planter Flower Pot Vase Hydroponics Garden', icon: Layers },
+  { id: 'hobby', titleKey: 'catHobby', descKey: 'catHobbyDesc', query: 'RC Car Drone Plane Model Vehicle Hobby', icon: Car }
 ];
 
 interface OnlineSearchContextType {
@@ -605,26 +488,26 @@ export const OnlineSearchSidebar: React.FC = () => {
           width: '100%',
           padding: '11px 14px',
           borderRadius: '12px',
-          background: isFavActive ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3))' : 'rgba(245, 158, 11, 0.08)',
-          border: isFavActive ? '1px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.25)',
+          background: isFavActive ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+          border: isFavActive ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.15)',
           color: '#fff',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           cursor: 'pointer',
           transition: 'all 0.2s',
-          boxShadow: isFavActive ? '0 4px 14px rgba(245, 158, 11, 0.3)' : 'none'
+          boxShadow: isFavActive ? '0 4px 15px rgba(0, 0, 0, 0.35)' : 'none'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Star size={16} color="#f59e0b" fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} />
+          <Star size={16} color="#ffffff" fill={favoriteModels.length > 0 ? '#ffffff' : 'none'} />
           <span style={{ fontSize: '13px', fontWeight: '700' }}>{t('myFavorites')}</span>
         </div>
         <span style={{
           fontSize: '11px',
           fontWeight: '800',
-          background: isFavActive ? '#f59e0b' : 'rgba(245, 158, 11, 0.2)',
-          color: isFavActive ? '#000' : '#fbbf24',
+          background: isFavActive ? '#ffffff' : 'rgba(255, 255, 255, 0.1)',
+          color: isFavActive ? '#090c14' : '#ffffff',
           padding: '2px 8px',
           borderRadius: '10px'
         }}>
@@ -634,24 +517,24 @@ export const OnlineSearchSidebar: React.FC = () => {
 
       {/* 2. Prominently Highlighted Search Hub */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(58, 123, 213, 0.15))',
-        border: '1px solid rgba(0, 210, 255, 0.35)',
-        boxShadow: '0 4px 20px rgba(0, 210, 255, 0.18)',
+        background: 'rgba(255, 255, 255, 0.03)',
+        border: '1px solid rgba(255, 255, 255, 0.32)',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
         borderRadius: '14px',
         padding: '12px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', color: 'var(--accent-cyan)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Search size={13} color="var(--accent-cyan)" /> {t('searchModels')}
+          <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', color: '#ffffff', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Search size={13} color="#ffffff" /> {t('searchModels')}
           </span>
           {currentQuery && (
-            <span style={{ fontSize: '10px', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.15)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
+            <span style={{ fontSize: '10px', color: '#ffffff', background: 'rgba(255, 255, 255, 0.15)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
               {t('activeSearch')}: "{currentQuery}"
             </span>
           )}
         </div>
         <form onSubmit={onSubmit} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--accent-cyan)', pointerEvents: 'none' }} />
+          <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
           <input
             type="text"
             className="input-field"
@@ -666,7 +549,7 @@ export const OnlineSearchSidebar: React.FC = () => {
               fontSize: '13px',
               fontWeight: '500',
               background: 'var(--bg-dark)',
-              border: '1px solid rgba(0, 210, 255, 0.3)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
               color: '#fff',
               boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
             }}
@@ -690,14 +573,14 @@ export const OnlineSearchSidebar: React.FC = () => {
               height: '34px',
               borderRadius: '8px',
               border: 'none',
-              background: searchTerm.trim() ? 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))' : 'rgba(255,255,255,0.06)',
-              color: '#fff',
+              background: searchTerm.trim() ? '#ffffff' : 'rgba(255, 255, 255, 0.08)',
+              color: searchTerm.trim() ? '#090c14' : 'var(--text-muted)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: loading || !searchTerm.trim() ? 'not-allowed' : 'pointer',
               opacity: loading || !searchTerm.trim() ? 0.4 : 1,
-              boxShadow: searchTerm.trim() ? '0 2px 10px rgba(0, 210, 255, 0.4)' : 'none',
+              boxShadow: searchTerm.trim() ? '0 2px 10px rgba(255, 255, 255, 0.2)' : 'none',
               transition: 'all 0.15s'
             }}
           >
@@ -731,11 +614,11 @@ export const OnlineSearchSidebar: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Filter size={13} color="var(--accent-cyan)" />
+            <Filter size={13} color="#ffffff" />
             <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
               {t('platforms')}
             </span>
-            <span style={{ fontSize: '10px', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.12)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
+            <span style={{ fontSize: '10px', color: '#ffffff', background: 'rgba(255, 255, 255, 0.12)', padding: '2px 6px', borderRadius: '6px', fontWeight: '700' }}>
               {activePlatforms.length === 0 ? '6/6' : `${activePlatforms.length}/6`}
             </span>
           </div>
@@ -758,7 +641,7 @@ export const OnlineSearchSidebar: React.FC = () => {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: activePlatforms.length === 0 ? 'var(--accent-cyan)' : 'var(--text-muted)',
+                  color: activePlatforms.length === 0 ? '#ffffff' : 'var(--text-muted)',
                   fontSize: '11px',
                   fontWeight: '700',
                   cursor: 'pointer',
@@ -779,8 +662,8 @@ export const OnlineSearchSidebar: React.FC = () => {
                     style={{
                       padding: '7px 8px',
                       borderRadius: '8px',
-                      border: isSelected ? `1px solid ${p.color}66` : '1px solid rgba(255, 255, 255, 0.05)',
-                      background: isSelected ? p.bg : 'rgba(255, 255, 255, 0.02)',
+                      border: isSelected ? '1px solid rgba(255, 255, 255, 0.45)' : '1px solid rgba(255, 255, 255, 0.08)',
+                      background: isSelected ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.02)',
                       color: isSelected ? '#fff' : 'var(--text-muted)',
                       fontSize: '11px',
                       fontWeight: isSelected ? '700' : '500',
@@ -792,7 +675,7 @@ export const OnlineSearchSidebar: React.FC = () => {
                       textAlign: 'left'
                     }}
                   >
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isSelected ? p.color : 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isSelected ? '#ffffff' : 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
                   </button>
                 );
@@ -999,7 +882,6 @@ export const OnlineSearchContent: React.FC = () => {
     handleCategoryClick,
     handleLoadMore,
     copyUrl,
-    getPlatformStyle,
     handleSearch
   } = useOnlineSearch();
 
@@ -1060,7 +942,7 @@ export const OnlineSearchContent: React.FC = () => {
             className={`explore-chip ${activeCategory === 'daily' ? 'active' : ''}`}
             onClick={() => handleCategoryClick('daily')}
           >
-            <TrendingUp size={13} color="#f59e0b" />
+            <TrendingUp size={13} color={activeCategory === 'daily' ? '#090c14' : '#ffffff'} />
             <span>{t('dailyTrends')}</span>
           </button>
           <button
@@ -1068,7 +950,7 @@ export const OnlineSearchContent: React.FC = () => {
             className={`explore-chip ${activeCategory === 'monthly' ? 'active' : ''}`}
             onClick={() => handleCategoryClick('monthly')}
           >
-            <Rocket size={13} color="#ec4899" />
+            <Rocket size={13} color={activeCategory === 'monthly' ? '#090c14' : '#ffffff'} />
             <span>{t('monthlyTrends')}</span>
           </button>
           <button
@@ -1076,7 +958,7 @@ export const OnlineSearchContent: React.FC = () => {
             className={`explore-chip ${activeCategory === 'newest' ? 'active' : ''}`}
             onClick={() => handleCategoryClick('newest')}
           >
-            <Sparkles size={13} color="#10b981" />
+            <Sparkles size={13} color={activeCategory === 'newest' ? '#090c14' : '#ffffff'} />
             <span>{t('newest')}</span>
           </button>
           {CATEGORY_EXPLORE_CARDS.map(cat => {
@@ -1089,7 +971,7 @@ export const OnlineSearchContent: React.FC = () => {
                 className={`explore-chip ${isCatActive ? 'active' : ''}`}
                 onClick={() => handleCategoryClick(cat.id)}
               >
-                <Icon size={13} color={cat.color} />
+                <Icon size={13} color={isCatActive ? '#090c14' : '#ffffff'} />
                 <span>{t(cat.titleKey as any)}</span>
               </button>
             );
@@ -1106,15 +988,15 @@ export const OnlineSearchContent: React.FC = () => {
             className="bento-card bento-card-hero"
             style={{ gridColumn: 'span 1', cursor: 'pointer' }}
           >
-            <div style={{ position: 'absolute', top: 0, right: 0, width: '280px', height: '100%', background: 'radial-gradient(circle at top right, rgba(0, 210, 255, 0.2), transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: 0, right: 0, width: '280px', height: '100%', background: 'radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 70%)', pointerEvents: 'none' }} />
 
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 77, 77, 0.2)', border: '1px solid rgba(255, 77, 77, 0.45)', color: '#ff6b6b', padding: '3px 10px', borderRadius: '10px', fontSize: '10.5px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ff6b6b' }} />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.25)', color: '#ffffff', padding: '3px 10px', borderRadius: '10px', fontSize: '10.5px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ffffff' }} />
                   {t('bentoFeatured')}
                 </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent-cyan)', fontSize: '11.5px', fontWeight: '700' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ffffff', fontSize: '11.5px', fontWeight: '700' }}>
                   <Trophy size={13} />
                   <span>{t('allContests')}</span>
                   <ChevronRight size={13} />
@@ -1138,15 +1020,15 @@ export const OnlineSearchContent: React.FC = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
-                  border: 'none',
+                  background: '#ffffff',
+                  border: '1px solid #ffffff',
                   borderRadius: '8px',
                   padding: '6px 14px',
-                  color: '#fff',
+                  color: '#090c14',
                   fontSize: '11.5px',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(0, 210, 255, 0.3)'
+                  boxShadow: '0 2px 10px rgba(255, 255, 255, 0.2)'
                 }}
               >
                 <Trophy size={13} /> {t('allContests')}
@@ -1160,7 +1042,7 @@ export const OnlineSearchContent: React.FC = () => {
                   alignItems: 'center',
                   gap: '6px',
                   background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
                   borderRadius: '8px',
                   padding: '6px 12px',
                   color: '#fff',
@@ -1179,11 +1061,11 @@ export const OnlineSearchContent: React.FC = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  background: 'rgba(0, 174, 66, 0.2)',
-                  border: '1px solid rgba(0, 174, 66, 0.4)',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
                   borderRadius: '8px',
                   padding: '6px 12px',
-                  color: '#4ade80',
+                  color: '#ffffff',
                   fontSize: '11.5px',
                   fontWeight: '700',
                   cursor: 'pointer'
@@ -1200,7 +1082,7 @@ export const OnlineSearchContent: React.FC = () => {
             {/* Section A: Trends & Entdecken */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
               <div style={{ fontSize: '12px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <TrendingUp size={14} color="#f59e0b" />
+                <TrendingUp size={14} color="#ffffff" />
                 <span>{t('trendsAndDiscover')}</span>
               </div>
             </div>
@@ -1216,13 +1098,13 @@ export const OnlineSearchContent: React.FC = () => {
                     onClick={() => handleCategoryClick(tPill.id)}
                     className="bento-category-pill"
                     style={{
-                      background: isActive ? tPill.activeGradient : 'rgba(255, 255, 255, 0.04)',
-                      border: isActive ? `1px solid ${tPill.color}` : '1px solid rgba(255, 255, 255, 0.1)',
-                      color: isActive ? '#fff' : 'var(--text-main)',
-                      boxShadow: isActive ? `0 2px 10px ${tPill.shadow}` : 'none'
+                      background: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.04)',
+                      border: isActive ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.12)',
+                      color: isActive ? '#090c14' : '#cbd5e1',
+                      boxShadow: isActive ? '0 2px 14px rgba(255, 255, 255, 0.25)' : 'none'
                     }}
                   >
-                    <Icon size={14} color={isActive ? '#fff' : tPill.color} />
+                    <Icon size={14} color={isActive ? '#090c14' : '#ffffff'} />
                     <span>{t(tPill.titleKey as any)}</span>
                   </button>
                 );
@@ -1230,12 +1112,12 @@ export const OnlineSearchContent: React.FC = () => {
             </div>
 
             {/* Subtle Divider */}
-            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.06)', margin: '14px 0' }} />
+            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.08)', margin: '14px 0' }} />
 
             {/* Section B: Themenwelten & Kategorien */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
               <div style={{ fontSize: '12px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Sparkles size={14} color="var(--accent-cyan)" />
+                <Sparkles size={14} color="#ffffff" />
                 <span>{t('bentoCategories')}</span>
               </div>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t('categoriesDesc')}</span>
@@ -1252,13 +1134,13 @@ export const OnlineSearchContent: React.FC = () => {
                     onClick={() => handleCategoryClick(cat.id)}
                     className="bento-category-pill"
                     style={{
-                      background: isCatActive ? cat.activeGradient : 'rgba(255, 255, 255, 0.04)',
-                      border: isCatActive ? `1px solid ${cat.color}` : '1px solid rgba(255, 255, 255, 0.08)',
-                      color: isCatActive ? '#fff' : 'var(--text-muted)',
-                      boxShadow: isCatActive ? `0 2px 10px ${cat.shadow}` : 'none'
+                      background: isCatActive ? '#ffffff' : 'rgba(255, 255, 255, 0.04)',
+                      border: isCatActive ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.12)',
+                      color: isCatActive ? '#090c14' : '#cbd5e1',
+                      boxShadow: isCatActive ? '0 2px 14px rgba(255, 255, 255, 0.25)' : 'none'
                     }}
                   >
-                    <Icon size={14} color={isCatActive ? '#fff' : cat.color} />
+                    <Icon size={14} color={isCatActive ? '#090c14' : '#ffffff'} />
                     <span>{t(cat.titleKey as any)}</span>
                   </button>
                 );
@@ -1448,7 +1330,7 @@ export const OnlineSearchContent: React.FC = () => {
         </div>
 
         {displayedResults.length > 0 && (
-          <span style={{ fontSize: '11px', fontWeight: '700', background: activeCategory === 'favorites' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(0, 210, 255, 0.15)', color: activeCategory === 'favorites' ? '#fbbf24' : 'var(--accent-cyan)', border: activeCategory === 'favorites' ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(0, 210, 255, 0.3)', padding: '4px 10px', borderRadius: '10px' }}>
+          <span style={{ fontSize: '11px', fontWeight: '700', background: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.25)', padding: '4px 10px', borderRadius: '10px' }}>
             {displayedResults.length} {t('modelsLoaded')}
           </span>
         )}
@@ -1456,7 +1338,7 @@ export const OnlineSearchContent: React.FC = () => {
 
       {/* Error Message */}
       {error && (
-        <div style={{ padding: '14px', background: 'rgba(255, 77, 77, 0.1)', border: '1px solid rgba(255, 77, 77, 0.3)', borderRadius: '10px', color: '#ff6b6b', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ padding: '14px', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '10px', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
           <AlertCircle size={18} />
           <span style={{ fontSize: '13px' }}>{error}</span>
         </div>
@@ -1465,7 +1347,7 @@ export const OnlineSearchContent: React.FC = () => {
       {/* Loading State */}
       {loading && (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-          <Loader2 size={36} className="spin" style={{ color: 'var(--accent-cyan)', margin: '0 auto 12px' }} />
+          <Loader2 size={36} className="spin" style={{ color: '#ffffff', margin: '0 auto 12px' }} />
           <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)' }}>{t('searchingAllPlatforms')}</div>
           <div style={{ fontSize: '12px', marginTop: '4px' }}>{t('searchingPlatformsDetail')}</div>
         </div>
@@ -1476,8 +1358,8 @@ export const OnlineSearchContent: React.FC = () => {
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
           {activeCategory === 'favorites' ? (
             <div>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <Star size={32} color="#f59e0b" fill="none" />
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <Star size={30} color="#ffffff" fill="none" />
               </div>
               <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)', marginBottom: '8px' }}>
                 {t('noFavoritesTitle')}
@@ -1494,13 +1376,13 @@ export const OnlineSearchContent: React.FC = () => {
                   gap: '8px',
                   padding: '10px 18px',
                   borderRadius: '10px',
-                  background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
-                  border: 'none',
-                  color: '#fff',
-                  fontWeight: '700',
+                  background: '#ffffff',
+                  border: '1px solid #ffffff',
+                  color: '#090c14',
+                  fontWeight: '800',
                   fontSize: '13px',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(0, 210, 255, 0.3)'
+                  boxShadow: '0 4px 14px rgba(255, 255, 255, 0.2)'
                 }}
               >
                 <TrendingUp size={15} /> {t('dailyTrends')} durchsuchen
@@ -1521,34 +1403,33 @@ export const OnlineSearchContent: React.FC = () => {
         <div>
           <div className="online-models-grid">
             {displayedResults.map(model => {
-              const platStyle = getPlatformStyle(model.platform);
               const isFav = isFavorite(model.id);
               return (
                 <div
                   key={model.id}
                   style={{
                     background: 'var(--bg-card)',
-                    border: isFav ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid rgba(255, 255, 255, 0.07)',
+                    border: isFav ? '1px solid rgba(255, 255, 255, 0.45)' : '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '16px',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                     transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-                    boxShadow: isFav ? '0 4px 18px rgba(245, 158, 11, 0.15)' : '0 4px 16px rgba(0,0,0,0.2)'
+                    boxShadow: isFav ? '0 4px 18px rgba(255, 255, 255, 0.08)' : '0 4px 16px rgba(0,0,0,0.2)'
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.transform = 'translateY(-3px)';
-                    e.currentTarget.style.boxShadow = isFav ? '0 10px 24px rgba(245, 158, 11, 0.25)' : '0 10px 24px rgba(0,0,0,0.35)';
-                    e.currentTarget.style.borderColor = isFav ? '#f59e0b' : 'rgba(0, 210, 255, 0.35)';
+                    e.currentTarget.style.boxShadow = '0 10px 24px rgba(0,0,0,0.45)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.transform = 'none';
-                    e.currentTarget.style.boxShadow = isFav ? '0 4px 18px rgba(245, 158, 11, 0.15)' : '0 4px 16px rgba(0,0,0,0.2)';
-                    e.currentTarget.style.borderColor = isFav ? 'rgba(245, 158, 11, 0.4)' : 'rgba(255, 255, 255, 0.07)';
+                    e.currentTarget.style.boxShadow = isFav ? '0 4px 18px rgba(255, 255, 255, 0.08)' : '0 4px 16px rgba(0,0,0,0.2)';
+                    e.currentTarget.style.borderColor = isFav ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 255, 255, 0.1)';
                   }}
                 >
                   {/* Image Container with Badges */}
-                  <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', background: '#16192b', overflow: 'hidden' }}>
+                  <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', background: '#0e121d', overflow: 'hidden' }}>
                     {model.thumbnail ? (
                       <img
                         src={model.thumbnail}
@@ -1571,20 +1452,20 @@ export const OnlineSearchContent: React.FC = () => {
                       position: 'absolute',
                       top: '8px',
                       left: '8px',
-                      background: 'rgba(18, 21, 36, 0.85)',
+                      background: 'rgba(11, 15, 24, 0.88)',
                       backdropFilter: 'blur(6px)',
-                      border: `1px solid ${platStyle.color}66`,
-                      color: platStyle.color,
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      color: '#ffffff',
                       padding: '3px 7px',
                       borderRadius: '7px',
                       fontSize: '10px',
-                      fontWeight: '800',
+                      fontWeight: '700',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
                       boxShadow: '0 2px 6px rgba(0,0,0,0.4)'
                     }}>
-                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: platStyle.color }} />
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ffffff' }} />
                       {model.platform_name}
                     </div>
 
@@ -1598,20 +1479,20 @@ export const OnlineSearchContent: React.FC = () => {
                       gap: '5px'
                     }}>
                       <div style={{
-                        background: 'rgba(18, 21, 36, 0.85)',
+                        background: 'rgba(11, 15, 24, 0.88)',
                         backdropFilter: 'blur(6px)',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
                         padding: '3px 7px',
                         borderRadius: '7px',
                         fontSize: '10px',
                         fontWeight: '700',
-                        color: '#ff6b81',
+                        color: '#e2e8f0',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '3px',
                         boxShadow: '0 2px 6px rgba(0,0,0,0.4)'
                       }}>
-                        <Heart size={11} fill="#ff6b81" />
+                        <Heart size={11} fill="#e2e8f0" color="#e2e8f0" />
                         <span>{model.likes || 12}</span>
                       </div>
 
@@ -1623,21 +1504,21 @@ export const OnlineSearchContent: React.FC = () => {
                         }}
                         title={isFav ? t('removeFromFavorites') : t('addToFavorites')}
                         style={{
-                          background: isFav ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'rgba(18, 21, 36, 0.85)',
+                          background: isFav ? '#ffffff' : 'rgba(11, 15, 24, 0.88)',
                           backdropFilter: 'blur(6px)',
-                          border: isFav ? '1px solid #fbbf24' : '1px solid rgba(255, 255, 255, 0.15)',
+                          border: isFav ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.2)',
                           padding: '4px 6px',
                           borderRadius: '7px',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: '#fff',
-                          boxShadow: isFav ? '0 2px 10px rgba(245, 158, 11, 0.5)' : '0 2px 6px rgba(0,0,0,0.4)',
+                          color: isFav ? '#090c14' : '#ffffff',
+                          boxShadow: isFav ? '0 2px 10px rgba(255, 255, 255, 0.25)' : '0 2px 6px rgba(0,0,0,0.4)',
                           transition: 'all 0.2s'
                         }}
                       >
-                        <Star size={13} fill={isFav ? '#fff' : 'none'} color={isFav ? '#fff' : 'rgba(255,255,255,0.85)'} />
+                        <Star size={13} fill={isFav ? '#090c14' : 'none'} color={isFav ? '#090c14' : '#ffffff'} />
                       </button>
                     </div>
 
@@ -1647,9 +1528,9 @@ export const OnlineSearchContent: React.FC = () => {
                       bottom: '8px',
                       left: '8px',
                       maxWidth: '85%',
-                      background: 'rgba(15, 18, 30, 0.85)',
+                      background: 'rgba(11, 15, 24, 0.88)',
                       backdropFilter: 'blur(6px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
                       borderRadius: '20px',
                       padding: '2px 8px 2px 3px',
                       display: 'flex',
@@ -1657,7 +1538,7 @@ export const OnlineSearchContent: React.FC = () => {
                       gap: '5px',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.5)'
                     }}>
-                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'linear-gradient(135deg, #00d2ff, #8e2de2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: '800', color: '#fff' }}>
+                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.15)', border: '1px solid rgba(255, 255, 255, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: '800', color: '#fff' }}>
                         {model.author ? model.author.charAt(0).toUpperCase() : 'U'}
                       </div>
                       <span style={{ fontSize: '11px', fontWeight: '600', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1671,10 +1552,10 @@ export const OnlineSearchContent: React.FC = () => {
                         position: 'absolute',
                         bottom: '8px',
                         right: '8px',
-                        background: 'rgba(15, 18, 30, 0.85)',
+                        background: 'rgba(11, 15, 24, 0.88)',
                         backdropFilter: 'blur(6px)',
-                        border: '1px solid rgba(255, 215, 0, 0.4)',
-                        color: '#ffd700',
+                        border: '1px solid rgba(255, 255, 255, 0.25)',
+                        color: '#ffffff',
                         padding: '2px 7px',
                         borderRadius: '6px',
                         fontSize: '10px',
@@ -1714,8 +1595,8 @@ export const OnlineSearchContent: React.FC = () => {
                         style={{
                           flex: 1,
                           padding: '7px 10px',
-                          background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(58, 123, 213, 0.25))',
-                          border: '1px solid rgba(0, 210, 255, 0.3)',
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
                           borderRadius: '8px',
                           color: '#fff',
                           fontSize: '11px',
@@ -1737,10 +1618,10 @@ export const OnlineSearchContent: React.FC = () => {
                         title={t('copyLink')}
                         style={{
                           padding: '7px 9px',
-                          background: copiedId === model.id ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                          border: `1px solid ${copiedId === model.id ? '#2ecc71' : 'var(--border-color)'}`,
+                          background: copiedId === model.id ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                          border: `1px solid ${copiedId === model.id ? '#ffffff' : 'rgba(255, 255, 255, 0.12)'}`,
                           borderRadius: '8px',
-                          color: copiedId === model.id ? '#2ecc71' : 'var(--text-muted)',
+                          color: copiedId === model.id ? '#ffffff' : 'var(--text-muted)',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
@@ -1765,18 +1646,18 @@ export const OnlineSearchContent: React.FC = () => {
                 disabled={loadingMore}
                 style={{
                   padding: '12px 28px',
-                  background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(58, 123, 213, 0.35))',
-                  border: '1px solid var(--accent-cyan)',
+                  background: '#ffffff',
+                  border: '1px solid #ffffff',
                   borderRadius: '12px',
-                  color: '#fff',
-                  fontWeight: '700',
+                  color: '#090c14',
+                  fontWeight: '800',
                   fontSize: '13px',
                   cursor: loadingMore ? 'not-allowed' : 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
-                  transition: 'all 0.2s',
-                  boxShadow: '0 4px 20px rgba(0, 210, 255, 0.25)'
+                  boxShadow: '0 4px 15px rgba(255, 255, 255, 0.15)',
+                  transition: 'all 0.2s'
                 }}
               >
                 {loadingMore ? (
