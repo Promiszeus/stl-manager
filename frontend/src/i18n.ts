@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export type Language = 'de' | 'en';
 
@@ -380,16 +380,20 @@ export function useI18n() {
     return (localStorage.getItem('stl_manager_lang') as Language) || 'de';
   });
 
-  const setLanguage = (newLang: Language) => {
+  const setLanguage = useCallback((newLang: Language) => {
     setLangState(newLang);
     localStorage.setItem('stl_manager_lang', newLang);
-  };
+  }, []);
 
-  const toggleLanguage = () => {
-    setLanguage(lang === 'de' ? 'en' : 'de');
-  };
+  const toggleLanguage = useCallback(() => {
+    setLangState(prev => {
+      const next = prev === 'de' ? 'en' : 'de';
+      localStorage.setItem('stl_manager_lang', next);
+      return next;
+    });
+  }, []);
 
-  const t = (key: keyof typeof translations['de'], params?: Record<string, string>): string => {
+  const t = useCallback((key: keyof typeof translations['de'], params?: Record<string, string>): string => {
     let text = translations[lang]?.[key] || translations['de']?.[key] || key;
     if (params) {
       Object.entries(params).forEach(([k, v]) => {
@@ -397,7 +401,7 @@ export function useI18n() {
       });
     }
     return text;
-  };
+  }, [lang]);
 
   return { lang, setLanguage, toggleLanguage, t };
 }

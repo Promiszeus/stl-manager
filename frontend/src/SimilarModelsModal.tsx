@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Sparkles, Box, Scissors, Eye, Check, Loader2, FolderOpen, Globe, Search, ExternalLink, Copy, RefreshCw, ThumbsUp } from 'lucide-react';
 import { useI18n } from './i18n';
 
@@ -43,6 +43,8 @@ interface SimilarModelsModalProps {
   slicers: Array<{ name: string; path: string }>;
 }
 
+const API_BASE = typeof window !== 'undefined' && window.location.port === '5173' ? 'http://127.0.0.1:8000' : '';
+
 export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
   sourceModel,
   onClose,
@@ -69,7 +71,7 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
   const [errorOnline, setErrorOnline] = useState<string | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
-  const API_BASE = window.location.port === '5173' ? 'http://127.0.0.1:8000' : '';
+  const onlineFetchedRef = useRef<string | null>(null);
 
   // Fetch Local Similar Models
   useEffect(() => {
@@ -99,7 +101,7 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [sourceModel.id, API_BASE, t]);
+  }, [sourceModel.id, t]);
 
   // Fetch Online Similar Models
   const fetchOnlineSimilar = useCallback((queryOverride?: string) => {
@@ -130,14 +132,15 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
         setLoadingOnline(false);
         setHasLoadedOnline(true);
       });
-  }, [API_BASE, sourceModel.id, t]);
+  }, [sourceModel.id, t]);
 
   // Auto-fetch online when switching to online tab for the first time
   useEffect(() => {
-    if (activeTab === 'online' && !hasLoadedOnline && !loadingOnline) {
+    if (activeTab === 'online' && onlineFetchedRef.current !== sourceModel.id) {
+      onlineFetchedRef.current = sourceModel.id;
       fetchOnlineSimilar();
     }
-  }, [activeTab, hasLoadedOnline, loadingOnline, fetchOnlineSimilar]);
+  }, [activeTab, sourceModel.id, fetchOnlineSimilar]);
 
   const handleOnlineSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,7 +204,7 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          animation: 'modalFadeIn 0.25s ease-out'
+          animation: 'scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
       >
         {/* Modal Header */}

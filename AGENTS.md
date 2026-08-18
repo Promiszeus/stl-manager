@@ -1,10 +1,28 @@
 # STL-Manager Agent Guidelines & Project Rules
 
-This document outlines mandatory guidelines, architectural constraints, and development standards for any AI agent or developer operating within the **STL-Manager** codebase.
+This document outlines mandatory guidelines, architectural constraints, development standards, and the **mandatory subagent delegation protocol** for the **STL-Manager** codebase.
 
 ---
 
-## 🏗️ 1. Architecture & Tech Stack Rules
+## 🤖 1. Mandatory Subagent Delegation Protocol
+
+Whenever handling coding, testing, debugging, or design tasks in STL-Manager, the main agent **MUST** actively delegate work to the corresponding specialized subagent(s) using `invoke_subagent`:
+
+| Domain / Task Type | Dedicated Subagent | Persona & Primary Role |
+| :--- | :--- | :--- |
+| 🎨 **UI, Styling & Design** | **`designer`** | Glassmorphism UI, React 19 / CSS / Tailwind, mobile dock, Three.js 3D viewer aesthetic, bilingual i18n keys. |
+| 🐛 **Bugs & Diagnostics** | **`bug_hunter`** | Diagnosing crashes, Windows file locks, async deadlocks, thumbnail generation fallbacks, scraper exceptions. |
+| 🧪 **Tests & Verification** | **`test_engineer`** | Build validation (`npm run build`), REST API testing (`/api/models`, `/api/online/search`), slicer launch commands. |
+| 🔍 **Code Review & Audits** | **`code_reviewer`** | Verifying AGENTS.md compliance, i18n completeness in `i18n.ts`, non-blocking FastAPI async checks, code cleanliness. |
+| ⚡ **New Features & Backend** | **`feature_dev`** | Implementing end-to-end fullstack features, database extensions, Slicer integrations. |
+| 🌐 **Scrapers & Online Feeds** | **`scraper_specialist`** | Multi-platform aggregations (MakerWorld, Printables, Thingiverse, Cults 3D, MakerOnline, Creality), caching, contests. |
+
+> [!IMPORTANT]
+> For complex or multi-step requests, spawn the relevant subagents in parallel or sequentially. Do not perform large domain-specific tasks solely in the primary context when a specialized subagent is available.
+
+---
+
+## 🏗️ 2. Architecture & Tech Stack Rules
 
 * **Backend (Python / FastAPI):**
   * Use FastAPI + Uvicorn for asynchronous high-throughput API endpoints.
@@ -20,7 +38,7 @@ This document outlines mandatory guidelines, architectural constraints, and deve
 
 ---
 
-## 🌐 2. Internationalization (i18n)
+## 🌐 3. Internationalization (i18n)
 
 * The application strictly supports bilingual operation: **German (`de`)** and **English (`en`)**.
 * **Rule:** Whenever you introduce new buttons, labels, error messages, placeholders, or modal text in `frontend/src/`, you **MUST** add the corresponding keys and translations to both `de` and `en` dictionaries in [`frontend/src/i18n.ts`](file:///f:/STL-Manager/frontend/src/i18n.ts).
@@ -28,7 +46,7 @@ This document outlines mandatory guidelines, architectural constraints, and deve
 
 ---
 
-## ⚡ 3. Performance & Rendering Constraints
+## ⚡ 4. Performance & Rendering Constraints
 
 * **Non-blocking Operations:** Long-running file scans, MD5 hashing, and 3D thumbnail rendering must run asynchronously or in background thread workers (`ThreadPoolExecutor` / background tasks). Never block the FastAPI main event loop.
 * **CPU-Friendly Thumbnails:** Ensure 3D rendering falls back gracefully if hardware OpenGL/GPU is unavailable.
@@ -36,7 +54,7 @@ This document outlines mandatory guidelines, architectural constraints, and deve
 
 ---
 
-## 🔄 4. Frontend Build & Verification Workflow
+## 🔄 5. Frontend Build & Verification Workflow
 
 * **Always Compile Assets:** After making changes to any files in `frontend/src/`, you **MUST** run the frontend build:
   ```powershell
@@ -48,15 +66,15 @@ This document outlines mandatory guidelines, architectural constraints, and deve
 
 ---
 
-## 🖥️ 5. Slicer & OS Integration
+## 🖥️ 6. Slicer & OS Integration
 
 * **1-Click Slicer Launch:** Preserve native desktop launching for Bambu Studio, OrcaSlicer, PrusaSlicer, and Cura via `/api/open-slicer`.
 * **Path Normalization:** Always use `pathlib.Path` or proper OS path sanitization when dealing with file paths across Windows and POSIX environments.
 
 ---
 
-## 🛡️ 6. Version Control & Clean Commits
+## 🛡️ 7. Version Control & Clean Commits
 
 * **Never Commit Large Binaries or Virtual Environments:**
-  * Keep `.gitignore` strictly enforced: `python_embeded/`, `node_modules/`, `logs/`, `.venv/`, `__pycache__/`, `.env`.
+  * Keep `.gitignore` strictly enforced: `python_embeded/`, `node_modules/`, `logs/`, `.venv/`, `venv/`, `__pycache__/`, `.env`, `.agents/`, `AGENTS.md`.
 * Ensure commit messages are clear, descriptive, and follow conventional commit formatting (e.g., `feat: ...`, `fix: ...`, `refactor: ...`).
