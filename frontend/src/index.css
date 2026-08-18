@@ -656,6 +656,99 @@ body {
   100% { transform: rotate(360deg); }
 }
 
+/* ========================================================
+   Bento Grid Dashboard (Online Models Hub)
+   ======================================================== */
+.bento-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.bento-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justifyContent: space-between;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: var(--shadow-card);
+}
+
+.bento-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-hover);
+}
+
+.bento-card.active {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 1px var(--accent-cyan), var(--shadow-hover);
+}
+
+.bento-card-hero {
+  grid-column: span 2;
+  background: linear-gradient(135deg, rgba(24, 34, 58, 0.85) 0%, rgba(15, 21, 36, 0.85) 100%);
+  border: 1px solid rgba(0, 210, 255, 0.3);
+  min-height: 160px;
+}
+
+.bento-card-fav {
+  grid-column: span 1;
+  background: linear-gradient(135deg, rgba(42, 28, 13, 0.85) 0%, rgba(26, 17, 8, 0.85) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.bento-card-fav:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.25);
+}
+
+.bento-card-fav.active {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 1px #f59e0b, 0 10px 30px rgba(245, 158, 11, 0.35);
+}
+
+.bento-card-stat {
+  padding: 16px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+}
+
+.bento-card-categories {
+  grid-column: span 3;
+  padding: 18px 20px;
+  cursor: default;
+}
+
+.bento-category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.bento-category-pill:hover {
+  transform: translateY(-2px);
+}
+
 /* Online Search Area */
 .online-search-container {
   flex: 1;
@@ -701,6 +794,22 @@ body {
   .online-models-grid {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
+  }
+}
+
+/* Tablets & Medium Screens (<= 1100px) */
+@media (max-width: 1100px) {
+  .bento-dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .bento-card-hero {
+    grid-column: span 2;
+  }
+  .bento-card-fav {
+    grid-column: span 2;
+  }
+  .bento-card-categories {
+    grid-column: span 2;
   }
 }
 

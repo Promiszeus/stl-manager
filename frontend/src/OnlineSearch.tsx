@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { Search, Globe, ExternalLink, Heart, Download, X, Copy, Check, Filter, Sparkles, AlertCircle, Loader2, TrendingUp, Rocket, History, ChevronRight, Trophy, Gamepad2, Palette, Wrench, Home, Car, Smile, Layers, Star, Trash2 } from 'lucide-react';
 import { useI18n } from './i18n';
 
@@ -240,6 +240,7 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [sortBy, setSortBy] = useState<'popular' | 'likes' | 'name'>('popular');
   const [freeOnly, setFreeOnly] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>('daily');
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Favorites Persistence
   const [favoriteModels, setFavoriteModels] = useState<OnlineModel[]>(() => {
@@ -320,6 +321,13 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
       addToHistory(query.trim());
     }
 
+    // Cancel ongoing search to save bandwidth & prevent race conditions
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     setError(null);
     setHasSearched(true);
@@ -335,13 +343,14 @@ export const OnlineSearchProvider: React.FC<{ children: ReactNode }> = ({ childr
       if (activePlatforms.length > 0) params.set('platforms', activePlatforms.join(','));
       params.set('page', '1');
 
-      const res = await fetch(`${API_BASE}/api/online/search?${params.toString()}`);
+      const res = await fetch(`${API_BASE}/api/online/search?${params.toString()}`, { signal: controller.signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const list: OnlineModel[] = Array.isArray(data) ? data : [];
       setResults(list);
       setHasMore(list.length >= 10);
     } catch (err: any) {
+      if (err.name === 'AbortError') return;
       console.error('Search error:', err);
       setError('Fehler bei der Suche. Bitte überprüfe deine Internetverbindung und versuche es erneut.');
     } finally {
@@ -811,14 +820,12 @@ export const OnlineSearchContent: React.FC = () => {
     hasMore,
     error,
     copiedId,
-    searchHistory,
     activeCategory,
     handleCategoryClick,
     handleLoadMore,
     copyUrl,
     getPlatformStyle,
-    handleSearch,
-    setSearchTerm
+    handleSearch
   } = useOnlineSearch();
 
   const [showContestsModal, setShowContestsModal] = useState(false);
@@ -916,112 +923,200 @@ export const OnlineSearchContent: React.FC = () => {
       </div>
 
       <div className="desktop-explore-section">
-        {/* 1. Interactive Hero Feature Banner (MakerWorld Contest / Design Spotlight) */}
-        <div
-          onClick={() => setShowContestsModal(true)}
-          className="contest-hero-banner"
-          style={{
-            position: 'relative',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            background: 'linear-gradient(135deg, #1b263b 0%, #111827 100%)',
-            border: '1px solid rgba(0, 210, 255, 0.3)',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.45), 0 0 20px rgba(0, 210, 255, 0.1)',
-            marginBottom: '20px',
-            padding: '22px 20px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-end',
-            minHeight: '145px',
-            cursor: 'pointer',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease'
-          }}
-        >
-          {/* Glow overlay */}
-          <div style={{ position: 'absolute', top: 0, right: 0, width: '260px', height: '100%', background: 'radial-gradient(circle at top right, rgba(0, 210, 255, 0.22), transparent 70%)', pointerEvents: 'none' }} />
+        {/* Bento Grid Dashboard (Apple/Linear Style Asymmetrical Grid) */}
+        <div className="bento-dashboard-grid">
+          {/* Bento Card 1: Featured 3D Design Contest & Spotlight (Col Span 2) */}
+          <div
+            onClick={() => setShowContestsModal(true)}
+            className="bento-card bento-card-hero"
+            style={{ cursor: 'pointer' }}
+          >
+            <div style={{ position: 'absolute', top: 0, right: 0, width: '280px', height: '100%', background: 'radial-gradient(circle at top right, rgba(0, 210, 255, 0.2), transparent 70%)', pointerEvents: 'none' }} />
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 77, 77, 0.25)', border: '1px solid rgba(255, 77, 77, 0.45)', color: '#ff6b6b', padding: '4px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff6b6b' }} />
-              {t('featuredContest')}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--accent-cyan)', fontSize: '12px', fontWeight: '700', background: 'rgba(0, 210, 255, 0.12)', border: '1px solid rgba(0, 210, 255, 0.25)', padding: '4px 10px', borderRadius: '8px' }}>
-              <Trophy size={13} />
-              <span>{t('allContests')}</span>
-              <ChevronRight size={14} />
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 77, 77, 0.2)', border: '1px solid rgba(255, 77, 77, 0.45)', color: '#ff6b6b', padding: '3px 10px', borderRadius: '10px', fontSize: '10.5px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ff6b6b' }} />
+                  {t('bentoFeatured')}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent-cyan)', fontSize: '11.5px', fontWeight: '700' }}>
+                  <Trophy size={13} />
+                  <span>{t('allContests')}</span>
+                  <ChevronRight size={13} />
+                </div>
+              </div>
+
+              <h2 style={{ fontSize: '17px', fontWeight: '800', color: '#fff', margin: '0 0 4px 0', lineHeight: '1.3' }}>
+                {t('contestTitle')}
+              </h2>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                MakerWorld • Printables • Thingiverse • Cults 3D • MakerOnline • Creality
+              </p>
+            </div>
+
+            {/* Quick Action Pill Buttons on the Hero Card */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', zIndex: 10 }} onClick={e => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={() => setShowContestsModal(true)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '6px 14px',
+                  color: '#fff',
+                  fontSize: '11.5px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0, 210, 255, 0.3)'
+                }}
+              >
+                <Trophy size={13} /> {t('allContests')}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSearch('MakerWorld Contest')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  color: '#fff',
+                  fontSize: '11.5px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                <Search size={13} /> {t('exploreContestModels')}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.open('https://makerworld.com/en/contests', '_blank')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(0, 174, 66, 0.2)',
+                  border: '1px solid rgba(0, 174, 66, 0.4)',
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  color: '#4ade80',
+                  fontSize: '11.5px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+                title="MakerWorld Contest Portal öffnen"
+              >
+                <ExternalLink size={12} /> MakerWorld Portal
+              </button>
             </div>
           </div>
 
-          <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#fff', margin: '0 0 6px 0', lineHeight: '1.3' }}>
-            {t('contestTitle')}
-          </h2>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 14px 0' }}>
-            MakerWorld • Printables • Thingiverse • Cults 3D • MakerOnline • Creality
-          </p>
+          {/* Bento Card 2: Favoriten Kachel (Col Span 1) */}
+          <div
+            className={`bento-card bento-card-fav ${activeCategory === 'favorites' ? 'active' : ''}`}
+            onClick={() => handleCategoryClick('favorites')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.2)', border: '1px solid rgba(245, 158, 11, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Star size={20} color="#f59e0b" fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} />
+              </div>
+              <span style={{ fontSize: '11px', fontWeight: '800', background: '#f59e0b', color: '#000', padding: '2px 8px', borderRadius: '10px' }}>
+                {favoriteModels.length}
+              </span>
+            </div>
+            <div style={{ marginTop: '14px' }}>
+              <div style={{ fontSize: '15px', fontWeight: '800', color: '#fff' }}>{t('myFavorites')}</div>
+              <div style={{ fontSize: '11px', color: '#fbbf24', marginTop: '2px' }}>{t('favoritesDesc')}</div>
+            </div>
+          </div>
 
-          {/* Quick Action Pill Buttons on the Banner */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', zIndex: 10 }} onClick={e => e.stopPropagation()}>
-            <button
-              type="button"
-              onClick={() => setShowContestsModal(true)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '6px 14px',
-                color: '#fff',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(0, 210, 255, 0.3)'
-              }}
-            >
-              <Trophy size={14} /> {t('allContests')}
-            </button>
+          {/* Bento Card 3: 24h Daily Trends */}
+          <div
+            className={`bento-card bento-card-stat ${activeCategory === 'daily' ? 'active' : ''}`}
+            onClick={() => handleCategoryClick('daily')}
+            style={{ background: activeCategory === 'daily' ? 'linear-gradient(135deg, rgba(66, 38, 22, 0.9), rgba(43, 23, 12, 0.9))' : 'rgba(20, 27, 45, 0.7)' }}
+          >
+            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <TrendingUp size={18} color="#f59e0b" />
+            </div>
+            <div>
+              <div style={{ fontSize: '13.5px', fontWeight: '800', color: '#fff' }}>{t('dailyTrends')}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>24h Top Vorlagen</div>
+            </div>
+          </div>
 
-            <button
-              type="button"
-              onClick={() => handleSearch('MakerWorld Contest')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '8px',
-                padding: '6px 14px',
-                color: '#fff',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer'
-              }}
-            >
-              <Search size={14} /> {t('exploreContestModels')}
-            </button>
+          {/* Bento Card 4: Monthly Bestsellers */}
+          <div
+            className={`bento-card bento-card-stat ${activeCategory === 'monthly' ? 'active' : ''}`}
+            onClick={() => handleCategoryClick('monthly')}
+            style={{ background: activeCategory === 'monthly' ? 'linear-gradient(135deg, rgba(68, 22, 52, 0.9), rgba(43, 11, 32, 0.9))' : 'rgba(20, 27, 45, 0.7)' }}
+          >
+            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(236, 72, 153, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Rocket size={18} color="#ec4899" />
+            </div>
+            <div>
+              <div style={{ fontSize: '13.5px', fontWeight: '800', color: '#fff' }}>{t('monthlyTrends')}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>Monats-Hits</div>
+            </div>
+          </div>
 
-            <button
-              type="button"
-              onClick={() => window.open('https://makerworld.com/en/contests', '_blank')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'rgba(0, 174, 66, 0.2)',
-                border: '1px solid rgba(0, 174, 66, 0.4)',
-                borderRadius: '8px',
-                padding: '6px 14px',
-                color: '#4ade80',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer'
-              }}
-              title="MakerWorld Contest Portal öffnen"
-            >
-              <ExternalLink size={13} /> MakerWorld Portal
-            </button>
+          {/* Bento Card 5: Frisch Online (Newest) */}
+          <div
+            className={`bento-card bento-card-stat ${activeCategory === 'newest' ? 'active' : ''}`}
+            onClick={() => handleCategoryClick('newest')}
+            style={{ background: activeCategory === 'newest' ? 'linear-gradient(135deg, rgba(18, 61, 48, 0.9), rgba(10, 37, 29, 0.9))' : 'rgba(20, 27, 45, 0.7)' }}
+          >
+            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Sparkles size={18} color="#10b981" />
+            </div>
+            <div>
+              <div style={{ fontSize: '13.5px', fontWeight: '800', color: '#fff' }}>{t('newest')}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>Frisch online</div>
+            </div>
+          </div>
+
+          {/* Bento Card 6: Themenwelten & Kategorien (Full Width 3-Col Span) */}
+          <div className="bento-card bento-card-categories">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Sparkles size={14} color="var(--accent-cyan)" />
+                {t('bentoCategories')}
+              </div>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t('categoriesDesc')}</span>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {CATEGORY_EXPLORE_CARDS.map(cat => {
+                const Icon = cat.icon;
+                const isCatActive = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => handleCategoryClick(cat.id)}
+                    className="bento-category-pill"
+                    style={{
+                      background: isCatActive ? cat.activeGradient : 'rgba(255, 255, 255, 0.04)',
+                      border: isCatActive ? `1px solid ${cat.color}` : '1px solid rgba(255, 255, 255, 0.08)',
+                      color: isCatActive ? '#fff' : 'var(--text-muted)',
+                      boxShadow: isCatActive ? `0 2px 10px ${cat.shadow}` : 'none'
+                    }}
+                  >
+                    <Icon size={14} color={isCatActive ? '#fff' : cat.color} />
+                    <span>{t(cat.titleKey as any)}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -1168,197 +1263,6 @@ export const OnlineSearchContent: React.FC = () => {
             </div>
           </div>
         )}
-
-        {/* 2. Four MakerWorld-Style Category Action Cards (2x2 Grid) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', marginBottom: '24px' }}>
-          {/* Card 1: Daily Trends */}
-          <button
-            onClick={() => handleCategoryClick('daily')}
-            style={{
-              padding: '14px 12px',
-              borderRadius: '14px',
-              background: activeCategory === 'daily' ? 'linear-gradient(135deg, #422616 0%, #2b170c 100%)' : 'linear-gradient(135deg, #2a1a11 0%, #1e130c 100%)',
-              border: activeCategory === 'daily' ? '1px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.25)',
-              boxShadow: activeCategory === 'daily' ? '0 4px 16px rgba(245, 158, 11, 0.3)' : 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              textAlign: 'left',
-              transition: 'all 0.2s'
-            }}
-          >
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <TrendingUp size={18} color="#f59e0b" />
-            </div>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{t('dailyTrends')}</div>
-              <div style={{ fontSize: '10px', color: '#d97706', marginTop: '2px' }}>24h Top</div>
-            </div>
-          </button>
-
-          {/* Card 2: Monthly Trends */}
-          <button
-            onClick={() => handleCategoryClick('monthly')}
-            style={{
-              padding: '14px 12px',
-              borderRadius: '14px',
-              background: activeCategory === 'monthly' ? 'linear-gradient(135deg, #441634 0%, #2b0b20 100%)' : 'linear-gradient(135deg, #2b1022 0%, #1c0a16 100%)',
-              border: activeCategory === 'monthly' ? '1px solid #ec4899' : '1px solid rgba(236, 72, 153, 0.25)',
-              boxShadow: activeCategory === 'monthly' ? '0 4px 16px rgba(236, 72, 153, 0.3)' : 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              textAlign: 'left',
-              transition: 'all 0.2s'
-            }}
-          >
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(236, 72, 153, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Rocket size={18} color="#ec4899" />
-            </div>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{t('monthlyTrends')}</div>
-              <div style={{ fontSize: '10px', color: '#db2777', marginTop: '2px' }}>Monats-Hits</div>
-            </div>
-          </button>
-
-          {/* Card 3: Newest */}
-          <button
-            onClick={() => handleCategoryClick('newest')}
-            style={{
-              padding: '14px 12px',
-              borderRadius: '14px',
-              background: activeCategory === 'newest' ? 'linear-gradient(135deg, #123d30 0%, #0a251d 100%)' : 'linear-gradient(135deg, #0e271f 0%, #081a14 100%)',
-              border: activeCategory === 'newest' ? '1px solid #10b981' : '1px solid rgba(16, 185, 129, 0.25)',
-              boxShadow: activeCategory === 'newest' ? '0 4px 16px rgba(16, 185, 129, 0.3)' : 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              textAlign: 'left',
-              transition: 'all 0.2s'
-            }}
-          >
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Sparkles size={18} color="#10b981" />
-            </div>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{t('newest')}</div>
-              <div style={{ fontSize: '10px', color: '#059669', marginTop: '2px' }}>Frisch online</div>
-            </div>
-          </button>
-
-          {/* Card 4: Favorites */}
-          <button
-            onClick={() => handleCategoryClick('favorites')}
-            style={{
-              padding: '14px 12px',
-              borderRadius: '14px',
-              background: activeCategory === 'favorites' ? 'linear-gradient(135deg, #422a10 0%, #2b1a08 100%)' : 'linear-gradient(135deg, #2a1c0d 0%, #1a1106 100%)',
-              border: activeCategory === 'favorites' ? '1px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.25)',
-              boxShadow: activeCategory === 'favorites' ? '0 4px 16px rgba(245, 158, 11, 0.3)' : 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              textAlign: 'left',
-              transition: 'all 0.2s'
-            }}
-          >
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Star size={18} color="#f59e0b" fill={favoriteModels.length > 0 ? '#f59e0b' : 'none'} />
-            </div>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{t('favorites')}</div>
-              <div style={{ fontSize: '10px', color: '#fbbf24', marginTop: '2px' }}>{favoriteModels.length} gespeichert</div>
-            </div>
-          </button>
-
-          {/* Card 5: History / Search History */}
-          <button
-            onClick={() => {
-              handleCategoryClick('history');
-              if (searchHistory.length > 0) {
-                setSearchTerm(searchHistory[0]);
-                handleSearch(searchHistory[0]);
-              }
-            }}
-            style={{
-              padding: '14px 12px',
-              borderRadius: '14px',
-              background: activeCategory === 'history' ? 'linear-gradient(135deg, #242c4c 0%, #151a30 100%)' : 'linear-gradient(135deg, #181d33 0%, #101424 100%)',
-              border: activeCategory === 'history' ? '1px solid #6366f1' : '1px solid rgba(99, 102, 241, 0.25)',
-              boxShadow: activeCategory === 'history' ? '0 4px 16px rgba(99, 102, 241, 0.3)' : 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              textAlign: 'left',
-              transition: 'all 0.2s'
-            }}
-          >
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <History size={18} color="#6366f1" />
-            </div>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{t('history')}</div>
-              <div style={{ fontSize: '10px', color: '#818cf8', marginTop: '2px' }}>{searchHistory.length} Suchen</div>
-            </div>
-          </button>
-        </div>
-
-        {/* 3. Kategorien & Themenwelten Grid */}
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <div style={{ fontSize: '13px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Sparkles size={14} color="var(--accent-cyan)" />
-              {t('categories')}
-            </div>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t('categoriesDesc')}</span>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
-            {CATEGORY_EXPLORE_CARDS.map(cat => {
-              const Icon = cat.icon;
-              const isActive = activeCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => handleCategoryClick(cat.id)}
-                  style={{
-                    padding: '12px 10px',
-                    borderRadius: '14px',
-                    background: isActive ? cat.activeGradient : cat.idleGradient,
-                    border: isActive ? `1px solid ${cat.color}` : `1px solid ${cat.border}`,
-                    boxShadow: isActive ? `0 4px 16px ${cat.shadow}` : 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.2s',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: cat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Icon size={17} color={cat.color} />
-                  </div>
-                  <div style={{ overflow: 'hidden' }}>
-                    <div style={{ fontSize: '12px', fontWeight: '800', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {t(cat.titleKey as any)}
-                    </div>
-                    <div style={{ fontSize: '10px', color: cat.color, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {t(cat.descKey as any)}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
       {/* Header Info Bar */}

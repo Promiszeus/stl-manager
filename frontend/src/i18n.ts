@@ -154,6 +154,21 @@ export const translations = {
     notConfigured: 'Nicht verknüpft',
     configured: 'Verknüpft',
 
+    // 3D Studio & Viewer Controls
+    autoRotate: 'Auto-Rotation',
+    wireframe: 'Drahtgitter',
+    gridFloor: 'Bodenraster',
+    resetCamera: 'Kamera zentrieren',
+    colorCyan: 'Cyan',
+    colorSilver: 'Silber',
+    colorOrange: 'Orange',
+    colorGold: 'Gold',
+    colorSlate: 'Anthrazit',
+    colorGreen: 'Smaragd',
+    bentoFeatured: '3D-Design Wettbewerb & Spotlight',
+    bentoTrends: 'Trends & Hits',
+    bentoCategories: 'Themenwelten & Kategorien',
+
     // Settings Modal Tabs
     settingsTabsFolders: 'Ordner & Slicer',
     settingsTabsTags: 'Tags & Farben',
@@ -315,6 +330,21 @@ export const translations = {
     accountDeletedSuccess: 'Credentials removed securely.',
     notConfigured: 'Not connected',
     configured: 'Connected',
+
+    // 3D Studio & Viewer Controls
+    autoRotate: 'Auto-Rotate',
+    wireframe: 'Wireframe',
+    gridFloor: 'Grid Floor',
+    resetCamera: 'Reset Camera',
+    colorCyan: 'Cyan',
+    colorSilver: 'Silver',
+    colorOrange: 'Orange',
+    colorGold: 'Gold',
+    colorSlate: 'Dark Slate',
+    colorGreen: 'Emerald',
+    bentoFeatured: '3D Design Contest & Spotlight',
+    bentoTrends: 'Trends & Hits',
+    bentoCategories: 'Categories & Topics',
 
     // Settings Modal Tabs
     settingsTabsFolders: 'Folders & Slicers',

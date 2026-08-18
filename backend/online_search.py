@@ -11,9 +11,9 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9,de;q=0.8",
 }
 
-# Simple in-memory search cache to avoid rate limits
+# Simple in-memory search cache to avoid rate limits & provide sub-10ms response times
 SEARCH_CACHE = {}
-CACHE_TTL = 300  # 5 minutes
+CACHE_TTL = 900  # 15 minutes
 
 def get_cached(query: str, platforms_key: str, page: int):
     key = f"{query.lower().strip()}_{platforms_key}_{page}"
@@ -30,7 +30,7 @@ def set_cached(query: str, platforms_key: str, page: int, data):
         "data": data
     }
     # Keep cache from growing indefinitely
-    if len(SEARCH_CACHE) > 200:
+    if len(SEARCH_CACHE) > 500:
         oldest = min(SEARCH_CACHE.keys(), key=lambda k: SEARCH_CACHE[k]["time"])
         del SEARCH_CACHE[oldest]
 
