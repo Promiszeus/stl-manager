@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
+import { AlertCircle, RotateCcw } from 'lucide-react';
 
 interface ThreeViewerProps {
   url: string;
@@ -13,10 +14,16 @@ export default function ThreeViewer({ url, filename }: ThreeViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (!mountRef.current) return;
     const container = mountRef.current;
+
+    setIsLoading(true);
+    setLoadProgress(0);
+    setErrorMessage(null);
 
     // --- Three.js objects ---
     const scene = new THREE.Scene();
@@ -86,33 +93,41 @@ export default function ThreeViewer({ url, filename }: ThreeViewerProps) {
 
     // ---- STEP 3: Load the 3D model in background ----
     const onLoad = (obj: any) => {
-      let mesh: THREE.Object3D;
-      if (obj instanceof THREE.BufferGeometry) {
-        const mat = new THREE.MeshStandardMaterial({ color: 0xd0d0d0, roughness: 0.6, metalness: 0.1 });
-        mesh = new THREE.Mesh(obj, mat);
-        // STL files are Z-up, so rotate to Y-up (Three.js default)
-        mesh.rotation.x = -Math.PI / 2;
-      } else {
-        mesh = obj;
-      }
+      try {
+        let mesh: THREE.Object3D;
+        if (obj instanceof THREE.BufferGeometry) {
+          const mat = new THREE.MeshStandardMaterial({ color: 0xd0d0d0, roughness: 0.6, metalness: 0.1 });
+          mesh = new THREE.Mesh(obj, mat);
+          // STL files are Z-up, so rotate to Y-up (Three.js default)
+          mesh.rotation.x = -Math.PI / 2;
+        } else {
+          mesh = obj;
+          // 3MF meshes are typically Z-up as well
+          mesh.rotation.x = -Math.PI / 2;
+        }
 
-      const pivot = new THREE.Group();
-      pivot.add(mesh);
-      scene.add(pivot);
-      pivot.updateMatrixWorld(true);
+        const pivot = new THREE.Group();
+        pivot.add(mesh);
+        scene.add(pivot);
+        pivot.updateMatrixWorld(true);
 
-      // Center the pivot by offsetting by its bounding box center
-      const box = new THREE.Box3().setFromObject(pivot);
-      const center = box.getCenter(new THREE.Vector3());
-      pivot.position.sub(center);
+        // Center the pivot by offsetting by its bounding box center
+        const box = new THREE.Box3().setFromObject(pivot);
+        const center = box.getCenter(new THREE.Vector3());
+        pivot.position.sub(center);
 
-      loadedPivot = pivot;
+        loadedPivot = pivot;
 
-      // If the container already has a size, fit camera immediately
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      if (rendererReady && w > 0 && h > 0) {
-        fitCameraToModel(w, h);
+        // If the container already has a size, fit camera immediately
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        if (rendererReady && w > 0 && h > 0) {
+          fitCameraToModel(w, h);
+        }
+      } catch (err) {
+        console.error("[ThreeViewer] Error mounting mesh:", err);
+        setErrorMessage("3D-Modell konnte nicht im Renderer platziert werden.");
+        setIsLoading(false);
       }
     };
 
@@ -122,14 +137,25 @@ export default function ThreeViewer({ url, filename }: ThreeViewerProps) {
       }
     };
 
-    const ext = filename.split('.').pop()?.toLowerCase();
-    if (ext === 'stl') {
-      new STLLoader().load(url, onLoad, onProgress);
-    } else if (ext === '3mf') {
-      new ThreeMFLoader().load(url, onLoad, onProgress);
-    } else {
-      console.error("Unsupported format:", ext);
+    const onError = (err: any) => {
+      console.error("[ThreeViewer] Error loading 3D model:", err);
       setIsLoading(false);
+      setErrorMessage("3D-Modell konnte nicht geladen werden (Datei nicht gefunden oder nicht lesbar).");
+    };
+
+    const cleanName = (filename || url || '').toLowerCase();
+    const is3mf = cleanName.endsWith('.3mf') || cleanName.includes('.3mf');
+    const isStl = cleanName.endsWith('.stl') || cleanName.includes('.stl');
+
+    if (isStl) {
+      new STLLoader().load(url, onLoad, onProgress, onError);
+    } else if (is3mf) {
+      new ThreeMFLoader().load(url, onLoad, onProgress, onError);
+    } else {
+      // Default fallback: try 3MF then STL
+      new ThreeMFLoader().load(url, onLoad, onProgress, () => {
+        new STLLoader().load(url, onLoad, onProgress, onError);
+      });
     }
 
     // ---- STEP 4: ResizeObserver fires with true pixel dimensions once modal is laid out ----
@@ -163,11 +189,34 @@ export default function ThreeViewer({ url, filename }: ThreeViewerProps) {
       }
       renderer.dispose();
     };
-  }, [url, filename]);
+  }, [url, filename, retryCount]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '8px', overflow: 'hidden' }}>
-      {isLoading && (
+      {errorMessage && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          background: '#1a1d2f', zIndex: 20, color: '#fff', gap: '14px', padding: '24px', textAlign: 'center'
+        }}>
+          <AlertCircle size={36} color="#ff6b6b" />
+          <div style={{ fontSize: '15px', fontWeight: 'bold' }}>3D-Vorschau nicht verfügbar</div>
+          <div style={{ fontSize: '13px', color: 'var(--text-muted)', maxWidth: '380px' }}>{errorMessage}</div>
+          <button
+            onClick={() => setRetryCount(c => c + 1)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))',
+              border: 'none', borderRadius: '10px', padding: '8px 16px', color: '#fff',
+              fontWeight: '700', fontSize: '13px', cursor: 'pointer', marginTop: '6px'
+            }}
+          >
+            <RotateCcw size={15} /> Erneut versuchen
+          </button>
+        </div>
+      )}
+
+      {isLoading && !errorMessage && (
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',

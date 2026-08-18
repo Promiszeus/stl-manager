@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -499,9 +500,10 @@ def download_model(model_id: str):
     if model_id not in models:
         raise HTTPException(status_code=404, detail="Model not found")
     model_path = models[model_id]["path"]
-    if not Path(model_path).exists():
+    p = Path(model_path)
+    if not p.exists():
         raise HTTPException(status_code=404, detail="File not found on disk")
-    return FileResponse(model_path)
+    return FileResponse(str(p), filename=p.name)
 
 class SliceRequest(BaseModel):
     slicer_path: str
