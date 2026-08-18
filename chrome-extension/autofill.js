@@ -1,4 +1,4 @@
-// STL-Manager Auto-Fill Content Script (v1.3.0)
+// STL-Manager Auto-Fill Content Script (v1.4.0)
 (function() {
   const hostname = window.location.hostname.toLowerCase();
   let platform = null;

@@ -9,7 +9,8 @@
 ### 📁 Local Library & Management
 * 📂 **Automated Directory Monitoring:** Live-monitors local and network folders, automatically registering new STL and 3MF files into your library.
 * 👁️ **Built-in 3D Viewer & High-Res Thumbnails:** Automatically generates multi-angle 3D renders and includes an interactive 3D model inspector right in your browser.
-* 🤖 **AI-Powered Visual Similarity Search (Meta DINOv2):** 100% local, offline AI engine that analyzes 3D renders to instantly find visually and geometrically similar models, remixes, and shape variants.
+* 🤖 **AI-Powered Visual Similarity Search (Meta DINOv2):** 100% local, offline AI engine that analyzes 3D renders to instantly find visually and geometrically similar models, remixes, and shape variants across both your **local library** AND **online platforms**!
+* 🌐 **Hybrid AI Online Similarity Re-Ranking:** Discovers candidate models across 6 major online platforms and ranks them in real-time with precise visual match percentages (`94% Match`) against your local reference model.
 * 🕒 **Windows File Modification Date Sorting:** Sort your models by actual filesystem modification timestamps (`mtime`), date added, file size, or alphabetically.
 * 🏷️ **Tag System with Color Customizer:** Categorize models with custom tags and custom colors, with instant 1-click filters for tags or untagged files.
 * 🔍 **Smart Duplicate Finder:** Identifies true binary content duplicates using MD5 content hashing to save valuable disk storage.
@@ -17,9 +18,10 @@
 * 🎯 **Modern Batch Action Bar:** Sleek floating toolbar for multi-selecting models, batch toggling printed status, or batch deleting.
 * ⌨️ **Search Command Palette (`Ctrl + K` / `/`):** Fast, centered popup search with auto-focus, tag filters, category shortcuts, and search history.
 
-### 🌐 Multi-Platform Online Model Hub (MakerWorld Aesthetic)
+### 🌐 Multi-Platform Online Model Hub (MakerWorld & Clean Monochrome Aesthetic)
 * 🔍 **Simultaneous Multi-Platform Search:** Search **MakerWorld**, **Printables**, **Cults 3D**, **Thingiverse**, **MakerOnline**, and **Creality Cloud** simultaneously with live result counters and infinite pagination (*"Load More Models"*).
-* 🏆 **3D Design Contests Hub:** Explore official 3D design competitions and challenges across MakerWorld, Printables, Cults 3D, and Creality with 1-click contest model searches and direct portal links.
+* 🏆 **3D Design Contests Hub (All 6 Platforms):** Explore official 3D design competitions and challenges across MakerWorld, Printables, Thingiverse, Cults 3D, Creality Cloud, and MakerOnline with 1-click contest model searches and direct portal links.
+* 🎨 **Clean Monochrome Design with Subtle Accents:** Minimalist dark slate & crisp white UI with gentle color indicators on trend pills and category chips.
 * 🗂️ **Explore Categories & Topics:** Dedicated category cards to explore popular 3D printing themes (*Toys, Art, Tools, Storage, Gaming, Planters, RC etc.*).
 * 📈 **Trend Discovery:** 1-Click access to *Daily Trends (24h Top)*, *Monthly Trends*, and *Newest* releases.
 * 🔒 **Secure Platform Account Storage (Windows DPAPI):** Store logins and session tokens for MakerWorld, Printables, Cults 3D, Thingiverse, and Creality Cloud encrypted directly with your Windows user credentials – zero plaintext passwords.

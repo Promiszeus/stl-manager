@@ -3,6 +3,10 @@ import sys
 import threading
 import urllib.request
 from pathlib import Path
+import io
+import re
+import requests
+import concurrent.futures
 import numpy as np
 from PIL import Image
 try:
@@ -136,6 +140,174 @@ def compute_image_embedding(image_path: Path):
     except Exception as e:
         print(f"[AI Vision] Error computing embedding for {image_path}: {e}")
         return None
+
+def compute_image_embedding_from_bytes(data: bytes):
+    """Computes a 384-dimensional normalized visual feature vector directly from image bytes in-memory."""
+    session = ensure_model_session()
+    if session is None or not data:
+        return None
+
+    try:
+        with Image.open(io.BytesIO(data)) as raw_img:
+            img = raw_img.convert('RGB').resize((224, 224), Image.Resampling.BICUBIC)
+            arr = np.array(img).astype(np.float32) / 255.0
+
+        arr = (arr - NORM_MEAN) / NORM_STD
+        arr = np.transpose(arr, (2, 0, 1))
+        tensor = np.expand_dims(arr, axis=0).astype(np.float32)
+
+        input_name = session.get_inputs()[0].name
+        out = session.run(None, {input_name: tensor})
+        feat = out[0]
+
+        if len(feat.shape) == 3:
+            feat = feat[:, 0, :]
+
+        norm = np.linalg.norm(feat, axis=-1, keepdims=True)
+        if norm > 0:
+            feat = feat / norm
+
+        return feat.flatten().astype(np.float32)
+    except Exception as e:
+        return None
+
+def compute_image_embedding_from_url(url: str, timeout: int = 4):
+    """Fetches image from URL in memory and computes its visual feature vector."""
+    if not url:
+        return None
+    try:
+        resp = requests.get(url, timeout=timeout, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
+        if resp.status_code == 200 and resp.content:
+            return compute_image_embedding_from_bytes(resp.content)
+    except Exception:
+        pass
+    return None
+
+PLATFORM_NOISE_WORDS = {"makerworld", "printables", "thingiverse", "cults", "cults3d", "creality", "makeronline", "bambulab", "anycubic", "prusa", "crealitycloud"}
+
+def extract_keywords_from_model(model_data: dict) -> str:
+    """Extracts clean, descriptive search keywords from a model's name, folder, and tags."""
+    name = model_data.get("name", "")
+    # Strip file extension
+    name_clean = re.sub(r'\.(stl|3mf|obj|step|stp|gcode|lys|ctb)$', '', name, flags=re.IGNORECASE)
+    # Remove special punctuation and noise words
+    name_clean = re.sub(r'[_\-\+\.\(\)\[\]]+', ' ', name_clean)
+    name_clean = re.sub(r'\b(v\d+|\d+mm|\d+cm|final|fixed|repaired|supported|nosupport|model)\b', '', name_clean, flags=re.IGNORECASE)
+    
+    parts = [w.strip() for w in name_clean.split() if len(w.strip()) > 1 and w.lower() not in PLATFORM_NOISE_WORDS]
+    
+    tags = model_data.get("tags", [])
+    if tags:
+        for t in tags[:2]:
+            t_clean = t.strip()
+            if t_clean and t_clean.lower() not in PLATFORM_NOISE_WORDS and t_clean.lower() not in [p.lower() for p in parts]:
+                parts.append(t_clean)
+                
+    if not parts:
+        rel = model_data.get("rel_path", "")
+        if rel:
+            folder = Path(rel).parent.name
+            if folder and folder.lower() not in ["3d", "models", "stl", "print", "test", *PLATFORM_NOISE_WORDS]:
+                parts.append(folder)
+                
+    return " ".join(parts[:4]) if parts else "3D model"
+
+def get_similar_online_models(target_model_id: str, custom_query: str = None, limit: int = 24, min_similarity: float = 0.20):
+    """
+    Hybrid AI Visual Similarity Search for Online Repositories:
+    1. Obtains reference DINOv2 embedding for the local target model.
+    2. Discovers online candidate models across all 6 platforms.
+    3. Concurrently downloads candidate thumbnails in-memory & computes DINOv2 embeddings.
+    4. Computes exact cosine visual similarity & returns candidates ranked by match score.
+    """
+    from database import load_models
+    from online_search import search_online_models
+
+    ensure_model_session()
+    models = load_models()
+    if target_model_id not in models:
+        return {"query": "", "total_evaluated": 0, "matches": []}
+
+    target_model = models[target_model_id]
+
+    # Ensure target embedding is available
+    with _embeddings_lock:
+        if target_model_id not in _EMBEDDINGS_STORE:
+            # Check for multi-angle thumbnail or single thumbnail
+            thumb_path = CACHE_DIR / f"{target_model_id}_0.png"
+            if not thumb_path.exists():
+                thumb_path = CACHE_DIR / f"{target_model_id}.png"
+            if thumb_path.exists():
+                vec = compute_image_embedding(thumb_path)
+                if vec is not None:
+                    _EMBEDDINGS_STORE[target_model_id] = vec
+                    save_embeddings_to_disk()
+
+        if target_model_id not in _EMBEDDINGS_STORE:
+            return {"query": "", "total_evaluated": 0, "matches": []}
+
+        target_vec = _EMBEDDINGS_STORE[target_model_id]
+
+    # Determine search query keywords
+    search_query = (custom_query.strip() if custom_query and custom_query.strip() else extract_keywords_from_model(target_model))
+    if not search_query:
+        search_query = target_model.get("name", "3d model")
+
+    # Step 1: Fetch candidate models across all 6 platforms
+    try:
+        candidates_result = search_online_models(search_query, platforms=None, page=1, sort="popular")
+        if isinstance(candidates_result, dict):
+            candidate_models = candidates_result.get("models", [])
+        elif isinstance(candidates_result, list):
+            candidate_models = candidates_result
+        else:
+            candidate_models = []
+    except Exception as e:
+        print(f"[AI Vision] Error fetching online candidates: {e}")
+        candidate_models = []
+
+    if not candidate_models:
+        return {"query": search_query, "total_evaluated": 0, "matches": []}
+
+    # Step 2: Concurrently fetch thumbnails & compute visual embeddings
+    def process_candidate(cand):
+        thumb_url = cand.get("thumbnail")
+        if not thumb_url:
+            return None
+        cand_vec = compute_image_embedding_from_url(thumb_url, timeout=4)
+        if cand_vec is None:
+            return None
+        
+        score = float(np.dot(target_vec, cand_vec))
+        if score >= min_similarity:
+            pct = int(min(100, max(0, round(score * 100))))
+            item = dict(cand)
+            name = cand.get("name") or cand.get("title") or "3D Model"
+            item["name"] = name
+            item["title"] = name
+            item["similarity_score"] = round(score, 4)
+            item["similarity_percentage"] = pct
+            return item
+        return None
+
+    matches = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(process_candidate, m) for m in candidate_models]
+        for f in concurrent.futures.as_completed(futures):
+            try:
+                res = f.result()
+                if res is not None:
+                    matches.append(res)
+            except Exception:
+                pass
+
+    # Sort descending by visual similarity score
+    matches.sort(key=lambda x: x.get("similarity_score", 0), reverse=True)
+    return {
+        "query": search_query,
+        "total_evaluated": len(candidate_models),
+        "matches": matches[:limit]
+    }
 
 def update_model_embedding(model_id: str, thumbnail_path: Path):
     """Computes and registers the embedding for a single model."""

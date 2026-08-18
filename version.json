@@ -1,13 +1,14 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "name": "STL-Manager",
-  "release_date": "2026-08-17",
+  "release_date": "2026-08-18",
   "features": [
-    "🤖 KI-Ähnlichkeitssuche mit Meta DINOv2 (100% lokal & offline)",
+    "🤖 Hybride KI-Ähnlichkeitssuche für Online-Modelle (Meta DINOv2 Re-Ranking über alle 6 Plattformen)",
+    "🎨 Minimalistisches Schiefergrau & Reinweiß Monochrome-Design mit dezenten Farbakzenten",
+    "🏆 3D-Design Contests & Challenges Hub für alle 6 Plattformen",
+    "🤖 Lokale KI-Ähnlichkeitssuche mit Meta DINOv2 (100% lokal & offline)",
     "🔒 Sichere Windows DPAPI Plattform-Zugangsdaten (verschlüsselt)",
-    "⚡ 1-Klick Auto-Fill für MakerWorld, Printables, Thingiverse, Cults 3D",
-    "🦊 Firefox & Chrome Browser-Erweiterungen (v1.3.0)",
-    "📱 Progressive Web App (PWA) für Desktop & Smartphone",
-    "📐 Feste, responsive Fenstergröße im Einstellungsmenü"
+    "🦊 Firefox & Chrome Browser-Erweiterungen (v1.4.0)",
+    "📱 Progressive Web App (PWA) für Desktop & Smartphone"
   ]
 }

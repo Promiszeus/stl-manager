@@ -1041,11 +1041,11 @@ function App() {
             </button>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ width: '28px', height: '28px', background: 'linear-gradient(135deg, #00d2ff, #8e2de2)', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0, 210, 255, 0.3)' }}>
+              <div style={{ width: '28px', height: '28px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>
                 <Database size={15} color="white" />
               </div>
               <span style={{ fontWeight: '800', fontSize: '16px', color: '#fff', letterSpacing: '0.5px' }}>STL Manager</span>
-              <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(0, 210, 255, 0.15)', color: 'var(--accent-cyan)', border: '1px solid rgba(0, 210, 255, 0.3)', padding: '1px 5px', borderRadius: '5px' }}>v1.3.0</span>
+              <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.25)', padding: '1px 5px', borderRadius: '5px' }}>v1.4.0</span>
             </div>
           </div>
         </div>
@@ -1061,7 +1061,7 @@ function App() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <div style={{ fontWeight: '800', fontSize: '17px', letterSpacing: '1px', color: '#fff' }}>STL Manager</div>
-                  <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.25)', padding: '1px 5px', borderRadius: '6px' }}>v1.3.0</span>
+                  <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.25)', padding: '1px 5px', borderRadius: '6px' }}>v1.4.0</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                   <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{models.length} {t('modelsTotal')}</span>

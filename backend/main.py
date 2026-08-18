@@ -93,6 +93,21 @@ def get_similar_models_endpoint(model_id: str, limit: int = 16, min_score: float
         print(f"Error in similar models endpoint: {e}")
         return []
 
+@app.get("/api/models/{model_id}/similar-online")
+def get_similar_online_models_endpoint(model_id: str, q: str = "", limit: int = 24, min_score: float = 0.20):
+    try:
+        from similarity import get_similar_online_models
+        models = load_models()
+        if model_id not in models:
+            raise HTTPException(status_code=404, detail="Model not found")
+
+        return get_similar_online_models(model_id, custom_query=q, limit=limit, min_similarity=min_score)
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in similar online models endpoint: {e}")
+        return {"query": q, "total_evaluated": 0, "matches": []}
+
 @app.get("/api/ai/status")
 def api_ai_status():
     try:
@@ -130,7 +145,7 @@ def api_get_version():
                 return json.load(f)
         except Exception:
             pass
-    return {"version": "1.3.0", "name": "STL-Manager"}
+    return {"version": "1.4.0", "name": "STL-Manager"}
 
 @app.get("/api/accounts")
 def api_get_accounts():

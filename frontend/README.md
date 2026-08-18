@@ -1,32 +1,40 @@
-# React + TypeScript + Vite
+# 🎨 STL-Manager Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The frontend for **STL-Manager** is a modern, responsive Single Page Application built with **React 19**, **TypeScript**, and **Vite**, featuring a dark glassmorphic design and an interactive 3D WebGL model viewer.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🛠️ Tech Stack & Key Libraries
 
-## React Compiler
+* **Framework:** React 19 + TypeScript
+* **Bundler:** Vite 6
+* **3D Viewer:** Three.js (WebGL interactive STL & 3MF rendering)
+* **Icons:** Lucide React
+* **Styling:** Custom Glassmorphic Dark Design System (`index.css`, `App.css`)
+* **Internationalization:** Custom lightweight i18n hook supporting German (`de`) & English (`en`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the Oxlint configuration
+## 📁 Key Components
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+* **[`src/App.tsx`](file:///f:/STL-Manager/frontend/src/App.tsx):** Main layout, library grid/list view, floating batch action bar, settings modal, Slicer integration dispatch.
+* **[`src/OnlineSearch.tsx`](file:///f:/STL-Manager/frontend/src/OnlineSearch.tsx):** Multi-platform 3D model hub (MakerWorld, Printables, Thingiverse, Cults 3D, MakerOnline, Creality Cloud), 3D design contests hub, trend feeds (Daily, Monthly, Newest), category cards, and search history.
+* **[`src/ThreeViewer.tsx`](file:///f:/STL-Manager/frontend/src/ThreeViewer.tsx):** Interactive 3D WebGL viewer with orbit controls, mesh inspection, wireframe toggle, and bounding box measurements.
+* **[`src/SearchModal.tsx`](file:///f:/STL-Manager/frontend/src/SearchModal.tsx):** Fast popup command palette (`Ctrl + K` / `/`) with tag filters and category shortcuts.
+* **[`src/FileBrowserModal.tsx`](file:///f:/STL-Manager/frontend/src/FileBrowserModal.tsx):** Directory picker for adding monitored folders.
+* **[`src/i18n.ts`](file:///f:/STL-Manager/frontend/src/i18n.ts):** Complete bilingual dictionaries for German (`de`) and English (`en`).
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+---
+
+## 🚀 Building & Production Compilation
+
+The compiled production bundle is hosted directly by the FastAPI backend from `frontend/dist/`.
+
+To build the frontend:
+
+```powershell
+# From the frontend directory:
+npm run build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The output bundle will be placed in `dist/` and served automatically by the Python backend.
