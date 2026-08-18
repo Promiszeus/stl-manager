@@ -1,23 +1,26 @@
-from fastapi import FastAPI, HTTPException, Request
+import os
+import sys
+import io
+import asyncio
+import threading
+import logging
+from pathlib import Path
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+import subprocess
+
+from logger import init_logging, get_recent_logs, clear_logs
+init_logging()
+
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-import subprocess
-from pathlib import Path
+
 from database import load_settings, save_settings, load_models, save_models
 from scanner import scan_all_directories, start_watching
 from online_search import search_online_models
-import os
-import sys
-import asyncio
-import threading
-
-if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
-    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
-    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 try:
     import tkinter as tk
@@ -38,6 +41,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_custom_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path in ["/", "/index.html", "/sw.js", "/manifest.json"]:
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    elif path.startswith("/assets/"):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return response
 
 CACHE_DIR = Path(__file__).resolve().parent / ".cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -356,6 +371,19 @@ def clear_database():
     threading.Thread(target=scan_all_directories, daemon=True).start()
     return {"status": "success"}
 
+@app.get("/api/logs")
+def get_server_logs(lines: int = 250, q: Optional[str] = None):
+    """Retrieve the recent lines from backend.log and its file statistics."""
+    return get_recent_logs(lines=lines, filter_query=q)
+
+@app.delete("/api/logs")
+def clear_server_logs():
+    """Safely clear the backend.log file."""
+    res = clear_logs()
+    if res.get("status") == "error":
+        raise HTTPException(status_code=500, detail=res.get("message", "Error clearing logs"))
+    return res
+
 @app.get("/api/duplicates")
 def get_duplicates():
     models = load_models()
@@ -609,4 +637,44 @@ def open_folder(model_id: str):
 # Serve Frontend static build if present (for Portable / standalone mode)
 frontend_dist = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 if frontend_dist.exists():
+    @app.get("/assets/{asset_name:path}")
+    def serve_frontend_asset(asset_name: str):
+        target = frontend_dist / "assets" / asset_name
+        if target.exists() and target.is_file():
+            return FileResponse(str(target))
+        # Fallback for stale cached HTML requesting old hashed CSS/JS
+        assets_dir = frontend_dist / "assets"
+        if assets_dir.exists():
+            if asset_name.endswith(".css"):
+                css_files = sorted(assets_dir.glob("*.css"), key=lambda f: f.stat().st_mtime, reverse=True)
+                if css_files:
+                    return FileResponse(str(css_files[0]), media_type="text/css")
+            elif asset_name.endswith(".js"):
+                js_files = sorted(assets_dir.glob("*.js"), key=lambda f: f.stat().st_mtime, reverse=True)
+                if js_files:
+                    return FileResponse(str(js_files[0]), media_type="application/javascript")
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    @app.get("/sw.js")
+    def serve_sw():
+        sw_file = frontend_dist / "sw.js"
+        if sw_file.exists():
+            return FileResponse(str(sw_file), media_type="application/javascript", headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            })
+        raise HTTPException(status_code=404, detail="sw.js not found")
+
+    @app.get("/")
+    def serve_root():
+        index_file = frontend_dist / "index.html"
+        if index_file.exists():
+            return FileResponse(str(index_file), media_type="text/html", headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            })
+        return {"message": "STL-Manager backend running"}
+
     app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="static")

@@ -3,6 +3,11 @@ setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
 
+set "PYTHONUNBUFFERED=1"
+set "PYTHONIOENCODING=utf-8"
+
+if not exist "%~dp0logs" mkdir "%~dp0logs"
+
 set "PORT=8000"
 if exist "%~dp0port.txt" (
     set /p PORT=<"%~dp0port.txt"

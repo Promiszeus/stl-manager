@@ -29,6 +29,9 @@ def render(filepath, base_outpath):
         count = extract_3mf_thumbnails(filepath, base_outpath)
         if count > 0:
             return
+            
+    if ext in ('step', 'stp', 'gcode'):
+        return
 
     import pyvista as pv
     import trimesh
@@ -37,10 +40,16 @@ def render(filepath, base_outpath):
     pv.set_jupyter_backend(None)
     plotter = pv.Plotter(off_screen=True, window_size=[400, 400])
     
-    # Pass file_type explicitly so trimesh doesn't rely on the filename extension
-    # This fixes files with unusual names like 'part.-1.stl'
-    file_type = 'stl' if ext == 'stl' else '3mf'
-    tmesh = trimesh.load(filepath, force='mesh', file_type=file_type)
+    valid_types = {'stl', '3mf', 'obj', 'ply', 'off', 'glb', 'gltf'}
+    file_type = ext if ext in valid_types else None
+    try:
+        if file_type:
+            tmesh = trimesh.load(filepath, force='mesh', file_type=file_type)
+        else:
+            tmesh = trimesh.load(filepath, force='mesh')
+    except Exception as e:
+        print(f"Trimesh error loading {filepath}: {e}", file=sys.stderr)
+        return
     
     if isinstance(tmesh, trimesh.Scene):
         meshes = list(tmesh.geometry.values())

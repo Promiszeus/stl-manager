@@ -8,16 +8,16 @@
   --bg-input: rgba(11, 15, 24, 0.85);
   --text-main: #ffffff;
   --text-muted: #8b949e;
-  --accent-cyan: #ffffff;
-  --accent-blue: #e2e8f0;
-  --accent-purple: #cbd5e1;
-  --accent-gold: #ffffff;
-  --accent-green: #e2e8f0;
-  --accent-rose: #ffffff;
+  --accent-cyan: #00d2ff;
+  --accent-blue: #3a7bd5;
+  --accent-purple: #8e2de2;
+  --accent-gold: #f59e0b;
+  --accent-green: #00b894;
+  --accent-rose: #e84393;
   --border-color: rgba(255, 255, 255, 0.12);
-  --border-glow: rgba(255, 255, 255, 0.4);
+  --border-glow: rgba(0, 210, 255, 0.4);
   --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.45);
-  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 20px rgba(255, 255, 255, 0.08);
+  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 20px rgba(0, 210, 255, 0.15);
 }
 
 * {
@@ -562,11 +562,24 @@ body {
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 210, 255, 0.08);
   width: min(840px, 94vw);
+  height: min(620px, 86vh);
+  min-height: min(620px, 86vh);
   max-height: 86vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Specific strict lock for Settings Modal to prevent any dimension jumping */
+.settings-modal-content {
+  width: min(840px, 94vw) !important;
+  height: min(620px, 86vh) !important;
+  min-height: min(620px, 86vh) !important;
+  max-height: min(620px, 86vh) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
 }
 
 .modal-header {
@@ -582,9 +595,10 @@ body {
 /* Modal Tabs */
 .modal-tabs {
   display: flex;
+  align-items: center;
   background: rgba(12, 16, 28, 0.6);
   border-bottom: 1px solid var(--border-color);
-  padding: 4px 16px;
+  padding: 6px 16px;
   gap: 6px;
   overflow-x: auto;
   flex-shrink: 0;
@@ -594,8 +608,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  border: none;
+  padding: 9px 15px;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-muted);
   font-size: 13px;
@@ -614,14 +628,31 @@ body {
 .modal-tab-btn.active {
   color: var(--accent-cyan);
   background: rgba(0, 210, 255, 0.12);
-  border: 1px solid rgba(0, 210, 255, 0.25);
+  border-color: rgba(0, 210, 255, 0.25);
   box-shadow: 0 2px 10px rgba(0, 210, 255, 0.15);
 }
 
 .modal-body {
   padding: 24px;
   overflow-y: auto;
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  scrollbar-gutter: stable;
+}
+
+/* Smooth Tab Content Pane Transition */
+.settings-tab-pane {
+  animation: tabFadeIn 0.15s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+@keyframes tabFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-footer {
@@ -1016,10 +1047,13 @@ body {
     transform: translateY(-5px) scale(0.95);
   }
 
-  .modal-content {
+  .modal-content,
+  .settings-modal-content {
     width: 95vw !important;
     max-width: 95vw !important;
-    max-height: 90vh !important;
+    height: min(580px, 88vh) !important;
+    min-height: min(580px, 88vh) !important;
+    max-height: 88vh !important;
     padding: 0 !important;
     border-radius: 16px !important;
   }
@@ -1121,4 +1155,577 @@ body {
   .model-card {
     border-radius: 14px;
   }
+}
+
+/* ========================================================
+   Windows Explorer / File Browser Modal (Glassmorphic)
+   ======================================================== */
+.win-explorer-overlay {
+  z-index: 1100;
+}
+
+.win-explorer-modal {
+  width: min(880px, 94vw) !important;
+  height: min(580px, 86vh) !important;
+  min-height: min(580px, 86vh) !important;
+  max-height: min(580px, 86vh) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #0d1220 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 210, 255, 0.1) !important;
+}
+
+.win-explorer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: rgba(15, 21, 36, 0.8);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.win-explorer-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.win-icon-button {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.win-icon-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.win-icon-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.win-icon-button.close-btn:hover {
+  background: rgba(255, 77, 77, 0.2);
+  color: #ff4d4d;
+}
+
+.win-explorer-navbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(12, 16, 28, 0.7);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.win-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.win-address-bar {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+}
+
+.win-address-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+}
+
+.win-explorer-body {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.win-explorer-sidebar {
+  width: 220px;
+  background: rgba(10, 14, 24, 0.65);
+  border-right: 1px solid var(--border-color);
+  padding: 12px 8px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.win-sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.win-sidebar-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  letter-spacing: 0.5px;
+}
+
+.win-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.win-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.win-sidebar-item.active {
+  background: rgba(0, 210, 255, 0.15);
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.win-explorer-content {
+  flex: 1 1 auto;
+  background: rgba(14, 18, 30, 0.4);
+  overflow-y: auto;
+  padding: 8px 12px;
+  min-height: 0;
+}
+
+.win-message {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.win-message.error {
+  color: #ff6b6b;
+}
+
+.win-file-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.win-file-table thead th {
+  text-align: left;
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  background: rgba(14, 18, 30, 0.95);
+  z-index: 5;
+}
+
+.win-file-table tbody tr {
+  cursor: pointer;
+  transition: background 0.1s ease;
+  border-radius: 4px;
+}
+
+.win-file-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.win-file-table tbody tr.selected {
+  background: rgba(0, 210, 255, 0.18) !important;
+  color: #fff;
+}
+
+.win-file-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  white-space: nowrap;
+}
+
+.win-file-table .file-name {
+  color: #fff;
+  font-weight: 500;
+}
+
+.win-explorer-footer {
+  padding: 12px 18px;
+  background: rgba(15, 21, 36, 0.85);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.win-footer-inputs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.win-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.win-input-row label {
+  font-size: 12px;
+  color: var(--text-muted);
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.win-input-row input,
+.win-input-row select {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #fff;
+  outline: none;
+}
+
+.win-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.win-btn-primary {
+  background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+  border: none;
+  border-radius: 8px;
+  color: #090c14;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.win-btn-primary:hover:not(:disabled) {
+  opacity: 0.95;
+  box-shadow: 0 2px 12px rgba(0, 210, 255, 0.4);
+}
+
+.win-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.win-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.win-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.danger-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ff6b6b;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.danger-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ========================================================
+   Server Logs Card & Monospace Terminal Viewer
+   ======================================================== */
+.server-logs-card {
+  background: linear-gradient(135deg, rgba(16, 22, 38, 0.8), rgba(12, 16, 28, 0.9));
+  border: 1px solid rgba(0, 210, 255, 0.22);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.2s ease;
+}
+
+.server-logs-card:hover {
+  border-color: rgba(0, 210, 255, 0.35);
+}
+
+.server-logs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.server-logs-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.server-logs-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.server-logs-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #2ecc71;
+  background: rgba(46, 204, 113, 0.12);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.live-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #2ecc71;
+  box-shadow: 0 0 8px #2ecc71;
+  animation: livePulse 2s infinite ease-in-out;
+}
+
+@keyframes livePulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 10px #2ecc71; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.server-logs-badge-size {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  background: rgba(0, 210, 255, 0.1);
+  border: 1px solid rgba(0, 210, 255, 0.25);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.server-logs-desc {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.server-logs-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.server-logs-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.log-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+.log-action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.log-action-btn.primary {
+  background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(58, 123, 213, 0.2));
+  border-color: rgba(0, 210, 255, 0.4);
+  color: var(--accent-cyan);
+}
+
+.log-action-btn.primary:hover {
+  background: linear-gradient(135deg, rgba(0, 210, 255, 0.3), rgba(58, 123, 213, 0.3));
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.25);
+}
+
+.log-action-btn.danger {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #ff6b6b;
+}
+
+.log-action-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+/* Terminal Log Box */
+.terminal-viewer {
+  background: #080b12;
+  border: 1px solid rgba(0, 210, 255, 0.18);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.15s ease-out;
+}
+
+.terminal-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgba(12, 16, 26, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.terminal-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.terminal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.terminal-dot.red { background: #ff5f56; }
+.terminal-dot.yellow { background: #ffbd2e; }
+.terminal-dot.green { background: #27c93f; }
+
+.terminal-title {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.terminal-content {
+  padding: 10px 12px;
+  max-height: 220px;
+  height: 220px;
+  overflow-y: auto;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  scrollbar-gutter: stable;
+}
+
+.log-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.log-line-num {
+  color: #475569;
+  user-select: none;
+  font-size: 10px;
+  min-width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.log-line-content {
+  flex: 1;
+}
+
+.log-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: italic;
 }

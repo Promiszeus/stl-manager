@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Folder, File, ArrowUp, RotateCw, HardDrive, Monitor, Download, Image as ImageIcon, Music, Video } from 'lucide-react';
+import { useI18n } from './i18n';
 
 interface FsItem {
   name: string;
@@ -38,15 +39,16 @@ const formatDate = (timestamp?: number) => {
 
 const getQuickAccessIcon = (name: string) => {
   const n = name.toLowerCase();
-  if (n.includes('desktop')) return <Monitor size={16} color="var(--accent-blue)" />;
-  if (n.includes('download')) return <Download size={16} color="#00cec9" />;
-  if (n.includes('bild') || n.includes('picture')) return <ImageIcon size={16} color="#fdcb6e" />;
-  if (n.includes('musik') || n.includes('music')) return <Music size={16} color="#e84393" />;
-  if (n.includes('video')) return <Video size={16} color="#6c5ce7" />;
-  return <Folder size={16} color="#f6e58d" />;
+  if (n.includes('desktop')) return <Monitor size={15} color="var(--accent-blue)" />;
+  if (n.includes('download')) return <Download size={15} color="#00cec9" />;
+  if (n.includes('bild') || n.includes('picture')) return <ImageIcon size={15} color="#fdcb6e" />;
+  if (n.includes('musik') || n.includes('music')) return <Music size={15} color="#e84393" />;
+  if (n.includes('video')) return <Video size={15} color="#6c5ce7" />;
+  return <Folder size={15} color="#f6e58d" />;
 };
 
 export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClose, onSelect, apiBase }) => {
+  const { t } = useI18n();
   const [currentPath, setCurrentPath] = useState('');
   const [parentPath, setParentPath] = useState('');
   const [items, setItems] = useState<FsItem[]>([]);
@@ -65,7 +67,7 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
     setSelectedItem(null);
     try {
       const res = await fetch(`${apiBase}/api/fs/list?path=${encodeURIComponent(p)}&filter_ext=${encodeURIComponent(filterExt)}`);
-      if (!res.ok) throw new Error('Zugriff verweigert oder Pfad nicht gefunden');
+      if (!res.ok) throw new Error(t('errAccessDenied'));
       const data = await res.json();
       setCurrentPath(data.current_path);
       setPathInput(data.current_path);
@@ -77,7 +79,7 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
       // Scroll to top
       if (mainContentRef.current) mainContentRef.current.scrollTop = 0;
     } catch (e: any) {
-      setError(e.message || 'Fehler beim Laden des Verzeichnisses');
+      setError(e.message || t('errLoadDir'));
     } finally {
       setLoading(false);
     }
@@ -122,25 +124,40 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
         {/* Title Bar */}
         <div className="win-explorer-header">
           <div className="win-explorer-title">
-            <Folder size={14} color="#f6e58d" /> 
-            {mode === 'folder' ? 'Ordner suchen' : 'Datei öffnen'}
+            <Folder size={16} color="#f6e58d" /> 
+            {mode === 'folder' ? t('findFolder') : t('openFile')}
           </div>
-          <button className="win-icon-button close-btn" onClick={onClose}><X size={16} /></button>
+          <button className="win-icon-button close-btn" onClick={onClose} title={t('btnCancel')}>
+            <X size={16} />
+          </button>
         </div>
 
         {/* Navigation Bar */}
         <div className="win-explorer-navbar">
           <div className="win-nav-actions">
-            <button className="win-icon-button" onClick={() => fetchPath(parentPath)} disabled={loading || !parentPath} title="Nach oben">
-              <ArrowUp size={18} />
+            <button 
+              className="win-icon-button" 
+              onClick={() => fetchPath(parentPath)} 
+              disabled={loading || !parentPath} 
+              title={t('upOneLevel')}
+            >
+              <ArrowUp size={16} />
             </button>
-            <button className="win-icon-button" onClick={() => fetchPath(currentPath)} disabled={loading} title="Aktualisieren">
-              <RotateCw size={16} />
+            <button 
+              className="win-icon-button" 
+              onClick={() => fetchPath(currentPath)} 
+              disabled={loading} 
+              title={t('refresh')}
+            >
+              <RotateCw size={15} />
             </button>
           </div>
           <div className="win-address-bar">
             {currentPath === "" ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Monitor size={16} color="var(--accent-blue)" /> Dieser PC</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Monitor size={15} color="var(--accent-blue)" /> 
+                <span>{t('thisPc')}</span>
+              </div>
             ) : (
               <input 
                 type="text" 
@@ -148,6 +165,7 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
                 onChange={e => setPathInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') fetchPath(pathInput); }}
                 className="win-address-input"
+                placeholder={t('searchLocalPlaceholder')}
               />
             )}
           </div>
@@ -158,7 +176,7 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
           {/* Sidebar */}
           <div className="win-explorer-sidebar">
             <div className="win-sidebar-group">
-              <div className="win-sidebar-title">Schnellzugriff</div>
+              <div className="win-sidebar-title">{t('quickAccess')}</div>
               {quickAccess.map((qa, i) => (
                 <div key={i} className={`win-sidebar-item ${currentPath === qa.path ? 'active' : ''}`} onClick={() => fetchPath(qa.path)}>
                   {getQuickAccessIcon(qa.name)}
@@ -167,10 +185,10 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
               ))}
             </div>
             <div className="win-sidebar-group">
-              <div className="win-sidebar-title">Dieser PC</div>
+              <div className="win-sidebar-title">{t('thisPc')}</div>
               {drives.map((d, i) => (
                 <div key={i} className={`win-sidebar-item ${currentPath === d.path ? 'active' : ''}`} onClick={() => fetchPath(d.path)}>
-                  <HardDrive size={16} color="var(--accent-blue)" />
+                  <HardDrive size={15} color="var(--accent-blue)" />
                   <span>{d.name}</span>
                 </div>
               ))}
@@ -180,19 +198,19 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
           {/* Content Pane */}
           <div className="win-explorer-content" ref={mainContentRef}>
             {loading ? (
-              <div className="win-message">Lade...</div>
+              <div className="win-message">{t('loadingDir')}</div>
             ) : error ? (
               <div className="win-message error">{error}</div>
             ) : items.length === 0 ? (
-              <div className="win-message">Dieser Ordner ist leer.</div>
+              <div className="win-message">{t('emptyFolder')}</div>
             ) : (
               <table className="win-file-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '50%' }}>Name</th>
-                    <th style={{ width: '25%' }}>Änderungsdatum</th>
-                    <th style={{ width: '15%' }}>Typ</th>
-                    <th style={{ width: '10%', textAlign: 'right' }}>Größe</th>
+                    <th style={{ width: '50%' }}>{t('colName')}</th>
+                    <th style={{ width: '25%' }}>{t('colDateModified')}</th>
+                    <th style={{ width: '15%' }}>{t('colType')}</th>
+                    <th style={{ width: '10%', textAlign: 'right' }}>{t('colSize')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -203,12 +221,18 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
                       onClick={() => handleItemClick(item)}
                       onDoubleClick={() => handleItemDoubleClick(item)}
                     >
-                      <td style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {item.is_dir ? <Folder size={18} color="#f6e58d" fill="#f6e58d" fillOpacity={0.2} /> : <File size={18} color="var(--text-muted)" />}
-                        <span className="file-name">{item.name}</span>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                          {item.is_dir ? (
+                            <Folder size={17} color="#f6e58d" fill="#f6e58d" fillOpacity={0.2} style={{ flexShrink: 0 }} />
+                          ) : (
+                            <File size={17} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+                          )}
+                          <span className="file-name">{item.name}</span>
+                        </div>
                       </td>
                       <td className="text-muted">{formatDate(item.mtime)}</td>
-                      <td className="text-muted">{item.is_dir ? 'Dateiordner' : 'Datei'}</td>
+                      <td className="text-muted">{item.is_dir ? t('typeFileFolder') : t('typeFile')}</td>
                       <td className="text-muted" style={{ textAlign: 'right' }}>{formatSize(item.size)}</td>
                     </tr>
                   ))}
@@ -222,14 +246,14 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
         <div className="win-explorer-footer">
           <div className="win-footer-inputs">
             <div className="win-input-row">
-              <label>{mode === 'folder' ? 'Ordner:' : 'Dateiname:'}</label>
+              <label>{mode === 'folder' ? t('lblFolder') : t('lblFileName')}</label>
               <input type="text" readOnly value={selectedItem ? selectedItem.name : (mode === 'folder' ? currentPath : '')} />
             </div>
             <div className="win-input-row">
-              <label>Dateityp:</label>
+              <label>{t('lblFileType')}</label>
               <select disabled>
                 {mode === 'folder' ? (
-                  <option>Ordner</option>
+                  <option>{t('optFolders')}</option>
                 ) : (
                   <option>Executable (*.exe)</option>
                 )}
@@ -242,9 +266,9 @@ export const FileBrowserModal: React.FC<Props> = ({ mode, filterExt = '', onClos
               onClick={handleSubmit}
               disabled={mode === 'file' ? (!selectedItem || selectedItem.is_dir) : false}
             >
-              {mode === 'folder' ? 'Ordner auswählen' : 'Öffnen'}
+              {mode === 'folder' ? t('btnSelectFolder') : t('btnOpen')}
             </button>
-            <button className="win-btn-secondary" onClick={onClose}>Abbrechen</button>
+            <button className="win-btn-secondary" onClick={onClose}>{t('btnCancel')}</button>
           </div>
         </div>
 

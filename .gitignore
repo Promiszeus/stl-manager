@@ -10,3 +10,5 @@ logs/
 venv/
 .agents/
 AGENTS.md
+/models.json
+/settings.json

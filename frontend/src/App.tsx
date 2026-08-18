@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, Folder, FolderOpen, Database, HardDrive, Printer, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, ArrowUpDown, Globe, Pencil, Menu, Languages, Sparkles, Lock, ShieldCheck, Eye, EyeOff, Smartphone, Download } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Search, Folder, FolderOpen, Database, HardDrive, Printer, X, Settings, Trash2, LayoutGrid, List as ListIcon, Box, CheckCircle, Copy, Tag, ArrowUpDown, Globe, Pencil, Menu, Languages, Sparkles, Lock, ShieldCheck, Eye, EyeOff, Smartphone, Download, Terminal, RefreshCw, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import ThreeViewer from './ThreeViewer';
 import { FileBrowserModal } from './FileBrowserModal';
 import { OnlineSearchProvider, OnlineSearchSidebar, OnlineSearchContent } from './OnlineSearch';
@@ -66,12 +66,24 @@ const TagColorPicker = ({ tag, initialColor, onSave, size = 14 }: { tag: string,
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         onSave(tag, color);
       }}
-      style={{ width: `${size}px`, height: `${size}px`, padding: 0, border: 'none', background: 'none', cursor: 'pointer', borderRadius: '50%' }} 
-    />
+      style={{ width: `${size}px`, height: `${size}px`, padding: 0, border: 'none', background: 'none', cursor: 'pointer', borderRadius: '50%' }}     />
   );
 };
 
-const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColors, handleToggleSelect, handleSlice, handleDeleteModel, handleToggleStatus, handlePreview, handleUpdateTags, handleOpenFolder, onContextMenu, handleSetSearchTerm, handleFindSimilar }: { model: Model, slicers: any[], viewMode: string, isSelected: boolean, allTags?: string[], tagColors?: Record<string, string>, handleToggleSelect: (id: string) => void, handleSlice: (id: string, path: string) => void, handleDeleteModel: (id: string, name: string) => void, handleToggleStatus: (id: string, current: string) => void, handlePreview: (m: Model) => void, handleUpdateTags: (id: string, tags: string[]) => void, handleOpenFolder: (id: string) => void, onContextMenu: (e: React.MouseEvent, m: Model) => void, handleSetSearchTerm: (term: string) => void, handleFindSimilar: (m: Model) => void }) => {
+const getSourcePlatformInfo = (url?: string) => {
+  if (!url) return { name: 'Web', color: 'var(--text-muted)', bg: 'rgba(255, 255, 255, 0.04)', border: 'rgba(255, 255, 255, 0.08)' };
+  const u = url.toLowerCase();
+  if (u.includes('makerworld.com')) return { name: 'MakerWorld', color: '#00ae42', bg: 'rgba(0, 174, 66, 0.15)', border: 'rgba(0, 174, 66, 0.35)' };
+  if (u.includes('printables.com')) return { name: 'Printables', color: '#fa6b05', bg: 'rgba(250, 107, 5, 0.15)', border: 'rgba(250, 107, 5, 0.35)' };
+  if (u.includes('thingiverse.com')) return { name: 'Thingiverse', color: '#248bfb', bg: 'rgba(36, 139, 251, 0.15)', border: 'rgba(36, 139, 251, 0.35)' };
+  if (u.includes('cults3d.com')) return { name: 'Cults 3D', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.35)' };
+  if (u.includes('makeronline.com')) return { name: 'MakerOnline', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.15)', border: 'rgba(6, 182, 212, 0.35)' };
+  if (u.includes('crealitycloud.com')) return { name: 'Creality Cloud', color: '#0284c7', bg: 'rgba(2, 132, 199, 0.15)', border: 'rgba(2, 132, 199, 0.35)' };
+  if (u.includes('thangs.com')) return { name: 'Thangs', color: '#9333ea', bg: 'rgba(147, 51, 234, 0.15)', border: 'rgba(147, 51, 234, 0.35)' };
+  return { name: 'Quelle', color: 'var(--accent-cyan)', bg: 'rgba(0, 210, 255, 0.12)', border: 'rgba(0, 210, 255, 0.3)' };
+};
+
+const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColors, handleToggleSelect, handleSlice, handleDeleteModel, handleToggleStatus, handlePreview, handleUpdateTags, handleOpenFolder, onContextMenu, handleSetSearchTerm, handleFindSimilar, handleUpdateUrl }: { model: Model, slicers: any[], viewMode: string, isSelected: boolean, allTags?: string[], tagColors?: Record<string, string>, handleToggleSelect: (id: string) => void, handleSlice: (id: string, path: string) => void, handleDeleteModel: (id: string, name: string) => void, handleToggleStatus: (id: string, current: string) => void, handlePreview: (m: Model) => void, handleUpdateTags: (id: string, tags: string[]) => void, handleOpenFolder: (id: string) => void, onContextMenu: (e: React.MouseEvent, m: Model) => void, handleSetSearchTerm: (term: string) => void, handleFindSimilar: (m: Model) => void, handleUpdateUrl?: (id: string, currentUrl?: string) => void }) => {
   const { t } = useI18n();
   const [imgIdx, setImgIdx] = useState(0);
   const thumbs = model.thumbnails && model.thumbnails.length > 0 ? model.thumbnails : (model.thumbnail ? [model.thumbnail] : []);
@@ -99,19 +111,22 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
       alert("Bitte hinterlege zuerst einen Slicer in den Einstellungen.");
       return;
     }
-    if (slicers.length === 1) {
-      handleSlice(model.id, defaultSlicerPath);
-    } else {
-      setShowSlicerMenu(!showSlicerMenu);
-    }
+    handleSlice(model.id, defaultSlicerPath);
   };
+
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('DownloadURL', `application/octet-stream:${model.name}:file:///${model.path.replace(/\\/g, '/')}`);
+    e.dataTransfer.setData('text/plain', model.path);
+  };
+
+  const platformInfo = getSourcePlatformInfo(model.source_url);
 
   const fileExt = model.name.split('.').pop()?.toUpperCase() || '3D';
   const folderName = model.rel_path ? model.rel_path.split(/[\/\\]/).pop() || '3d' : '3d';
 
   if (viewMode === 'list') {
     return (
-      <div onContextMenu={e => onContextMenu(e, model)} className={`list-item ${isSelected ? 'is-selected' : ''}`}>
+      <div onContextMenu={e => onContextMenu(e, model)} draggable onDragStart={handleDragStart} className={`list-item ${isSelected ? 'is-selected' : ''}`}>
         <div className="list-item-main-row">
           <div className="list-item-checkbox">
             <input type="checkbox" checked={isSelected} onChange={() => handleToggleSelect(model.id)} style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--accent-blue)' }} />
@@ -155,7 +170,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
 
           <div className="list-item-size">{model.size_kb} KB</div>
 
-          <div className="list-item-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, marginLeft: 'auto' }}>
+          <div className="list-item-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: 'auto' }}>
             <button
               className="icon-button"
               onClick={() => handleToggleStatus(model.id, model.status)}
@@ -170,29 +185,54 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                flexShrink: 0
               }}
             >
               <CheckCircle size={17} strokeWidth={model.status === 'Printed' ? 2.5 : 2} />
             </button>
-            {model.source_url && (
+            {model.source_url ? (
               <button
                 className="icon-button"
                 onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }}
-                title={`Quelle öffnen:\n${model.source_url}`}
+                title={`${platformInfo.name} öffnen:\n${model.source_url}`}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  color: platformInfo.color,
+                  background: platformInfo.bg,
+                  border: `1px solid ${platformInfo.border}`,
                   borderRadius: '6px',
                   width: '30px',
                   height: '30px',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  boxShadow: `0 0 8px ${platformInfo.bg}`
                 }}
               >
-                <Globe size={16} />
+                <Globe size={16} color={platformInfo.color} />
+              </button>
+            ) : (
+              <button
+                className="icon-button"
+                onClick={(e) => { e.stopPropagation(); handleUpdateUrl && handleUpdateUrl(model.id); }}
+                title={t('addSourceUrl')}
+                style={{
+                  color: '#cbd5e1',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.18)',
+                  borderRadius: '6px',
+                  width: '30px',
+                  height: '30px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0
+                }}
+              >
+                <Globe size={15} color="var(--accent-cyan)" />
               </button>
             )}
             <button
@@ -208,7 +248,8 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                flexShrink: 0
               }}
             >
               <FolderOpen size={16} />
@@ -226,7 +267,8 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                flexShrink: 0
               }}
             >
               <Trash2 size={14} />
@@ -300,7 +342,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
   }
 
   return (
-    <div onContextMenu={e => onContextMenu(e, model)} className={`model-card ${isSelected ? 'is-selected' : ''}`} style={{ border: isSelected ? '2px solid var(--accent-blue)' : undefined }}>
+    <div onContextMenu={e => onContextMenu(e, model)} draggable onDragStart={handleDragStart} className={`model-card ${isSelected ? 'is-selected' : ''}`} style={{ border: isSelected ? '2px solid var(--accent-blue)' : undefined }}>
       <div className="card-image-container">
         {/* Top-Left: Checkbox */}
         <div className="card-top-left">
@@ -437,7 +479,7 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
 
         {/* Actions Toolbar */}
         <div className="card-actions" style={{ position: 'relative', marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
             <button
               className="icon-button"
               onClick={() => handleToggleStatus(model.id, model.status)}
@@ -452,29 +494,54 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                flexShrink: 0
               }}
             >
               <CheckCircle size={17} strokeWidth={model.status === 'Printed' ? 2.5 : 2} />
             </button>
-            {model.source_url && (
+            {model.source_url ? (
               <button
                 className="icon-button"
                 onClick={(e) => { e.stopPropagation(); window.open(model.source_url, '_blank'); }}
-                title={`Quelle öffnen:\n${model.source_url}`}
+                title={`${platformInfo.name} öffnen:\n${model.source_url}`}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  color: platformInfo.color,
+                  background: platformInfo.bg,
+                  border: `1px solid ${platformInfo.border}`,
                   borderRadius: '6px',
                   width: '30px',
                   height: '30px',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  boxShadow: `0 0 8px ${platformInfo.bg}`
                 }}
               >
-                <Globe size={16} />
+                <Globe size={16} color={platformInfo.color} />
+              </button>
+            ) : (
+              <button
+                className="icon-button"
+                onClick={(e) => { e.stopPropagation(); handleUpdateUrl && handleUpdateUrl(model.id); }}
+                title={t('addSourceUrl')}
+                style={{
+                  color: '#cbd5e1',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.18)',
+                  borderRadius: '6px',
+                  width: '30px',
+                  height: '30px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0
+                }}
+              >
+                <Globe size={15} color="var(--accent-cyan)" />
               </button>
             )}
             <button
@@ -490,7 +557,8 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                flexShrink: 0
               }}
             >
               <FolderOpen size={16} />
@@ -508,7 +576,8 @@ const ModelCard = ({ model, slicers, viewMode, isSelected, allTags = [], tagColo
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                flexShrink: 0
               }}
             >
               <Trash2 size={14} />
@@ -658,6 +727,91 @@ function App() {
     } else {
       alert('Tipp: Um die WebApp zu installieren, klicke im Browser (Chrome/Edge/Firefox) in der Adressleiste auf das App-Installieren-Symbol (⊕) oder im Browser-Menü auf "App installieren" bzw. "Zum Startbildschirm hinzufügen".');
     }
+  };
+
+  // Server Logs State
+  const [showLogViewer, setShowLogViewer] = useState(false);
+  const [serverLogs, setServerLogs] = useState<string>('');
+  const [logSizeKb, setLogSizeKb] = useState<number>(0);
+  const [isLogsLoading, setIsLogsLoading] = useState(false);
+  const [logsCopied, setLogsCopied] = useState(false);
+  const [autoScrollLogs, setAutoScrollLogs] = useState(true);
+  const logContainerRef = useRef<HTMLDivElement>(null);
+
+  // Fetch Server Logs
+  const fetchServerLogs = useCallback(async () => {
+    setIsLogsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/logs`);
+      if (res.ok) {
+        const data = await res.json();
+        setServerLogs(data.logs || '');
+        setLogSizeKb(data.size_kb || 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch server logs:', err);
+    } finally {
+      setIsLogsLoading(false);
+    }
+  }, [API_BASE]);
+
+  // Clear Server Logs
+  const handleClearLogs = async () => {
+    if (!window.confirm(t('clearLogsConfirm'))) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/logs`, { method: 'DELETE' });
+      if (res.ok) {
+        setServerLogs('');
+        setLogSizeKb(0);
+      }
+    } catch (err) {
+      console.error('Failed to clear logs:', err);
+    }
+  };
+
+  // Copy Logs to Clipboard
+  const handleCopyLogs = () => {
+    if (!serverLogs) return;
+    navigator.clipboard.writeText(serverLogs);
+    setLogsCopied(true);
+    setTimeout(() => setLogsCopied(false), 2000);
+  };
+
+  // Auto-scroll when logs update
+  useEffect(() => {
+    if (autoScrollLogs && logContainerRef.current) {
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+    }
+  }, [serverLogs, showLogViewer, autoScrollLogs]);
+
+  // Fetch logs when Settings Maintenance tab is active
+  useEffect(() => {
+    if (showSettings && settingsTab === 'maintenance') {
+      fetchServerLogs();
+    }
+  }, [showSettings, settingsTab, fetchServerLogs]);
+
+  // Syntax highlighting for log lines
+  const renderLogLine = (line: string, index: number) => {
+    if (!line && line !== '') return null;
+    
+    let levelColor = '#cbd5e1';
+    if (/\[ERROR\]|ERROR:|CRITICAL/i.test(line)) {
+      levelColor = '#f87171';
+    } else if (/\[WARN|WARNING\]|WARNING:/i.test(line)) {
+      levelColor = '#fbbf24';
+    } else if (/\[INFO\]|INFO:/i.test(line)) {
+      levelColor = '#38bdf8';
+    } else if (/\[DEBUG\]|DEBUG:/i.test(line)) {
+      levelColor = '#c084fc';
+    }
+
+    return (
+      <div key={index} className="log-line">
+        <span className="log-line-num">{index + 1}</span>
+        <span className="log-line-content" style={{ color: levelColor }}>{line}</span>
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -871,6 +1025,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: newUrl })
       });
+      setPreviewModel(prev => prev && prev.id === id ? { ...prev, source_url: newUrl } : prev);
       fetchModels();
     } catch (err) {
       console.error("Failed to update URL", err);
@@ -1391,7 +1546,7 @@ function App() {
 
         <div className={`${viewMode === 'grid' ? "models-grid" : "models-list"} ${selectedIds.length > 0 ? "has-selection" : ""}`}>
           {sortedModels.map(model => (
-            <ModelCard key={model.id} model={model} slicers={settings.slicers} viewMode={viewMode} isSelected={selectedIds.includes(model.id)} allTags={allTags} tagColors={settings.tag_colors} handleToggleSelect={handleToggleSelect} handleSlice={handleSlice} handleDeleteModel={handleDeleteModel} handleToggleStatus={handleToggleStatus} handlePreview={setPreviewModel} handleUpdateTags={handleUpdateTags} handleOpenFolder={handleOpenFolder} handleSetSearchTerm={setSearchTerm} handleFindSimilar={setSimilarModalSource} onContextMenu={(e, m) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, model: m }); }} />
+            <ModelCard key={model.id} model={model} slicers={settings.slicers} viewMode={viewMode} isSelected={selectedIds.includes(model.id)} allTags={allTags} tagColors={settings.tag_colors} handleToggleSelect={handleToggleSelect} handleSlice={handleSlice} handleDeleteModel={handleDeleteModel} handleToggleStatus={handleToggleStatus} handlePreview={setPreviewModel} handleUpdateTags={handleUpdateTags} handleOpenFolder={handleOpenFolder} handleSetSearchTerm={setSearchTerm} handleFindSimilar={setSimilarModalSource} handleUpdateUrl={handleUpdateUrl} onContextMenu={(e, m) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, model: m }); }} />
           ))}
           {sortedModels.length === 0 && (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
@@ -1403,7 +1558,7 @@ function App() {
 
       {showSettings && (
         <div className="modal-overlay" onClick={() => setShowSettings(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-content settings-modal-content" onClick={e => e.stopPropagation()}>
              <div className="modal-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Settings size={18} color="var(--accent-cyan)" />
@@ -1445,6 +1600,7 @@ function App() {
              </div>
 
              <div className="modal-body">
+               <div className="settings-tab-pane" key={settingsTab}>
                 {/* TAB 1: Folders & Slicers */}
                 {settingsTab === 'folders' && (
                   <>
@@ -1461,7 +1617,7 @@ function App() {
                         />
                         <button
                           type="button"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 14px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.12)', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 14px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#ffffff', fontSize: '12px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
                           onClick={handleBrowseDirectory}
                           title="Ordner auf Festplatte auswählen"
                         >
@@ -1469,7 +1625,7 @@ function App() {
                         </button>
                         <button
                           type="button"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', border: 'none', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0, 210, 255, 0.3)', whiteSpace: 'nowrap' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 18px', borderRadius: '10px', background: 'linear-gradient(135deg, #00d2ff, #3a7bd5)', border: 'none', color: '#090c14', fontSize: '12px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 2px 12px rgba(0, 210, 255, 0.4)', whiteSpace: 'nowrap' }}
                           onClick={handleAddDirectory}
                         >
                           + {lang === 'de' ? 'Hinzufügen' : 'Add'}
@@ -1509,7 +1665,7 @@ function App() {
                           />
                           <button
                             type="button"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.12)', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 14px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#ffffff', fontSize: '12px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
                             onClick={handleBrowseSlicer}
                             title="Datei auf Festplatte auswählen"
                           >
@@ -1518,7 +1674,7 @@ function App() {
                         </div>
                         <button
                           type="button"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', border: 'none', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0, 210, 255, 0.3)', whiteSpace: 'nowrap' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 18px', borderRadius: '10px', background: 'linear-gradient(135deg, #00d2ff, #3a7bd5)', border: 'none', color: '#090c14', fontSize: '12px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 2px 12px rgba(0, 210, 255, 0.4)', whiteSpace: 'nowrap' }}
                           onClick={handleAddSlicer}
                         >
                           + {lang === 'de' ? 'Hinzufügen' : 'Add'}
@@ -1555,7 +1711,7 @@ function App() {
                        />
                        <button
                          type="button"
-                         style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', border: 'none', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0, 210, 255, 0.3)', whiteSpace: 'nowrap' }}
+                         style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 18px', borderRadius: '10px', background: 'linear-gradient(135deg, #00d2ff, #3a7bd5)', border: 'none', color: '#090c14', fontSize: '12px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 2px 12px rgba(0, 210, 255, 0.4)', whiteSpace: 'nowrap' }}
                          onClick={handleAddSettingsTag}
                        >
                          + {lang === 'de' ? 'Tag erstellen' : 'Add Tag'}
@@ -1757,6 +1913,118 @@ function App() {
                      </button>
                    </div>
 
+                   {/* Server Logs Box */}
+                   <div className="server-logs-card">
+                     <div className="server-logs-header">
+                       <div className="server-logs-title-group">
+                         <Terminal size={16} color="var(--accent-cyan)" />
+                         {t('serverLogs')}
+                       </div>
+                       <div className="server-logs-badges">
+                         <span className="server-logs-badge-live">
+                           <span className="live-pulse-dot"></span>
+                           {t('serverLogsLive')}
+                         </span>
+                         <span className="server-logs-badge-size">
+                           {logSizeKb > 0 ? `${logSizeKb.toFixed(1)} KB` : '0 KB'}
+                         </span>
+                       </div>
+                     </div>
+
+                     <p className="server-logs-desc">
+                       {t('serverLogsDesc')}
+                     </p>
+
+                     <div className="server-logs-actions">
+                       <div className="server-logs-btn-group">
+                         <button
+                           type="button"
+                           className={`log-action-btn ${showLogViewer ? 'primary' : ''}`}
+                           onClick={() => {
+                             setShowLogViewer(!showLogViewer);
+                             if (!showLogViewer) fetchServerLogs();
+                           }}
+                         >
+                           {showLogViewer ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                           {showLogViewer ? t('hideLogs') : t('showLogs')}
+                         </button>
+                         
+                         <button
+                           type="button"
+                           className="log-action-btn"
+                           onClick={fetchServerLogs}
+                           disabled={isLogsLoading}
+                           title={t('refreshLogs')}
+                         >
+                           <RefreshCw size={13} className={isLogsLoading ? 'spin' : ''} />
+                           {t('refreshLogs')}
+                         </button>
+
+                         {showLogViewer && (
+                           <button
+                             type="button"
+                             className="log-action-btn"
+                             onClick={handleCopyLogs}
+                             title={t('copyLogs')}
+                           >
+                             {logsCopied ? <Check size={13} color="#2ecc71" /> : <Copy size={13} />}
+                             {logsCopied ? t('logsCopied') : t('copyLogs')}
+                           </button>
+                         )}
+                       </div>
+
+                       <div className="server-logs-btn-group">
+                         {showLogViewer && (
+                           <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: 'var(--text-muted)', cursor: 'pointer', userSelect: 'none' }}>
+                             <input
+                               type="checkbox"
+                               checked={autoScrollLogs}
+                               onChange={e => setAutoScrollLogs(e.target.checked)}
+                               style={{ accentColor: 'var(--accent-cyan)', cursor: 'pointer' }}
+                             />
+                             {t('autoScroll')}
+                           </label>
+                         )}
+
+                         <button
+                           type="button"
+                           className="log-action-btn danger"
+                           onClick={handleClearLogs}
+                           title={t('clearLogs')}
+                         >
+                           <Trash2 size={13} />
+                           {t('clearLogs')}
+                         </button>
+                       </div>
+                     </div>
+
+                     {/* Expandable Terminal Viewer */}
+                     {showLogViewer && (
+                       <div className="terminal-viewer">
+                         <div className="terminal-header-bar">
+                           <div className="terminal-dots">
+                             <span className="terminal-dot red" />
+                             <span className="terminal-dot yellow" />
+                             <span className="terminal-dot green" />
+                           </div>
+                           <span className="terminal-title">logs/backend.log</span>
+                           <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                             {serverLogs ? `${serverLogs.split('\n').filter(Boolean).length} lines` : '0 lines'}
+                           </span>
+                         </div>
+                         <div className="terminal-content" ref={logContainerRef}>
+                           {serverLogs ? (
+                             serverLogs.split('\n').map((line, idx) => renderLogLine(line, idx))
+                           ) : (
+                             <div className="log-empty-state">
+                               {isLogsLoading ? t('loadingDir') : t('noLogsFound')}
+                             </div>
+                           )}
+                         </div>
+                       </div>
+                     )}
+                   </div>
+
                    {/* Rescan & Clear DB Box */}
                    <div style={{ background: 'rgba(255, 50, 50, 0.05)', border: '1px solid rgba(255, 50, 50, 0.2)', borderRadius: '12px', padding: '16px' }}>
                      <h4 style={{ margin: '0 0 8px 0', color: '#ff4d4d', fontSize: '13px' }}>Clear Database & Rescan</h4>
@@ -1766,13 +2034,14 @@ function App() {
                      <button className="danger-btn" onClick={handleClearDatabase}>
                         Clear Database & Rescan
                      </button>
+                     </div>
                    </div>
-                 </div>
-               )}
-             </div>
-           </div>
-        </div>
-      )}
+                )}
+               </div>
+              </div>
+            </div>
+         </div>
+       )}
 
       {previewModel && (
         <div className="modal-overlay" onClick={() => setPreviewModel(null)}>
@@ -1906,6 +2175,14 @@ function App() {
                onClick={() => { setSimilarModalSource(contextMenu.model); setContextMenu(null); }}
             >
                <Sparkles size={14} /> {t('findSimilar')}
+            </div>
+            <div 
+               style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '4px', color: 'var(--accent-cyan)', marginTop: '2px' }}
+               onMouseEnter={e => e.currentTarget.style.background = 'rgba(0, 210, 255, 0.15)'}
+               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+               onClick={() => { handleUpdateUrl(contextMenu.model.id, contextMenu.model.source_url); setContextMenu(null); }}
+            >
+               <Globe size={14} /> {contextMenu.model.source_url ? t('editSourceUrl') : t('addSourceUrl')}
             </div>
             <div 
                style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '4px', color: 'white', marginTop: '2px' }}

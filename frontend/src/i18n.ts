@@ -126,6 +126,10 @@ export const translations = {
     free: 'Kostenlos',
     notPrintedStatus: 'Nicht gedruckt',
     printedStatus: 'Gedruckt',
+    openSourceUrl: 'Quelle öffnen',
+    addSourceUrl: 'Quell-URL hinzufügen',
+    editSourceUrl: 'Quell-URL anpassen',
+    noSourceUrl: 'Keine Quell-URL hinterlegt',
 
     // AI Visual Similarity
     findSimilar: 'Ähnliche Modelle finden (KI)',
@@ -186,7 +190,48 @@ export const translations = {
     newTagName: 'Neuer Tag Name...',
     clearDatabaseDesc: 'Löscht alle generierten 3D-Vorschaubilder und liest alle Verzeichnisse komplett neu ein.',
     installApp: 'Als WebApp installieren',
-    installAppDesc: 'Installiere STL-Manager als native Desktop- oder Smartphone-App für schnellen 1-Klick-Zugriff ohne Browserleiste.'
+    installAppDesc: 'Installiere STL-Manager als native Desktop- oder Smartphone-App für schnellen 1-Klick-Zugriff ohne Browserleiste.',
+
+    // File Browser Modal
+    findFolder: 'Ordner suchen',
+    openFile: 'Datei öffnen',
+    upOneLevel: 'Nach oben',
+    refresh: 'Aktualisieren',
+    thisPc: 'Dieser PC',
+    quickAccess: 'Schnellzugriff',
+    loadingDir: 'Lade...',
+    emptyFolder: 'Dieser Ordner ist leer.',
+    colName: 'Name',
+    colDateModified: 'Änderungsdatum',
+    colType: 'Typ',
+    colSize: 'Größe',
+    typeFileFolder: 'Dateiordner',
+    typeFile: 'Datei',
+    lblFolder: 'Ordner:',
+    lblFileName: 'Dateiname:',
+    lblFileType: 'Dateityp:',
+    optFolders: 'Ordner',
+    btnSelectFolder: 'Ordner auswählen',
+    btnOpen: 'Öffnen',
+    btnCancel: 'Abbrechen',
+    errAccessDenied: 'Zugriff verweigert oder Pfad nicht gefunden',
+    errLoadDir: 'Fehler beim Laden des Verzeichnisses',
+
+    // Server Logs & Diagnostics
+    serverLogs: 'Server-Logs & Diagnose',
+    serverLogsDesc: 'Echtzeit-Diagnose, API-Anfragen und Systemprotokolle des Python-Backends einsehen und verwalten.',
+    serverLogsLive: 'Live / Aktiv',
+    serverLogsSize: 'Log-Größe',
+    showLogs: 'Logs anzeigen',
+    hideLogs: 'Logs verbergen',
+    refreshLogs: 'Aktualisieren',
+    clearLogs: 'Logs leeren',
+    clearLogsConfirm: 'Möchtest du die Server-Logs wirklich leeren?',
+    clearLogsSuccess: 'Server-Logs wurden erfolgreich geleert.',
+    copyLogs: 'Logs kopieren',
+    logsCopied: 'Kopiert!',
+    autoScroll: 'Auto-Scroll',
+    noLogsFound: 'Noch keine Log-Einträge vorhanden.'
   },
   en: {
     // Navigation
@@ -311,6 +356,10 @@ export const translations = {
     free: 'Free',
     notPrintedStatus: 'Not Printed',
     printedStatus: 'Printed',
+    openSourceUrl: 'Open Source URL',
+    addSourceUrl: 'Add Source URL',
+    editSourceUrl: 'Edit Source URL',
+    noSourceUrl: 'No Source URL saved',
 
     // AI Visual Similarity
     findSimilar: 'Find Similar Models (AI)',
@@ -371,7 +420,48 @@ export const translations = {
     newTagName: 'New Tag Name...',
     clearDatabaseDesc: 'Deletes all generated 3D thumbnails and triggers a full fresh rescan of all folders.',
     installApp: 'Install as WebApp',
-    installAppDesc: 'Install STL-Manager as a standalone desktop or mobile application for instant access without a browser bar.'
+    installAppDesc: 'Install STL-Manager as a standalone desktop or mobile application for instant access without a browser bar.',
+
+    // File Browser Modal
+    findFolder: 'Select Folder',
+    openFile: 'Open File',
+    upOneLevel: 'Up one level',
+    refresh: 'Refresh',
+    thisPc: 'This PC',
+    quickAccess: 'Quick Access',
+    loadingDir: 'Loading...',
+    emptyFolder: 'This folder is empty.',
+    colName: 'Name',
+    colDateModified: 'Date modified',
+    colType: 'Type',
+    colSize: 'Size',
+    typeFileFolder: 'File folder',
+    typeFile: 'File',
+    lblFolder: 'Folder:',
+    lblFileName: 'File name:',
+    lblFileType: 'File type:',
+    optFolders: 'Folders',
+    btnSelectFolder: 'Select Folder',
+    btnOpen: 'Open',
+    btnCancel: 'Cancel',
+    errAccessDenied: 'Access denied or path not found',
+    errLoadDir: 'Error loading directory',
+
+    // Server Logs & Diagnostics
+    serverLogs: 'Server Logs & Diagnostics',
+    serverLogsDesc: 'View and manage real-time diagnostic output, API requests, and system logs from the Python backend.',
+    serverLogsLive: 'Live / Active',
+    serverLogsSize: 'Log Size',
+    showLogs: 'Show Logs',
+    hideLogs: 'Hide Logs',
+    refreshLogs: 'Refresh',
+    clearLogs: 'Clear Logs',
+    clearLogsConfirm: 'Are you sure you want to clear the server logs?',
+    clearLogsSuccess: 'Server logs have been successfully cleared.',
+    copyLogs: 'Copy Logs',
+    logsCopied: 'Copied!',
+    autoScroll: 'Auto-Scroll',
+    noLogsFound: 'No log entries recorded yet.'
   }
 };
 

@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { AlertCircle, RotateCcw, Play, Pause, Grid, Layers, RefreshCw } from 'lucide-react';
 import { useI18n } from './i18n';
 
@@ -259,14 +260,23 @@ export default function ThreeViewer({ url, filename }: ThreeViewerProps) {
     const cleanName = (filename || url || '').toLowerCase();
     const is3mf = cleanName.endsWith('.3mf') || cleanName.includes('.3mf');
     const isStl = cleanName.endsWith('.stl') || cleanName.includes('.stl');
+    const isObj = cleanName.endsWith('.obj') || cleanName.includes('.obj');
+    const isCadOrGcode = cleanName.endsWith('.step') || cleanName.endsWith('.stp') || cleanName.endsWith('.gcode');
 
-    if (isStl) {
+    if (isCadOrGcode) {
+      setIsLoading(false);
+      setErrorMessage("CAD/G-Code Format (.step / .stp / .gcode): Kann direkt über den Slicer-Button geöffnet werden.");
+    } else if (isStl) {
       new STLLoader().load(url, onLoad, onProgress, onError);
     } else if (is3mf) {
       new ThreeMFLoader().load(url, onLoad, onProgress, onError);
+    } else if (isObj) {
+      new OBJLoader().load(url, onLoad, onProgress, onError);
     } else {
       new ThreeMFLoader().load(url, onLoad, onProgress, () => {
-        new STLLoader().load(url, onLoad, onProgress, onError);
+        new STLLoader().load(url, onLoad, onProgress, () => {
+          new OBJLoader().load(url, onLoad, onProgress, onError);
+        });
       });
     }
 
