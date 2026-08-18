@@ -337,11 +337,22 @@ def remove_slicer(slicer_name: str):
 @app.post("/api/database/clear")
 def clear_database():
     save_models({})
-    import shutil
-    cache_dir = Path(".cache")
+    cache_dir = Path(__file__).resolve().parent / ".cache"
     if cache_dir.exists():
-        shutil.rmtree(cache_dir)
-    cache_dir.mkdir(exist_ok=True)
+        # Clear only cached thumbnail images without deleting ai_models/ or breaking Windows file locks
+        for f in cache_dir.iterdir():
+            if f.is_file() and f.suffix.lower() in [".png", ".jpg", ".jpeg", ".webp"]:
+                try:
+                    f.unlink(missing_ok=True)
+                except Exception as e:
+                    print(f"Warning removing cache thumbnail {f.name}: {e}")
+                    
+    try:
+        from similarity import clear_embeddings_store
+        clear_embeddings_store()
+    except Exception as e:
+        print(f"Error resetting similarity cache: {e}")
+
     threading.Thread(target=scan_all_directories, daemon=True).start()
     return {"status": "success"}
 

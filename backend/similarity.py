@@ -43,8 +43,8 @@ def load_embeddings_from_disk():
     with _embeddings_lock:
         if EMBEDDINGS_FILE.exists():
             try:
-                npz = np.load(EMBEDDINGS_FILE)
-                _EMBEDDINGS_STORE = {k: npz[k] for k in npz.files}
+                with np.load(EMBEDDINGS_FILE) as npz:
+                    _EMBEDDINGS_STORE = {k: np.array(npz[k]) for k in npz.files}
             except Exception as e:
                 print(f"[AI Vision] Error loading embeddings.npz: {e}")
                 _EMBEDDINGS_STORE = {}
@@ -56,6 +56,17 @@ def save_embeddings_to_disk():
                 np.savez_compressed(EMBEDDINGS_FILE, **_EMBEDDINGS_STORE)
         except Exception as e:
             print(f"[AI Vision] Error saving embeddings.npz: {e}")
+
+def clear_embeddings_store():
+    """Safely resets the in-memory embeddings dictionary and removes embeddings.npz if present."""
+    global _EMBEDDINGS_STORE
+    with _embeddings_lock:
+        _EMBEDDINGS_STORE.clear()
+        if EMBEDDINGS_FILE.exists():
+            try:
+                EMBEDDINGS_FILE.unlink(missing_ok=True)
+            except Exception as e:
+                print(f"[AI Vision] Notice: could not remove embeddings.npz ({e}), cleared memory.")
 
 # Load cached embeddings on startup
 load_embeddings_from_disk()
