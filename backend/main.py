@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -11,6 +11,8 @@ from scanner import scan_all_directories, start_watching
 from online_search import search_online_models
 import os
 import sys
+import asyncio
+import threading
 
 if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -70,14 +72,14 @@ def api_online_search(q: str = "", platforms: str = "", page: int = 1, sort: str
     return search_online_models(q.strip(), platforms=plat_list, page=page, sort=sort, mode=mode)
 
 @app.get("/api/models/{model_id}/similar")
-def get_similar_models_endpoint(model_id: str, limit: int = 16, min_score: float = 0.35):
+async def get_similar_models_endpoint(model_id: str, limit: int = 16, min_score: float = 0.35):
     try:
         from similarity import get_similar_models
         models = load_models()
         if model_id not in models:
             raise HTTPException(status_code=404, detail="Model not found")
 
-        matches = get_similar_models(model_id, limit=limit, min_similarity=min_score)
+        matches = await asyncio.to_thread(get_similar_models, model_id, limit=limit, min_similarity=min_score)
         result = []
         for m in matches:
             mid = m["id"]
@@ -94,14 +96,44 @@ def get_similar_models_endpoint(model_id: str, limit: int = 16, min_score: float
         return []
 
 @app.get("/api/models/{model_id}/similar-online")
-def get_similar_online_models_endpoint(model_id: str, q: str = "", limit: int = 24, min_score: float = 0.20):
+async def get_similar_online_models_endpoint(
+    request: Request,
+    model_id: str,
+    q: str = "",
+    limit: int = 24,
+    min_score: float = 0.20
+):
     try:
         from similarity import get_similar_online_models
         models = load_models()
         if model_id not in models:
             raise HTTPException(status_code=404, detail="Model not found")
 
-        return get_similar_online_models(model_id, custom_query=q, limit=limit, min_similarity=min_score)
+        cancel_event = threading.Event()
+
+        # Monitor client disconnection asynchronously
+        async def monitor_disconnect():
+            while not cancel_event.is_set():
+                if await request.is_disconnected():
+                    cancel_event.set()
+                    break
+                await asyncio.sleep(0.2)
+
+        disconnect_task = asyncio.create_task(monitor_disconnect())
+
+        try:
+            return await asyncio.to_thread(
+                get_similar_online_models,
+                model_id,
+                custom_query=q,
+                limit=limit,
+                min_similarity=min_score,
+                cancel_event=cancel_event
+            )
+        finally:
+            cancel_event.set()
+            disconnect_task.cancel()
+
     except HTTPException:
         raise
     except Exception as e:

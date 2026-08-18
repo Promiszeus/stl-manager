@@ -28,7 +28,7 @@ EMBEDDINGS_FILE = CACHE_DIR / "embeddings.npz"
 
 _session = None
 _session_lock = threading.Lock()
-_embeddings_lock = threading.Lock()
+_embeddings_lock = threading.RLock()
 
 # In-memory dictionary: model_id -> np.ndarray (shape: 384,)
 _EMBEDDINGS_STORE = {}
@@ -212,13 +212,20 @@ def extract_keywords_from_model(model_data: dict) -> str:
                 
     return " ".join(parts[:4]) if parts else "3D model"
 
-def get_similar_online_models(target_model_id: str, custom_query: str = None, limit: int = 24, min_similarity: float = 0.20):
+def get_similar_online_models(
+    target_model_id: str,
+    custom_query: str = None,
+    limit: int = 24,
+    min_similarity: float = 0.20,
+    cancel_event: threading.Event = None
+):
     """
     Hybrid AI Visual Similarity Search for Online Repositories:
     1. Obtains reference DINOv2 embedding for the local target model.
     2. Discovers online candidate models across all 6 platforms.
     3. Concurrently downloads candidate thumbnails in-memory & computes DINOv2 embeddings.
     4. Computes exact cosine visual similarity & returns candidates ranked by match score.
+    Supports cooperative cancellation via cancel_event.
     """
     from database import load_models
     from online_search import search_online_models
@@ -231,22 +238,28 @@ def get_similar_online_models(target_model_id: str, custom_query: str = None, li
     target_model = models[target_model_id]
 
     # Ensure target embedding is available
+    target_vec = None
     with _embeddings_lock:
-        if target_model_id not in _EMBEDDINGS_STORE:
-            # Check for multi-angle thumbnail or single thumbnail
-            thumb_path = CACHE_DIR / f"{target_model_id}_0.png"
-            if not thumb_path.exists():
-                thumb_path = CACHE_DIR / f"{target_model_id}.png"
-            if thumb_path.exists():
-                vec = compute_image_embedding(thumb_path)
-                if vec is not None:
+        if target_model_id in _EMBEDDINGS_STORE:
+            target_vec = _EMBEDDINGS_STORE[target_model_id]
+
+    if target_vec is None:
+        thumb_path = CACHE_DIR / f"{target_model_id}_0.png"
+        if not thumb_path.exists():
+            thumb_path = CACHE_DIR / f"{target_model_id}.png"
+        if thumb_path.exists():
+            vec = compute_image_embedding(thumb_path)
+            if vec is not None:
+                with _embeddings_lock:
                     _EMBEDDINGS_STORE[target_model_id] = vec
-                    save_embeddings_to_disk()
+                save_embeddings_to_disk()
+                target_vec = vec
 
-        if target_model_id not in _EMBEDDINGS_STORE:
-            return {"query": "", "total_evaluated": 0, "matches": []}
+    if target_vec is None:
+        return {"query": "", "total_evaluated": 0, "matches": []}
 
-        target_vec = _EMBEDDINGS_STORE[target_model_id]
+    if cancel_event and cancel_event.is_set():
+        return {"query": "", "total_evaluated": 0, "matches": []}
 
     # Determine search query keywords
     search_query = (custom_query.strip() if custom_query and custom_query.strip() else extract_keywords_from_model(target_model))
@@ -266,16 +279,18 @@ def get_similar_online_models(target_model_id: str, custom_query: str = None, li
         print(f"[AI Vision] Error fetching online candidates: {e}")
         candidate_models = []
 
-    if not candidate_models:
+    if not candidate_models or (cancel_event and cancel_event.is_set()):
         return {"query": search_query, "total_evaluated": 0, "matches": []}
 
     # Step 2: Concurrently fetch thumbnails & compute visual embeddings
     def process_candidate(cand):
+        if cancel_event and cancel_event.is_set():
+            return None
         thumb_url = cand.get("thumbnail")
         if not thumb_url:
             return None
         cand_vec = compute_image_embedding_from_url(thumb_url, timeout=4)
-        if cand_vec is None:
+        if cand_vec is None or (cancel_event and cancel_event.is_set()):
             return None
         
         score = float(np.dot(target_vec, cand_vec))
@@ -294,12 +309,19 @@ def get_similar_online_models(target_model_id: str, custom_query: str = None, li
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         futures = [executor.submit(process_candidate, m) for m in candidate_models]
         for f in concurrent.futures.as_completed(futures):
+            if cancel_event and cancel_event.is_set():
+                for p in futures:
+                    p.cancel()
+                break
             try:
                 res = f.result()
                 if res is not None:
                     matches.append(res)
             except Exception:
                 pass
+
+    if cancel_event and cancel_event.is_set():
+        return {"query": search_query, "total_evaluated": len(candidate_models), "matches": []}
 
     # Sort descending by visual similarity score
     matches.sort(key=lambda x: x.get("similarity_score", 0), reverse=True)
@@ -326,21 +348,28 @@ def get_similar_models(target_model_id: str, limit: int = 16, min_similarity: fl
     """
     ensure_model_session()
     
+    target_vec = None
     with _embeddings_lock:
-        if target_model_id not in _EMBEDDINGS_STORE:
-            # Try to compute it on the fly if thumbnail exists
+        if target_model_id in _EMBEDDINGS_STORE:
+            target_vec = _EMBEDDINGS_STORE[target_model_id]
+
+    if target_vec is None:
+        # Try to compute it on the fly outside the lock
+        thumb_path = CACHE_DIR / f"{target_model_id}_0.png"
+        if not thumb_path.exists():
             thumb_path = CACHE_DIR / f"{target_model_id}.png"
-            if thumb_path.exists():
-                vec = compute_image_embedding(thumb_path)
-                if vec is not None:
+        if thumb_path.exists():
+            vec = compute_image_embedding(thumb_path)
+            if vec is not None:
+                with _embeddings_lock:
                     _EMBEDDINGS_STORE[target_model_id] = vec
-                    save_embeddings_to_disk()
+                save_embeddings_to_disk()
+                target_vec = vec
 
-        if target_model_id not in _EMBEDDINGS_STORE:
-            return []
+    if target_vec is None:
+        return []
 
-        target_vec = _EMBEDDINGS_STORE[target_model_id]
-        
+    with _embeddings_lock:
         # Build candidate matrix
         model_ids = [mid for mid in _EMBEDDINGS_STORE.keys() if mid != target_model_id]
         if not model_ids:

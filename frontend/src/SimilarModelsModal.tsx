@@ -72,46 +72,72 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   const onlineFetchedRef = useRef<string | null>(null);
+  const localAbortControllerRef = useRef<AbortController | null>(null);
+  const onlineAbortControllerRef = useRef<AbortController | null>(null);
 
-  // Fetch Local Similar Models
+  // Component unmount cleanup: abort all active search requests when modal is closed
   useEffect(() => {
-    let isMounted = true;
+    return () => {
+      if (localAbortControllerRef.current) {
+        localAbortControllerRef.current.abort();
+      }
+      if (onlineAbortControllerRef.current) {
+        onlineAbortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Fetch Local Similar Models with AbortController
+  useEffect(() => {
+    if (localAbortControllerRef.current) {
+      localAbortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    localAbortControllerRef.current = controller;
+
     setLoadingLocal(true);
     setErrorLocal(null);
 
-    fetch(`${API_BASE}/api/models/${sourceModel.id}/similar?limit=24&min_score=0.35`)
+    fetch(`${API_BASE}/api/models/${sourceModel.id}/similar?limit=24&min_score=0.35`, {
+      signal: controller.signal
+    })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then(data => {
-        if (isMounted) {
-          setSimilarModels(Array.isArray(data) ? data : []);
-          setLoadingLocal(false);
-        }
+        setSimilarModels(Array.isArray(data) ? data : []);
+        setLoadingLocal(false);
       })
       .catch(err => {
-        if (isMounted) {
-          console.error('Error fetching local similar models:', err);
-          setErrorLocal(t('noSimilarFound'));
-          setLoadingLocal(false);
+        if (err.name === 'AbortError' || controller.signal.aborted) {
+          return; // Silently ignore cancelled requests
         }
+        console.error('Error fetching local similar models:', err);
+        setErrorLocal(t('noSimilarFound'));
+        setLoadingLocal(false);
       });
 
     return () => {
-      isMounted = false;
+      controller.abort();
     };
   }, [sourceModel.id, t]);
 
-  // Fetch Online Similar Models
+  // Fetch Online Similar Models with AbortController
   const fetchOnlineSimilar = useCallback((queryOverride?: string) => {
+    if (onlineAbortControllerRef.current) {
+      onlineAbortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    onlineAbortControllerRef.current = controller;
+
     setLoadingOnline(true);
     setErrorOnline(null);
 
     const qParam = queryOverride !== undefined ? encodeURIComponent(queryOverride) : '';
     const url = `${API_BASE}/api/models/${sourceModel.id}/similar-online?q=${qParam}&limit=24&min_score=0.20`;
 
-    fetch(url)
+    fetch(url, { signal: controller.signal })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -127,6 +153,9 @@ export const SimilarModelsModal: React.FC<SimilarModelsModalProps> = ({
         setHasLoadedOnline(true);
       })
       .catch(err => {
+        if (err.name === 'AbortError' || controller.signal.aborted) {
+          return; // Silently ignore cancelled requests
+        }
         console.error('Error fetching online similar models:', err);
         setErrorOnline(t('noSimilarOnlineFound'));
         setLoadingOnline(false);
