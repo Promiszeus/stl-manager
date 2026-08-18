@@ -1087,7 +1087,7 @@ function App() {
             <button
               className="mobile-close-btn"
               onClick={() => setMobileMenuOpen(false)}
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', width: '32px', height: '32px', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}
             >
               <X size={18} />
             </button>
@@ -1284,12 +1284,25 @@ function App() {
 
       <div className="main-content" style={{ display: activeNav === 'library' ? 'flex' : 'none' }}>
         {/* Controls Bar: Sort, View Mode, Selection Bar */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '12px',
+          marginBottom: '20px',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'rgba(20, 27, 45, 0.6)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '14px',
+          padding: '12px 16px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
+        }}>
           {/* Left / Selection Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {selectedIds.length > 0 ? (
               <div className="batch-action-bar">
-                <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.15)', padding: '3px 8px', borderRadius: '6px' }}>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.15)', padding: '4px 10px', borderRadius: '8px', border: '1px solid rgba(0, 210, 255, 0.3)' }}>
                   {selectedIds.length} {t('modelSelected')}
                 </span>
                 <button className="batch-pill-btn default" onClick={handleSelectAll}>
@@ -1306,8 +1319,13 @@ function App() {
                 </button>
               </div>
             ) : (
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                {sortedModels.length} {t('modelsDisplayed')}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '15px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Folder size={18} color="var(--accent-cyan)" /> {t('library')}
+                </span>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--accent-cyan)', background: 'rgba(0, 210, 255, 0.12)', border: '1px solid rgba(0, 210, 255, 0.25)', padding: '2px 8px', borderRadius: '10px' }}>
+                  {sortedModels.length} {t('modelsDisplayed')}
+                </span>
               </div>
             )}
           </div>
@@ -1322,43 +1340,70 @@ function App() {
                 gap: '6px',
                 background: 'rgba(0, 210, 255, 0.12)',
                 border: '1px solid rgba(0, 210, 255, 0.3)',
-                borderRadius: '8px',
-                padding: '6px 12px',
+                borderRadius: '10px',
+                padding: '7px 12px',
                 color: 'var(--accent-cyan)',
                 fontSize: '12px',
                 fontWeight: '700',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                transition: 'all 0.15s'
               }}
               title="Suche öffnen (Strg + K)"
             >
               <Search size={14} /> {t('searchButton')}
-              <kbd style={{ fontSize: '10px', background: 'rgba(0, 210, 255, 0.2)', padding: '1px 4px', borderRadius: '4px', marginLeft: '2px' }}>Ctrl+K</kbd>
+              <kbd style={{ fontSize: '10px', background: 'rgba(0, 210, 255, 0.2)', padding: '1px 5px', borderRadius: '4px', marginLeft: '2px', fontWeight: '800' }}>Ctrl+K</kbd>
             </button>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <ArrowUpDown size={14} color="var(--text-muted)" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(13, 17, 30, 0.7)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '10px', padding: '2px 8px' }}>
+              <ArrowUpDown size={13} color="var(--accent-cyan)" />
               <select 
                 value={sortBy} 
                 onChange={e => setSortBy(e.target.value)}
-                style={{ background: 'var(--bg-card)', color: 'var(--text-color)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
+                style={{ background: 'transparent', color: '#fff', border: 'none', padding: '6px 4px', fontSize: '12px', fontWeight: '600', outline: 'none', cursor: 'pointer' }}
               >
-                <option value="mod_desc">{t('sortModDesc')}</option>
-                <option value="mod_asc">{t('sortModAsc')}</option>
-                <option value="date_desc">{t('sortDateDesc')}</option>
-                <option value="date_asc">{t('sortDateAsc')}</option>
-                <option value="name_asc">{t('sortName')}</option>
-                <option value="name_desc">{t('sortNameDesc')}</option>
-                <option value="size_desc">{t('sortSizeDesc')}</option>
-                <option value="size_asc">{t('sortSizeAsc')}</option>
+                <option value="mod_desc" style={{ background: '#111627' }}>{t('sortModDesc')}</option>
+                <option value="mod_asc" style={{ background: '#111627' }}>{t('sortModAsc')}</option>
+                <option value="date_desc" style={{ background: '#111627' }}>{t('sortDateDesc')}</option>
+                <option value="date_asc" style={{ background: '#111627' }}>{t('sortDateAsc')}</option>
+                <option value="name_asc" style={{ background: '#111627' }}>{t('sortName')}</option>
+                <option value="name_desc" style={{ background: '#111627' }}>{t('sortNameDesc')}</option>
+                <option value="size_desc" style={{ background: '#111627' }}>{t('sortSizeDesc')}</option>
+                <option value="size_asc" style={{ background: '#111627' }}>{t('sortSizeAsc')}</option>
               </select>
             </div>
 
-            <button className="icon-button" style={{ background: viewMode === 'grid' ? 'var(--accent-blue)' : 'var(--bg-dark)' }} onClick={() => setViewMode('grid')} title="Grid View">
-               <LayoutGrid size={18} />
-            </button>
-            <button className="icon-button" style={{ background: viewMode === 'list' ? 'var(--accent-blue)' : 'var(--bg-dark)' }} onClick={() => setViewMode('list')} title="List View">
-               <ListIcon size={18} />
-            </button>
+            <div style={{ display: 'flex', background: 'rgba(13, 17, 30, 0.7)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <button
+                className="icon-button"
+                style={{
+                  background: viewMode === 'grid' ? 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))' : 'transparent',
+                  color: viewMode === 'grid' ? '#fff' : 'var(--text-muted)',
+                  border: 'none',
+                  borderRadius: '7px',
+                  width: '30px',
+                  height: '30px'
+                }}
+                onClick={() => setViewMode('grid')}
+                title="Grid View"
+              >
+                <LayoutGrid size={16} />
+              </button>
+              <button
+                className="icon-button"
+                style={{
+                  background: viewMode === 'list' ? 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))' : 'transparent',
+                  color: viewMode === 'list' ? '#fff' : 'var(--text-muted)',
+                  border: 'none',
+                  borderRadius: '7px',
+                  width: '30px',
+                  height: '30px'
+                }}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <ListIcon size={16} />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1418,107 +1463,137 @@ function App() {
              </div>
 
              <div className="modal-body">
-               {/* TAB 1: Folders & Slicers */}
-               {settingsTab === 'folders' && (
-                 <>
-                   <div className="form-group">
-                     <label className="form-label">{t('monitoredFolders')}:</label>
-                     <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                       <input 
-                         type="text" 
-                         className="input-field" 
-                         placeholder="z.B. D:\STLs" 
-                         value={directoryInput}
-                         onChange={e => setDirectoryInput(e.target.value)}
-                         style={{ flex: 1, minWidth: '160px' }}
-                       />
-                       <button className="slice-btn" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', whiteSpace: 'nowrap' }} onClick={handleBrowseDirectory} title="Ordner auf Festplatte auswählen">
-                         📁 {t('addFolder')}
-                       </button>
-                       <button className="slice-btn" onClick={handleAddDirectory}>Add Folder</button>
-                     </div>
-                     <div style={{ maxHeight: '140px', overflowY: 'auto' }}>
-                       {settings.directories.map((d: string, i: number) => (
-                         <div className="list-item" key={i}>
-                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '12px' }}>{d}</span>
-                           <button className="icon-button" onClick={() => handleRemoveDirectory(d)}><Trash2 size={14} color="#ff4d4d" /></button>
-                         </div>
-                       ))}
-                       {settings.directories.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No directories monitored.</div>}
-                     </div>
-                   </div>
-
-                   <div className="form-group" style={{ marginTop: '8px' }}>
-                     <label className="form-label">{t('slicers')}:</label>
-                     <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                       <input 
-                         type="text" 
-                         className="input-field" 
-                         value={slicerNameInput}
-                         onChange={e => setSlicerNameInput(e.target.value)}
-                         placeholder="Name (z.B. PrusaSlicer / Bambu Studio)"
-                         style={{ flex: 1, minWidth: '120px' }}
-                       />
-                       <div style={{ flex: 2, display: 'flex', gap: '4px', minWidth: '180px' }}>
-                         <input 
-                           type="text" 
-                           className="input-field" 
-                           value={slicerPathInput}
-                           onChange={e => setSlicerPathInput(e.target.value)}
-                           placeholder="Pfad (z.B. C:\...)"
-                           style={{ flex: 1 }}
-                         />
-                         <button className="slice-btn" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', whiteSpace: 'nowrap' }} onClick={handleBrowseSlicer} title="Datei auf Festplatte auswählen">
-                           📁 Auswählen
-                         </button>
-                       </div>
-                       <button className="slice-btn" onClick={handleAddSlicer}>Add</button>
-                     </div>
-                     <div style={{ maxHeight: '140px', overflowY: 'auto' }}>
-                       {settings.slicers?.map((s: any, i: number) => (
-                         <div className="list-item" key={i}>
-                           <span style={{ flex: 1, fontWeight: 'bold', fontSize: '12px' }}>{s.name}</span>
-                           <span style={{ flex: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '11px', color: 'var(--text-muted)' }}>{s.path}</span>
-                           <button className="icon-button" onClick={() => handleRemoveSlicer(s.name)}><Trash2 size={14} color="#ff4d4d" /></button>
-                         </div>
-                       ))}
-                       {(!settings.slicers || settings.slicers.length === 0) && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No slicers configured.</div>}
-                     </div>
-                   </div>
-                 </>
-               )}
-
-               {/* TAB 2: Tags & Colors */}
-               {settingsTab === 'tags' && (
-                 <div className="form-group">
-                    <label className="form-label">{t('manageTags')}:</label>
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                      <input 
-                        type="text" 
-                        className="input-field" 
-                        placeholder={t('newTagName')} 
-                        value={newTagInput}
-                        onChange={e => setNewTagInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleAddSettingsTag(); }}
-                        style={{ flex: 1 }}
-                      />
-                      <button className="slice-btn" onClick={handleAddSettingsTag}>Add Tag</button>
-                    </div>
-                    <div style={{ maxHeight: '280px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {allTags.map(t => {
-                        const c = tagColor(t, settings?.tag_colors);
-                        return (
-                          <div key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--bg-input)', padding: '4px 10px', borderRadius: '8px', border: `1px solid ${c}44` }}>
-                            <span style={{ fontSize: '12px', color: c, fontWeight: 'bold' }}>{t}</span>
-                            <TagColorPicker tag={t} initialColor={c} onSave={handleUpdateTagColor} size={18} />
-                            <button className="icon-button" style={{ marginLeft: '4px', padding: '2px' }} onClick={() => handleRemoveSettingsTag(t)} title="Tag komplett löschen"><Trash2 size={12} color="#ff4d4d" /></button>
+                {/* TAB 1: Folders & Slicers */}
+                {settingsTab === 'folders' && (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">{t('monitoredFolders')}:</label>
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                        <input 
+                          type="text" 
+                          className="input-field" 
+                          placeholder="z.B. D:\STLs" 
+                          value={directoryInput}
+                          onChange={e => setDirectoryInput(e.target.value)}
+                          style={{ flex: 1, minWidth: '180px' }}
+                        />
+                        <button
+                          type="button"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 14px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.12)', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                          onClick={handleBrowseDirectory}
+                          title="Ordner auf Festplatte auswählen"
+                        >
+                          <FolderOpen size={14} color="var(--accent-cyan)" /> {t('addFolder')}
+                        </button>
+                        <button
+                          type="button"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', border: 'none', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0, 210, 255, 0.3)', whiteSpace: 'nowrap' }}
+                          onClick={handleAddDirectory}
+                        >
+                          + {lang === 'de' ? 'Hinzufügen' : 'Add'}
+                        </button>
+                      </div>
+                      <div style={{ maxHeight: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {settings.directories.map((d: string, i: number) => (
+                          <div className="list-item" key={i} style={{ margin: 0, padding: '8px 12px', background: 'rgba(15, 20, 35, 0.7)' }}>
+                            <Folder size={14} color="#8e2de2" style={{ flexShrink: 0 }} />
+                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '12px', color: '#fff' }}>{d}</span>
+                            <button className="icon-button" onClick={() => handleRemoveDirectory(d)} title="Ordner entfernen"><Trash2 size={13} color="#ff4d4d" /></button>
                           </div>
-                        );
-                      })}
-                      {allTags.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No tags available.</div>}
+                        ))}
+                        {settings.directories.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)', padding: '12px 0' }}>{lang === 'de' ? 'Noch keine Ordner überwacht.' : 'No directories monitored.'}</div>}
+                      </div>
                     </div>
-                 </div>
-               )}
+
+                    <div className="form-group" style={{ marginTop: '16px' }}>
+                      <label className="form-label">{t('slicers')}:</label>
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                        <input 
+                          type="text" 
+                          className="input-field" 
+                          value={slicerNameInput}
+                          onChange={e => setSlicerNameInput(e.target.value)}
+                          placeholder="Name (z.B. Bambu Studio / OrcaSlicer)"
+                          style={{ flex: 1, minWidth: '140px' }}
+                        />
+                        <div style={{ flex: 2, display: 'flex', gap: '6px', minWidth: '200px' }}>
+                          <input 
+                            type="text" 
+                            className="input-field" 
+                            value={slicerPathInput}
+                            onChange={e => setSlicerPathInput(e.target.value)}
+                            placeholder="Pfad (z.B. C:\Program Files\...)"
+                            style={{ flex: 1 }}
+                          />
+                          <button
+                            type="button"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 12px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.12)', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                            onClick={handleBrowseSlicer}
+                            title="Datei auf Festplatte auswählen"
+                          >
+                            <FolderOpen size={14} color="var(--accent-cyan)" /> {lang === 'de' ? 'Auswählen' : 'Browse'}
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', border: 'none', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0, 210, 255, 0.3)', whiteSpace: 'nowrap' }}
+                          onClick={handleAddSlicer}
+                        >
+                          + {lang === 'de' ? 'Hinzufügen' : 'Add'}
+                        </button>
+                      </div>
+                      <div style={{ maxHeight: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {settings.slicers?.map((s: any, i: number) => (
+                          <div className="list-item" key={i} style={{ margin: 0, padding: '8px 12px', background: 'rgba(15, 20, 35, 0.7)' }}>
+                            <Printer size={14} color="var(--accent-blue)" style={{ flexShrink: 0 }} />
+                            <span style={{ fontWeight: '700', fontSize: '12px', color: '#fff', width: '130px', flexShrink: 0 }}>{s.name}</span>
+                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '11px', color: 'var(--text-muted)' }}>{s.path}</span>
+                            <button className="icon-button" onClick={() => handleRemoveSlicer(s.name)} title="Slicer entfernen"><Trash2 size={13} color="#ff4d4d" /></button>
+                          </div>
+                        ))}
+                        {(!settings.slicers || settings.slicers.length === 0) && <div style={{ fontSize: '12px', color: 'var(--text-muted)', padding: '12px 0' }}>{lang === 'de' ? 'Noch keine Slicer hinterlegt.' : 'No slicers configured.'}</div>}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* TAB 2: Tags & Colors */}
+                {settingsTab === 'tags' && (
+                  <div className="form-group">
+                     <label className="form-label">{t('manageTags')}:</label>
+                     <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+                       <input 
+                         type="text" 
+                         className="input-field" 
+                         placeholder={t('newTagName')} 
+                         value={newTagInput}
+                         onChange={e => setNewTagInput(e.target.value)}
+                         onKeyDown={e => { if (e.key === 'Enter') handleAddSettingsTag(); }}
+                         style={{ flex: 1 }}
+                       />
+                       <button
+                         type="button"
+                         style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-blue))', border: 'none', color: '#fff', fontSize: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0, 210, 255, 0.3)', whiteSpace: 'nowrap' }}
+                         onClick={handleAddSettingsTag}
+                       >
+                         + {lang === 'de' ? 'Tag erstellen' : 'Add Tag'}
+                       </button>
+                     </div>
+                     <div style={{ maxHeight: '280px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                       {allTags.map(t => {
+                         const c = tagColor(t, settings?.tag_colors);
+                         return (
+                           <div key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 20, 35, 0.8)', padding: '5px 10px', borderRadius: '10px', border: `1px solid ${c}55` }}>
+                             <span style={{ fontSize: '12px', color: c, fontWeight: '700' }}>{t}</span>
+                             <TagColorPicker tag={t} initialColor={c} onSave={handleUpdateTagColor} size={18} />
+                             <button className="icon-button" style={{ marginLeft: '4px', width: '24px', height: '24px' }} onClick={() => handleRemoveSettingsTag(t)} title="Tag komplett löschen"><Trash2 size={11} color="#ff4d4d" /></button>
+                           </div>
+                         );
+                       })}
+                       {allTags.length === 0 && <div style={{ fontSize: '12px', color: 'var(--text-muted)', padding: '12px 0' }}>{lang === 'de' ? 'Keine Tags vorhanden.' : 'No tags available.'}</div>}
+                     </div>
+                  </div>
+                )}
 
                {/* TAB 3: Platform Accounts (DPAPI Encrypted) */}
                {settingsTab === 'accounts' && (
