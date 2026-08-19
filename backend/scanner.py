@@ -454,14 +454,20 @@ class STLHandler(FileSystemEventHandler):
             except Exception:
                 pass
 
-        mtime = path_obj.stat().st_mtime
+        try:
+            mtime = path_obj.stat().st_mtime
+            file_size_kb = round(path_obj.stat().st_size / 1024, 1)
+        except Exception:
+            mtime = time.time()
+            file_size_kb = 0.0
+
         if file_id not in models or existing_entry.get("thumbnails") != thumbnails_list or existing_entry.get("source_url") != new_source_url or existing_entry.get("rel_path") != rel_path or existing_entry.get("modified_at") != mtime:
             model_entry = {
                 "id": file_id,
                 "name": path_obj.name,
                 "path": str(path_obj),
                 "rel_path": rel_path,
-                "size_kb": round(path_obj.stat().st_size / 1024, 1),
+                "size_kb": file_size_kb,
                 "thumbnails": thumbnails_list,
                 "content_hash": get_content_hash(str(path_obj)),
                 "status": existing_entry.get("status", "Not Printed"),
@@ -515,7 +521,7 @@ def scan_all_directories():
     settings = load_settings()
     handler = STLHandler()
     
-    # 0. Prune models no longer supported (non-.stl/.3mf) or deleted from disk
+    # 0. Prune models with unsupported extensions (non-.stl/.3mf)
     try:
         models = load_models()
         changed = False
@@ -528,11 +534,6 @@ def scan_all_directories():
             lower_path = fpath.strip().lower()
             if not any(lower_path.endswith(ext) for ext in SUPPORTED_3D_EXTENSIONS):
                 print(f"  [Prune] Removing unsupported format from DB: {model.get('name')}")
-                del models[mid]
-                changed = True
-                continue
-            if not os.path.exists(fpath):
-                print(f"  [Prune] Removing missing file from DB: {model.get('name')}")
                 del models[mid]
                 changed = True
                 continue
@@ -562,23 +563,20 @@ def scan_all_directories():
     except Exception as e:
         print(f"Error repairing thumbnails: {e}")
 
-    # 2. Scan all monitored directories on disk (using os.walk with error tolerance)
+    # 2. Scan all monitored directories on disk (using os.walk with robust path normalization)
     for directory in settings.get("directories", []):
         if not os.path.exists(directory) or not os.path.isdir(directory):
+            print(f"Directory not accessible or not found: {directory}")
             continue
         print(f"Scanning directory: {directory}")
         try:
             visited_dirs = set()
             for root, dirs, files in os.walk(directory, topdown=True, followlinks=True):
-                # Avoid infinite recursion on symlinked directories
-                try:
-                    real_root = os.path.realpath(root)
-                    if real_root in visited_dirs:
-                        dirs[:] = []
-                        continue
-                    visited_dirs.add(real_root)
-                except Exception:
-                    pass
+                norm_root = os.path.normcase(os.path.abspath(root))
+                if norm_root in visited_dirs:
+                    dirs[:] = []
+                    continue
+                visited_dirs.add(norm_root)
 
                 # Skip hidden, system, and recycle bin directories
                 dirs[:] = [d for d in dirs if not d.startswith('.') and not d.startswith('$') and d.lower() != 'system volume information']

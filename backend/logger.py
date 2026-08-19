@@ -33,7 +33,18 @@ class RotatingLogWriter:
         self.backup_count = backup_count
         self.lock = threading.RLock()
         self._file = None
+        self._last_err_time = 0
         self._ensure_file_open()
+
+    def _log_internal_error(self, prefix: str, err: Exception):
+        now = time.time()
+        if now - self._last_err_time > 30:
+            self._last_err_time = now
+            if sys.__stderr__:
+                try:
+                    sys.__stderr__.write(f"[{prefix}] {err}\n")
+                except Exception:
+                    pass
 
     def _ensure_file_open(self):
         try:
@@ -41,17 +52,22 @@ class RotatingLogWriter:
             if self._file is None or self._file.closed:
                 self._file = open(self.log_file, "a", encoding="utf-8", errors="replace")
         except Exception as e:
-            if sys.__stderr__:
-                sys.__stderr__.write(f"[Logger Error] Failed to open {self.log_file}: {e}\n")
+            self._file = None
+            self._log_internal_error("Logger Warning", f"Could not open {self.log_file}: {e}")
 
     def _rotate_if_needed(self):
         try:
             if self.log_file.exists() and self.log_file.stat().st_size >= self.max_bytes:
                 # Close current file handle before renaming (crucial on Windows)
                 if self._file and not self._file.closed:
-                    self._file.flush()
-                    self._file.close()
+                    try:
+                        self._file.flush()
+                        self._file.close()
+                    except Exception:
+                        pass
                     self._file = None
+
+                time.sleep(0.02)
 
                 # Shift existing backups: .4 -> .5, .3 -> .4, etc.
                 for i in range(self.backup_count - 1, 0, -1):
@@ -83,26 +99,25 @@ class RotatingLogWriter:
 
                 self._ensure_file_open()
         except Exception as e:
-            if sys.__stderr__:
-                sys.__stderr__.write(f"[Logger Rotation Error] {e}\n")
+            self._log_internal_error("Logger Rotation Warning", e)
             self._ensure_file_open()
 
     def write(self, text: str):
         with self.lock:
-            # Strip ANSI color codes for clean plain-text log files
-            clean_text = ANSI_REGEX.sub('', text)
-            if not clean_text:
-                return
+            try:
+                # Strip ANSI color codes for clean plain-text log files
+                clean_text = ANSI_REGEX.sub('', text)
+                if not clean_text:
+                    return
 
-            self._rotate_if_needed()
-            self._ensure_file_open()
+                self._rotate_if_needed()
+                self._ensure_file_open()
 
-            if self._file and not self._file.closed:
-                try:
+                if self._file and not self._file.closed:
                     self._file.write(clean_text)
                     self._file.flush()
-                except Exception:
-                    pass
+            except Exception:
+                pass
 
     def flush(self):
         with self.lock:
@@ -122,12 +137,20 @@ class RotatingLogWriter:
                     pass
                 self._file = None
 
+            time.sleep(0.05)
+
             try:
                 with open(self.log_file, "w", encoding="utf-8", errors="replace") as f:
                     f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Log file cleared by user.\n")
+            except PermissionError:
+                # Fallback if Windows file lock is temporarily active
+                try:
+                    with open(self.log_file, "a", encoding="utf-8", errors="replace") as f:
+                        f.write(f"\n--- [{time.strftime('%Y-%m-%d %H:%M:%S')}] Log file reset by user ---\n")
+                except Exception:
+                    pass
             except Exception as e:
-                if sys.__stderr__:
-                    sys.__stderr__.write(f"[Logger Clear Error] {e}\n")
+                self._log_internal_error("Logger Clear Warning", e)
             finally:
                 self._ensure_file_open()
 
