@@ -3,17 +3,26 @@ import os
 import threading
 from pathlib import Path
 
-SETTINGS_FILE = Path("settings.json")
-MODELS_FILE = Path("models.json")
+DB_DIR = Path(__file__).resolve().parent
+SETTINGS_FILE = DB_DIR / "settings.json"
+MODELS_FILE = DB_DIR / "models.json"
+
+ROOT_DIR = DB_DIR.parent
+LEGACY_SETTINGS = ROOT_DIR / "settings.json"
+LEGACY_MODELS = ROOT_DIR / "models.json"
 
 settings_lock = threading.Lock()
 models_lock = threading.Lock()
 
 def load_settings():
-    if not SETTINGS_FILE.exists() or SETTINGS_FILE.stat().st_size == 0:
-        return {"directories": [], "slicers": []}
+    target = SETTINGS_FILE
+    if (not target.exists() or target.stat().st_size == 0) and LEGACY_SETTINGS.exists() and LEGACY_SETTINGS.stat().st_size > 0:
+        target = LEGACY_SETTINGS
+
+    if not target.exists() or target.stat().st_size == 0:
+        return {"directories": [], "slicers": [], "tag_colors": {}, "predefined_tags": [], "platform_accounts": {}}
     try:
-        with open(SETTINGS_FILE, "r") as f:
+        with open(target, "r", encoding="utf-8") as f:
             data = json.load(f)
             # Migration from old format
             if "slicer_path" in data and "slicers" not in data:
@@ -27,25 +36,31 @@ def load_settings():
                 data["tag_colors"] = {}
             if "predefined_tags" not in data:
                 data["predefined_tags"] = []
+            if "platform_accounts" not in data:
+                data["platform_accounts"] = {}
             return data
-    except json.JSONDecodeError:
-        return {"directories": [], "slicers": [], "tag_colors": {}, "predefined_tags": []}
+    except (json.JSONDecodeError, Exception):
+        return {"directories": [], "slicers": [], "tag_colors": {}, "predefined_tags": [], "platform_accounts": {}}
 
 def save_settings(data):
     with settings_lock:
-        with open(SETTINGS_FILE, "w") as f:
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
 
 def load_models():
-    if not MODELS_FILE.exists() or MODELS_FILE.stat().st_size == 0:
+    target = MODELS_FILE
+    if (not target.exists() or target.stat().st_size == 0) and LEGACY_MODELS.exists() and LEGACY_MODELS.stat().st_size > 0:
+        target = LEGACY_MODELS
+
+    if not target.exists() or target.stat().st_size == 0:
         return {}
     try:
-        with open(MODELS_FILE, "r") as f:
+        with open(target, "r", encoding="utf-8") as f:
             return json.load(f)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, Exception):
         return {}
 
 def save_models(data):
     with models_lock:
-        with open(MODELS_FILE, "w") as f:
+        with open(MODELS_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
