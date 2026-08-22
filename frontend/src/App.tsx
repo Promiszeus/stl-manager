@@ -1281,7 +1281,6 @@ function App() {
               onClick={() => {
                 setActiveNav('online');
                 setMobileMenuOpen(false);
-                window.dispatchEvent(new CustomEvent('stl_reset_online_search'));
               }}
               style={{
                 padding: '12px 16px',
@@ -2252,7 +2251,6 @@ function App() {
           onClick={() => {
             setActiveNav('online');
             setMobileMenuOpen(false);
-            window.dispatchEvent(new CustomEvent('stl_reset_online_search'));
           }}
         >
           <Globe size={18} />

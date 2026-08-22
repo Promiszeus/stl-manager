@@ -54,13 +54,17 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      setLocalInput(searchTerm);
+      if (activeNav === 'online') {
+        setLocalInput(onlineSearchContext?.searchTerm || '');
+      } else {
+        setLocalInput(searchTerm || '');
+      }
       setTimeout(() => {
         inputRef.current?.focus();
         inputRef.current?.select();
       }, 50);
     }
-  }, [isOpen, searchTerm]);
+  }, [isOpen, activeNav]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -142,7 +146,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         <div style={{ display: 'flex', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(0, 0, 0, 0.2)', padding: '6px' }}>
           <button
             type="button"
-            onClick={() => setActiveNav('library')}
+            onClick={() => {
+              setActiveNav('library');
+              setLocalInput(searchTerm || '');
+            }}
             style={{
               flex: 1,
               padding: '10px 14px',
@@ -166,7 +173,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
           <button
             type="button"
-            onClick={() => setActiveNav('online')}
+            onClick={() => {
+              setActiveNav('online');
+              setLocalInput(onlineSearchContext?.searchTerm || '');
+            }}
             style={{
               flex: 1,
               padding: '10px 14px',
