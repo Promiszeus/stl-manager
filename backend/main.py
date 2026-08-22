@@ -18,7 +18,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from database import load_settings, save_settings, load_models, save_models
+from database import (
+    load_settings,
+    save_settings,
+    load_models,
+    save_models,
+    upsert_model,
+    remove_model,
+    batch_upsert_models,
+    atomic_mutate_models
+)
 from scanner import scan_all_directories, start_watching
 from online_search import search_online_models
 
@@ -421,10 +430,12 @@ def _delete_single_model(model_id: str, models: dict):
 
 @app.delete("/api/models/{model_id}")
 def delete_model(model_id: str):
-    models = load_models()
-    if model_id in models:
-        _delete_single_model(model_id, models)
-        save_models(models)
+    def _mutate(models: dict):
+        if model_id in models:
+            _delete_single_model(model_id, models)
+            return True
+        return False
+    atomic_mutate_models(_mutate)
     return {"status": "success"}
 
 class BatchDeleteRequest(BaseModel):
@@ -432,13 +443,15 @@ class BatchDeleteRequest(BaseModel):
 
 @app.post("/api/models/batch-delete")
 def batch_delete_models(data: BatchDeleteRequest):
-    models = load_models()
     deleted_count = 0
-    for mid in data.ids:
-        if mid in models:
-            _delete_single_model(mid, models)
-            deleted_count += 1
-    save_models(models)
+    def _mutate(models: dict):
+        nonlocal deleted_count
+        for mid in data.ids:
+            if mid in models:
+                _delete_single_model(mid, models)
+                deleted_count += 1
+        return deleted_count > 0
+    atomic_mutate_models(_mutate)
     return {"status": "success", "deleted": deleted_count}
 
 class BatchStatusRequest(BaseModel):
@@ -447,13 +460,15 @@ class BatchStatusRequest(BaseModel):
 
 @app.post("/api/models/batch-status")
 def batch_status_models(data: BatchStatusRequest):
-    models = load_models()
     updated_count = 0
-    for mid in data.ids:
-        if mid in models:
-            models[mid]["status"] = data.status
-            updated_count += 1
-    save_models(models)
+    def _mutate(models: dict):
+        nonlocal updated_count
+        for mid in data.ids:
+            if mid in models:
+                models[mid]["status"] = data.status
+                updated_count += 1
+        return updated_count > 0
+    atomic_mutate_models(_mutate)
     return {"status": "success", "updated": updated_count}
 
 class StatusUpdate(BaseModel):
@@ -461,10 +476,12 @@ class StatusUpdate(BaseModel):
 
 @app.put("/api/models/{model_id}/status")
 def update_status(model_id: str, data: StatusUpdate):
-    models = load_models()
-    if model_id in models:
-        models[model_id]["status"] = data.status
-        save_models(models)
+    def _mutate(models: dict):
+        if model_id in models:
+            models[model_id]["status"] = data.status
+            return True
+        return False
+    atomic_mutate_models(_mutate)
     return {"status": "success"}
 
 class TagsUpdate(BaseModel):
@@ -472,12 +489,13 @@ class TagsUpdate(BaseModel):
 
 @app.put("/api/models/{model_id}/tags")
 def update_tags(model_id: str, data: TagsUpdate):
-    models = load_models()
-    if model_id in models:
-        # Normalize: lowercase, strip whitespace, remove empty, deduplicate
-        cleaned = list(dict.fromkeys(t.strip().lower() for t in data.tags if t.strip()))
-        models[model_id]["tags"] = cleaned
-        save_models(models)
+    cleaned = list(dict.fromkeys(t.strip().lower() for t in data.tags if t.strip()))
+    def _mutate(models: dict):
+        if model_id in models:
+            models[model_id]["tags"] = cleaned
+            return True
+        return False
+    atomic_mutate_models(_mutate)
     return {"status": "success"}
 
 @app.get("/api/tags")
@@ -527,14 +545,14 @@ def delete_tag(tag_name: str):
         settings["predefined_tags"].remove(tag)
         save_settings(settings)
     
-    models = load_models()
-    changed = False
-    for m in models.values():
-        if "tags" in m and tag in m["tags"]:
-            m["tags"].remove(tag)
-            changed = True
-    if changed:
-        save_models(models)
+    def _mutate(models: dict):
+        changed = False
+        for m in models.values():
+            if "tags" in m and tag in m["tags"]:
+                m["tags"].remove(tag)
+                changed = True
+        return changed
+    atomic_mutate_models(_mutate)
     
     return {"status": "success"}
 
@@ -543,13 +561,15 @@ class ModelUrlUpdate(BaseModel):
 
 @app.put("/api/models/{model_id}/url")
 def update_model_url(model_id: str, data: ModelUrlUpdate):
-    models = load_models()
-    if model_id in models:
-        from scanner import clean_model_source_url, apply_auto_tags
-        cleaned_url = clean_model_source_url(data.url) or data.url.strip()
-        models[model_id]["source_url"] = cleaned_url
-        apply_auto_tags(models[model_id], cleaned_url)
-        save_models(models)
+    from scanner import clean_model_source_url, apply_auto_tags
+    cleaned_url = clean_model_source_url(data.url) or data.url.strip()
+    def _mutate(models: dict):
+        if model_id in models:
+            models[model_id]["source_url"] = cleaned_url
+            apply_auto_tags(models[model_id], cleaned_url)
+            return True
+        return False
+    atomic_mutate_models(_mutate)
     return {"status": "success"}
 
 

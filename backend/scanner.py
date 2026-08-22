@@ -4,7 +4,16 @@ import json
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from pathlib import Path
-from database import load_settings, load_models, save_models
+from database import (
+    load_settings,
+    save_settings,
+    load_models,
+    save_models,
+    upsert_model,
+    remove_model,
+    batch_upsert_models,
+    atomic_mutate_models
+)
 from thumbnailer import generate_thumbnail
 import time
 import hashlib
@@ -358,55 +367,125 @@ def get_source_url(filepath: str):
             pass
     return None
 
+class FileEventQueue:
+    """Debounces rapid filesystem events so each file is processed only once after writes finish settling."""
+    def __init__(self, delay: float = 1.2):
+        self.delay = delay
+        self._pending = {}  # filepath -> (last_event_time, last_size)
+        self._lock = threading.Lock()
+        self._running = True
+        self._worker = threading.Thread(target=self._run, daemon=True, name="ScannerDebounceWorker")
+        self._worker.start()
+
+    def enqueue(self, filepath: str):
+        try:
+            p = Path(filepath)
+            size = p.stat().st_size if p.exists() else 0
+        except Exception:
+            size = 0
+        with self._lock:
+            self._pending[filepath] = (time.time(), size)
+
+    def cancel(self, filepath: str):
+        with self._lock:
+            self._pending.pop(filepath, None)
+
+    def _run(self):
+        while self._running:
+            time.sleep(0.3)
+            now = time.time()
+            to_process = []
+            with self._lock:
+                for path_str, (last_time, last_size) in list(self._pending.items()):
+                    if now - last_time >= self.delay:
+                        try:
+                            p = Path(path_str)
+                            if p.exists() and p.is_file():
+                                cur_size = p.stat().st_size
+                                if cur_size != last_size and cur_size > 0:
+                                    # Still being written by OS, update size & postpone
+                                    self._pending[path_str] = (now, cur_size)
+                                    continue
+                                if cur_size > 0:
+                                    to_process.append(path_str)
+                            del self._pending[path_str]
+                        except Exception:
+                            self._pending.pop(path_str, None)
+
+            for path_str in to_process:
+                threading.Thread(target=self._safe_process, args=(path_str,), daemon=True).start()
+
+    def _safe_process(self, filepath: str):
+        try:
+            handler = STLHandler()
+            handler.process_file(filepath)
+        except Exception as e:
+            print(f"Error processing debounced file {filepath}: {e}")
+
+_FILE_EVENT_QUEUE = None
+
+def get_event_queue() -> FileEventQueue:
+    global _FILE_EVENT_QUEUE
+    if _FILE_EVENT_QUEUE is None:
+        _FILE_EVENT_QUEUE = FileEventQueue()
+    return _FILE_EVENT_QUEUE
+
+
 class STLHandler(FileSystemEventHandler):
     def _is_3d_file(self, path: str) -> bool:
+        if not path:
+            return False
         p = path.lower()
         return any(p.endswith(ext) for ext in SUPPORTED_3D_EXTENSIONS)
 
     def on_created(self, event):
         if not event.is_directory and self._is_3d_file(event.src_path):
-            threading.Thread(target=self.delayed_process, args=(event.src_path,), daemon=True).start()
+            get_event_queue().enqueue(event.src_path)
 
     def on_modified(self, event):
         if not event.is_directory and self._is_3d_file(event.src_path):
-            threading.Thread(target=self.delayed_process, args=(event.src_path,), daemon=True).start()
+            get_event_queue().enqueue(event.src_path)
 
     def on_moved(self, event):
-        if not event.is_directory and self._is_3d_file(event.dest_path):
-            threading.Thread(target=self.delayed_process, args=(event.dest_path,), daemon=True).start()
+        if not event.is_directory:
+            if self._is_3d_file(event.src_path):
+                get_event_queue().cancel(event.src_path)
+                file_id = get_file_hash(event.src_path)
+                if remove_model(file_id):
+                    print(f"Moved/Removed old path {event.src_path} from database.")
+            if self._is_3d_file(event.dest_path):
+                get_event_queue().enqueue(event.dest_path)
 
     def on_deleted(self, event):
         if not event.is_directory and self._is_3d_file(event.src_path):
+            get_event_queue().cancel(event.src_path)
             file_id = get_file_hash(event.src_path)
-            models = load_models()
-            if file_id in models:
-                del models[file_id]
-                save_models(models)
+            if remove_model(file_id):
                 print(f"Removed {event.src_path} from database.")
 
-    def delayed_process(self, filepath):
-        # Wait 1.5 seconds to ensure file write/copy is completed
-        time.sleep(1.5)
+    def process_file(self, filepath: str):
         try:
-            p = Path(filepath)
-            if p.exists() and p.is_file() and p.stat().st_size > 0:
-                self.process_file(filepath)
+            path_obj = Path(filepath)
+            if not path_obj.exists() or not path_obj.is_file():
+                return
+            try:
+                stat_info = path_obj.stat()
+                file_size = stat_info.st_size
+                mtime = stat_info.st_mtime
+                file_size_kb = round(file_size / 1024, 1)
+            except Exception:
+                file_size = 0
+                mtime = time.time()
+                file_size_kb = 0.0
         except Exception as e:
-            print(f"Error processing {filepath}: {e}")
+            print(f"Cannot inspect file {filepath}: {e}")
+            return
 
-    def process_file(self, filepath):
-        models = load_models()
-        path_obj = Path(filepath)
         file_id = get_file_hash(filepath)
-        
         base_thumb = CACHE_DIR / file_id
         existing = list(CACHE_DIR.glob(f"{file_id}_*.png"))
-        
+
         if not existing:
-            # Also retry if already in DB but has no thumbnail (previous render failure)
-            already_in_db_no_thumb = file_id in models and not models[file_id].get("thumbnails")
-            file_size = path_obj.stat().st_size if path_obj.exists() else 0
-            
             if file_size < 100:
                 print(f"  Skipping {path_obj.name} - file too small ({file_size} bytes), likely empty")
             else:
@@ -420,10 +499,10 @@ class STLHandler(FileSystemEventHandler):
                             print(f"  Thumbnail failed for {path_obj.name} - will show without image")
                     except Exception as e:
                         print(f"  Thumbnail error for {path_obj.name}: {e}")
-        
+
         existing.sort(key=lambda p: int(p.stem.split('_')[-1]) if '_' in p.stem else 0)
         thumbnails_list = [f"/cache/{p.name}" for p in existing]
-        
+
         # Trigger AI vision embedding in background
         if existing:
             try:
@@ -432,10 +511,6 @@ class STLHandler(FileSystemEventHandler):
             except Exception:
                 pass
 
-        # Always save to DB - even without a thumbnail the model should appear
-        existing_entry = models.get(file_id, {})
-        new_source_url = get_source_url(filepath) or existing_entry.get("source_url")
-        
         # Determine rel_path
         settings = load_settings()
         directories = settings.get("directories", [])
@@ -454,65 +529,75 @@ class STLHandler(FileSystemEventHandler):
             except Exception:
                 pass
 
-        try:
-            mtime = path_obj.stat().st_mtime
-            file_size_kb = round(path_obj.stat().st_size / 1024, 1)
-        except Exception:
-            mtime = time.time()
-            file_size_kb = 0.0
+        new_discovered_url = get_source_url(filepath)
 
-        if file_id not in models or existing_entry.get("thumbnails") != thumbnails_list or existing_entry.get("source_url") != new_source_url or existing_entry.get("rel_path") != rel_path or existing_entry.get("modified_at") != mtime:
-            model_entry = {
-                "id": file_id,
-                "name": path_obj.name,
-                "path": str(path_obj),
-                "rel_path": rel_path,
-                "size_kb": file_size_kb,
-                "thumbnails": thumbnails_list,
-                "content_hash": get_content_hash(str(path_obj)),
-                "status": existing_entry.get("status", "Not Printed"),
-                "tags": existing_entry.get("tags", []),
-                "source_url": new_source_url,
-                "added_at": existing_entry.get("added_at", time.time()),
-                "modified_at": mtime
-            }
-            # Auto-tag if new url is found
-            if new_source_url and new_source_url != existing_entry.get("source_url"):
-                apply_auto_tags(model_entry, new_source_url)
-            
-            models[file_id] = model_entry
-            save_models(models)
-            print(f"  Saved: {path_obj.name}")
+        # Atomic upsert into models.json
+        def _mutate(models: dict):
+            existing_entry = models.get(file_id, {})
+            source_url = new_discovered_url or existing_entry.get("source_url")
+
+            if (file_id not in models or 
+                existing_entry.get("thumbnails") != thumbnails_list or 
+                existing_entry.get("source_url") != source_url or 
+                existing_entry.get("rel_path") != rel_path or 
+                existing_entry.get("modified_at") != mtime):
+
+                model_entry = {
+                    "id": file_id,
+                    "name": path_obj.name,
+                    "path": str(path_obj),
+                    "rel_path": rel_path,
+                    "size_kb": file_size_kb,
+                    "thumbnails": thumbnails_list,
+                    "content_hash": get_content_hash(str(path_obj)),
+                    "status": existing_entry.get("status", "Not Printed"),
+                    "tags": existing_entry.get("tags", []),
+                    "source_url": source_url,
+                    "added_at": existing_entry.get("added_at", time.time()),
+                    "modified_at": mtime
+                }
+                if source_url and source_url != existing_entry.get("source_url"):
+                    apply_auto_tags(model_entry, source_url)
+
+                models[file_id] = model_entry
+                print(f"  Saved: {path_obj.name}")
+                return True
+            return False
+
+        atomic_mutate_models(_mutate)
+
 
 def cleanup_existing_source_urls():
     """Migrates legacy CDN/direct-file URLs and discovers missing URLs for all models in models.json."""
     try:
-        models = load_models()
-        changed = False
-        for mid, model in models.items():
-            surl = model.get("source_url")
-            fpath = model.get("path")
-            if surl:
-                cleaned = clean_model_source_url(surl)
-                if cleaned and cleaned != surl:
-                    model["source_url"] = cleaned
-                    apply_auto_tags(model, cleaned)
-                    changed = True
-                elif not cleaned and surl and fpath and Path(fpath).exists():
-                    better = get_source_url(fpath)
-                    if better and better != surl:
-                        model["source_url"] = better
-                        apply_auto_tags(model, better)
+        def _mutate_urls(models: dict):
+            changed = False
+            for mid, model in models.items():
+                surl = model.get("source_url")
+                fpath = model.get("path")
+                if surl:
+                    cleaned = clean_model_source_url(surl)
+                    if cleaned and cleaned != surl:
+                        model["source_url"] = cleaned
+                        apply_auto_tags(model, cleaned)
                         changed = True
-            elif fpath and Path(fpath).exists():
-                discovered = get_source_url(fpath)
-                if discovered:
-                    model["source_url"] = discovered
-                    apply_auto_tags(model, discovered)
-                    changed = True
-        if changed:
-            save_models(models)
-            print("  Cleaned up & auto-discovered model source URLs in database.")
+                    elif not cleaned and surl and fpath and Path(fpath).exists():
+                        better = get_source_url(fpath)
+                        if better and better != surl:
+                            model["source_url"] = better
+                            apply_auto_tags(model, better)
+                            changed = True
+                elif fpath and Path(fpath).exists():
+                    discovered = get_source_url(fpath)
+                    if discovered:
+                        model["source_url"] = discovered
+                        apply_auto_tags(model, discovered)
+                        changed = True
+            if changed:
+                print("  Cleaned up & auto-discovered model source URLs in database.")
+            return changed
+
+        atomic_mutate_models(_mutate_urls)
     except Exception as e:
         print(f"Error cleaning legacy URLs: {e}")
 
